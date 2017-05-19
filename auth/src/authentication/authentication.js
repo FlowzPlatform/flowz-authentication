@@ -30,7 +30,15 @@ const attempt = (username, password) => {
  */
 const auth = ({ username, password }) =>
   attempt(username, password).then(({ id }) => {
-    let token = sign(id, secret);
+  id2 = {
+    "userId": 0,
+    "iat": Math.floor(Date.now() / 1000) - 30,
+    "exp": Math.floor(Date.now() / 1000) + (60 * 60),
+    "aud": "https://yourdomain.com",
+    "iss": "notneeded",
+    "sub": "anonymous"
+  }
+    let token = sign(id2, secret);
     return { token: token };
   });
 

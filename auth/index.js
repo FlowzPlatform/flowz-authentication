@@ -20,9 +20,9 @@ const signuptwRoute = route('/auth/twitter')
 const callbacktwRoute = route('/auth/twitter/callback')
 
 module.exports = async function (req, res) {
-  console.log("-------->");
+/*  console.log("-------->");
   console.log(req.url);
-  console.log("<---------");
+  console.log("<---------"); */
   res.setHeader('Content-Type', 'application/json');
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Credentials', 'true');
