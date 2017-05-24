@@ -11,8 +11,8 @@ module.exports = {
     twitcallbackUrl: 'http://localhost:3000/auth/twitter/callback',
     twitpath: '/auth/twitter',
     //fb details
-    fbappId: '302344900208884',
-    fbappSecret: '999ed9f0b3523e8f8f2aae9d144edf2d',
+    fbappId: '171070230090248',
+    fbappSecret: 'a6ae93bfa7ba0d597a33b523291f455a',
     fbcallbackUrl: 'http://localhost:3000/auth/facebook/callback',
     fbpath: '/auth/facebook',
     fbfields: 'name,email,cover,first_name' // Check fields list here: https://developers.facebook.com/docs/graph-api/reference/v2.8/user

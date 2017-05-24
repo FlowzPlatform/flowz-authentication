@@ -20,9 +20,6 @@ const signuptwRoute = route('/auth/twitter')
 const callbacktwRoute = route('/auth/twitter/callback')
 
 module.exports = async function (req, res) {
-/*  console.log("-------->");
-  console.log(req.url);
-  console.log("<---------"); */
   res.setHeader('Content-Type', 'application/json');
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Credentials', 'true');
@@ -30,6 +27,17 @@ module.exports = async function (req, res) {
     'Access-Control-Allow-Methods',
     'GET,HEAD,OPTIONS,POST,PUT,DELETE'
   );
+
+  url = (req.url).split('?')
+  success_url = url[1].split('=');
+  if(success_url)
+  {
+    if(success_url[0]=="success_url")
+    {
+      exports.redirect_app_url = success_url[1];
+    }
+  }
+
   if (corsRoute(req)) {
     // Send CORS headers
         return '';
