@@ -5,19 +5,13 @@ const microAuthGithub = require('microauth-github');
 const users = require('../services/user.service');
 let mongoose = require('mongoose');
 const assert = require('assert');
+const index = require('../../index');
 
 const { secret } = require('../config');
 const User = require('../models/user');
+const redirect = require('micro-redirect')
 
-const options = {
-  clientId: '25930191109a85c4e5fb',
-  clientSecret: 'f5c83db45af0333f51a727c4244a78c570b8bd46',
-  callbackUrl: 'http://localhost:3000/auth/github/callback',
-  path: '/auth/github',
-  scope: 'user'
-};
-
-const githubAuth = microAuthGithub(options);
+const githubAuth = microAuthGithub(index.options);
 
 /**
  * Attempt to authenticate a user.
@@ -62,6 +56,11 @@ module.exports.github = githubAuth(async (req, res, auth) => {
     return send(res, 403, 'Forbidden');
   }
 
-  send(res, 200, await users.setup());
+  const statusCode = 302
+  const location = 'http://github.com'
+
+  redirect(res, statusCode, location)
+
+  //send(res, 200, await users.setup());
 
 });

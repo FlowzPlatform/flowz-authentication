@@ -31,7 +31,7 @@ const attempt = (username, password) => {
 const auth = ({ username, password }) =>
   attempt(username, password).then(({ id }) => {
   id2 = {
-    "userId": 0,
+    "userId": id,
     "iat": Math.floor(Date.now() / 1000) - 30,
     "exp": Math.floor(Date.now() / 1000) + (60 * 60),
     "aud": "https://yourdomain.com",
@@ -39,7 +39,7 @@ const auth = ({ username, password }) =>
     "sub": "anonymous"
   }
     let token = sign(id2, secret);
-    return { token: token };
+    return { id:id, username:username,token: token  };
   });
 
 const decode = token => verify(token, secret);
@@ -58,3 +58,20 @@ const sociallogin = (req) => {
 }
 
 module.exports.sociallogin = sociallogin
+
+module.exports.me = async(req) => {
+  let data;
+  data = verify(req.headers['authorization'], secret);
+
+  return User.find({ _id: data.userId }).exec().then((users, err) => {
+    if (!users.length) {
+      throw createError(401, 'That user does not exist');
+    }
+
+    const user = users[0];
+
+    return user;
+  });
+
+
+}

@@ -4,22 +4,23 @@ const db = require('./src/models/db');
 const route = require('micro-route')
 const auth = require('./src/authentication/authentication');
 const github = require('./src/authentication/github');
-const twitter = require('./src/authentication/twitter');
 const fb = require('./src/authentication/facebook');
 const microAuthGithub = require('microauth-github');
-
+let twitter;
 
 const corsRoute = route('*', 'OPTIONS')
 const loginRoute = route('/api/login', 'POST')
 const signupRoute = route('/api/setup')
+const callbacktwRoute = route('/auth/twitter/callback')
 const signupGitRoute = route('/auth/github')
 const callbackGitRoute = route('/auth/github/callback')
 const signupFbRoute = route('/auth/facebook')
 const callbackFbRoute = route('/auth/facebook/callback')
 const signuptwRoute = route('/auth/twitter')
-const callbacktwRoute = route('/auth/twitter/callback')
+const getdetailuser = route('/api/me')
 
 module.exports = async function (req, res) {
+
   res.setHeader('Content-Type', 'application/json');
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Credentials', 'true');
@@ -30,11 +31,14 @@ module.exports = async function (req, res) {
 
   url = (req.url).split('?')
   success_url = url[1].split('=');
+  success_key = success_url[1].split('&');
   if(success_url)
   {
-    if(success_url[0]=="success_url")
+
+    if(typeof success_url[0] !== 'undefined' && success_url[0]=="success_url")
     {
-      exports.redirect_app_url = success_url[1];
+      redirect_app_url = success_key[0];
+      module.exports.redirect_app_url = redirect_app_url;
     }
   }
 
@@ -54,62 +58,36 @@ module.exports = async function (req, res) {
     } else if(callbackFbRoute(req)) {
         return fb.facebook(req, res);
   } else if(signuptwRoute(req)) {
+      getTwitter(req);
       return twitter.twitter(req, res);
     } else if(callbacktwRoute(req)) {
         return twitter.twitter(req, res);
+    } else if(getdetailuser(req)){
+      if (auth.decode(req, res) !== null) {
+        return auth.me(req);
+      }
     }
 }
+function getTwitter(req){
 
-/*
-module.exports = async function(req, res) {
-  res.setHeader('Content-Type', 'application/json');
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Credentials', 'true');
-  res.setHeader(
-    'Access-Control-Allow-Methods',
-    'GET,HEAD,OPTIONS,POST,PUT,DELETE'
-  );
-  res.setHeader(
-    'Access-Control-Allow-Headers',
-    'Authorization, Access-Control-Allow-Headers, Access-Control-Allow-Methods, Origin,Accept, X-Requested-With, Content-Type, Access-Control-Request-Method, Access-Control-Request-Headers'
-  );
+  const { twitcallbackUrl,twitpath } = require('./src/social-config');
 
-  if (req.method == 'OPTIONS') {
-    return '';
-  }
-  try {
-    switch (req.url) {
-      case '/api/setup':
-        send(res, 200, await users.setup());
-        break;
+  url1 = req.url.split("?")
+  url2 = url1[1].split("&")
+  key = url2[1].split("=")
+  seceret = url2[2].split("=")
 
-      case '/api/authentication':
-        return auth.login(req, res);
+  const options = {
+    consumerKey: key[1],
+    consumerSecret: seceret[1],
+    callbackUrl: twitcallbackUrl,
+    path: twitpath
+  };
+    module.exports.options = options;
+    twitter = require('./src/authentication/twitter');
 
-      case '/api/users':
-        if (auth.decode(req, res) !== null) {
-          send(res, 200, await users.list());
-        }
-        break;
-      default:
-        break;
-    }
-  } catch (err) {
-    if (process.env.NODE_ENV !== 'production' && err.stack) {
-      console.error(err.stack);
-    }
-
-    send(res, err.statusCode || 500, { error: true, message: err.message });
-  }
-};
-*/
-/*
-const user = async (req, res) => {
-  const body = await json(req)
-  send(res, 200, body)
 }
 
-module.exports = router(
-  post('/user', user)
-)
-*/
+function getGithub(req){
+  
+}
