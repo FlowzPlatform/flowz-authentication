@@ -4,6 +4,7 @@ const authGit = require('./authentication');
 const redirect = require('micro-redirect')
 const index = require('../../index')
 
+/*
 const { gitclientId,gitclientSecret,gitcallbackUrl,gitpath,gitscope } = require('../social-config');
 
 
@@ -14,8 +15,8 @@ const options = {
   path: gitpath,
   scope: gitscope
 };
-
-const githubAuth = microAuthGithub(options);
+*/
+const githubAuth = microAuthGithub(index.options);
 
 module.exports.github = githubAuth(async (req, res, auth) => {
 
@@ -28,14 +29,12 @@ module.exports.github = githubAuth(async (req, res, auth) => {
     return send(res, 403, 'Forbidden');
   }
 
-  setTimeout(function(){
     token = authGit.sociallogin(auth);
     console.log(token.token);
     const statusCode = 302
     const location = index.redirect_app_url+'?token='+token.token
     redirect(res, statusCode, location)
-  },5000)
-
+  
 //send(res, 200, authGit.sociallogin(auth));
 
 });

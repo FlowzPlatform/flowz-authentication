@@ -1,7 +1,9 @@
 const { json, send, createError } = require('micro');
 const microAuthFacebook  = require('microauth-facebook');
 const authFb = require('./authentication');
+const index = require('../../index')
 
+/*
 const { fbappId,fbappSecret,fbcallbackUrl,fbpath,fbscope } = require('../social-config');
 
 const options = {
@@ -11,8 +13,8 @@ const options = {
   path: fbpath,
   fields: fbscope
 };
-
-const facebookAuth = microAuthFacebook(options);
+*/
+const facebookAuth = microAuthFacebook(index.options);
 
 module.exports.facebook = facebookAuth(async (req, res, auth) => {
 

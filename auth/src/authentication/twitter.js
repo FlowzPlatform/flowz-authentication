@@ -3,16 +3,6 @@ const microAuthTwitter = require('microauth-twitter');
 const authTwitter = require('./authentication');
 const redirect = require('micro-redirect')
 const index = require('../../index')
-/*
-const { twitconsumerKey,twitconsumerSecret,twitcallbackUrl,twitpath } = require('../social-config');
-
-const options = {
-  consumerKey: twitconsumerKey,
-  consumerSecret: twitconsumerSecret,
-  callbackUrl: twitcallbackUrl,
-  path: twitpath
-};
-*/
 const twitterAuth = microAuthTwitter(index.options);
 
 module.exports.twitter = twitterAuth( async (req, res, auth) => {
@@ -30,7 +20,5 @@ module.exports.twitter = twitterAuth( async (req, res, auth) => {
   const statusCode = 302
   const location = index.redirect_app_url+'?token='+token.token
   redirect(res, statusCode, location)
-  //send(res, 200, authTwitter.sociallogin(auth));
-
 
 });

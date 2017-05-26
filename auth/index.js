@@ -3,10 +3,10 @@ const users = require('./src/services/user.service');
 const db = require('./src/models/db');
 const route = require('micro-route')
 const auth = require('./src/authentication/authentication');
-const github = require('./src/authentication/github');
-const fb = require('./src/authentication/facebook');
 const microAuthGithub = require('microauth-github');
 let twitter;
+let github;
+let fb;
 
 const corsRoute = route('*', 'OPTIONS')
 const loginRoute = route('/api/login', 'POST')
@@ -50,10 +50,12 @@ module.exports = async function (req, res) {
   } else if (signupRoute(req)) {
         return users.setup(req, res);
   } else if(signupGitRoute(req)) {
+      getGithub(req);
       return github.github(req, res);
     } else if(callbackGitRoute(req)) {
         return github.github(req, res);
   } else if(signupFbRoute(req)) {
+      getFacebook(req);
       return fb.facebook(req, res);
     } else if(callbackFbRoute(req)) {
         return fb.facebook(req, res);
@@ -89,5 +91,39 @@ function getTwitter(req){
 }
 
 function getGithub(req){
-  
+  const { gitcallbackUrl,gitpath,gitscope } = require('./src/social-config');
+
+  url1 = req.url.split("?")
+  url2 = url1[1].split("&")
+  key = url2[1].split("=")
+  seceret = url2[2].split("=")
+  const options = {
+    clientId: key[1],
+    clientSecret: seceret[1],
+    callbackUrl: gitcallbackUrl,
+    path: gitpath,
+    scope: gitscope
+  };
+
+    module.exports.options = options;
+    github = require('./src/authentication/github');
+}
+
+function getFacebook(req){
+  const { fbcallbackUrl,fbpath,fbscope  } = require('./src/social-config');
+
+  url1 = req.url.split("?")
+  url2 = url1[1].split("&")
+  key = url2[1].split("=")
+  seceret = url2[2].split("=")
+  const options = {
+    appId: key[1],
+    appSecret: seceret[1],
+    callbackUrl: fbcallbackUrl,
+    path: fbpath,
+    fields: fbscope
+  };
+
+    module.exports.options = options;
+    fb = require('./src/authentication/facebook');
 }
