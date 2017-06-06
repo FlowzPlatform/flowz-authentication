@@ -4,9 +4,12 @@ const db = require('./src/models/db');
 const route = require('micro-route')
 const auth = require('./src/authentication/authentication');
 const microAuthGithub = require('microauth-github');
+const parse = require('urlencoded-body-parser');
 let twitter;
 let github;
 let fb;
+let key;
+let seceret;
 
 const corsRoute = route('*', 'OPTIONS')
 const loginRoute = route('/api/login', 'POST')
@@ -18,6 +21,9 @@ const signupFbRoute = route('/auth/facebook')
 const callbackFbRoute = route('/auth/facebook/callback')
 const signuptwRoute = route('/auth/twitter')
 const getdetailuser = route('/api/me')
+const forgetpassword = route('/api/account/password')
+
+const { twitcallbackUrl,twitpath,gitcallbackUrl,gitpath,gitscope,fbcallbackUrl,fbpath,fbscope  } = require('./src/social-config');
 
 module.exports = async function (req, res) {
 
@@ -28,19 +34,19 @@ module.exports = async function (req, res) {
     'Access-Control-Allow-Methods',
     'GET,HEAD,OPTIONS,POST,PUT,DELETE'
   );
+  /*const _data = await parse(req);
+  success_url = _data.success_url;
+  key = _data.key;
+  seceret = _data.seceret;
 
-  url = (req.url).split('?')
-  success_url = url[1].split('=');
-  success_key = success_url[1].split('&');
   if(success_url)
   {
 
-    if(typeof success_url[0] !== 'undefined' && success_url[0]=="success_url")
+    if(typeof success_url !== 'undefined')
     {
-      redirect_app_url = success_key[0];
-      module.exports.redirect_app_url = redirect_app_url;
+      module.exports.redirect_app_url = success_url;
     }
-  }
+  }*/
 
   if (corsRoute(req)) {
     // Send CORS headers
@@ -68,38 +74,30 @@ module.exports = async function (req, res) {
       if (auth.decode(req, res) !== null) {
         return auth.me(req);
       }
+    } else if(forgetpassword(req)){
+      return auth.forgetpassword(req);
     }
+
 }
 function getTwitter(req){
 
-  const { twitcallbackUrl,twitpath } = require('./src/social-config');
-
-  url1 = req.url.split("?")
-  url2 = url1[1].split("&")
-  key = url2[1].split("=")
-  seceret = url2[2].split("=")
-
   const options = {
-    consumerKey: key[1],
-    consumerSecret: seceret[1],
+    consumerKey: key,
+    consumerSecret: seceret,
     callbackUrl: twitcallbackUrl,
     path: twitpath
   };
+
     module.exports.options = options;
     twitter = require('./src/authentication/twitter');
 
 }
 
 function getGithub(req){
-  const { gitcallbackUrl,gitpath,gitscope } = require('./src/social-config');
 
-  url1 = req.url.split("?")
-  url2 = url1[1].split("&")
-  key = url2[1].split("=")
-  seceret = url2[2].split("=")
   const options = {
-    clientId: key[1],
-    clientSecret: seceret[1],
+    clientId: key,
+    clientSecret: seceret,
     callbackUrl: gitcallbackUrl,
     path: gitpath,
     scope: gitscope
@@ -110,15 +108,10 @@ function getGithub(req){
 }
 
 function getFacebook(req){
-  const { fbcallbackUrl,fbpath,fbscope  } = require('./src/social-config');
 
-  url1 = req.url.split("?")
-  url2 = url1[1].split("&")
-  key = url2[1].split("=")
-  seceret = url2[2].split("=")
   const options = {
-    appId: key[1],
-    appSecret: seceret[1],
+    appId: key,
+    appSecret: seceret,
     callbackUrl: fbcallbackUrl,
     path: fbpath,
     fields: fbscope

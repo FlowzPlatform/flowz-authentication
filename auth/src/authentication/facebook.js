@@ -1,19 +1,9 @@
 const { json, send, createError } = require('micro');
 const microAuthFacebook  = require('microauth-facebook');
 const authFb = require('./authentication');
+const redirect = require('micro-redirect')
 const index = require('../../index')
 
-/*
-const { fbappId,fbappSecret,fbcallbackUrl,fbpath,fbscope } = require('../social-config');
-
-const options = {
-  appId: fbappId,
-  appSecret: fbappSecret,
-  callbackUrl: fbcallbackUrl,
-  path: fbpath,
-  fields: fbscope
-};
-*/
 const facebookAuth = microAuthFacebook(index.options);
 
 module.exports.facebook = facebookAuth(async (req, res, auth) => {
@@ -27,6 +17,9 @@ module.exports.facebook = facebookAuth(async (req, res, auth) => {
     return send(res, 403, 'Forbidden');
   }
 
-  send(res, 200, authFb.sociallogin(auth));
+  token = authFb.sociallogin(auth);
+  const statusCode = 302
+  const location = index.redirect_app_url+'?token='+token.token
+  redirect(res, statusCode, location)
 
 });

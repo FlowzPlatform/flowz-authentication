@@ -57,7 +57,25 @@ const sociallogin = (req) => {
 
 }
 
+const forgetpassword = async (req) => {
+  req = await json(req);
+
+  /*return User.find({ username: req.username }).exec().then((users, err) => {
+    if (!users.length) {
+      throw createError(401, 'That user does not exist');
+    }
+
+    const user = users[0];
+
+    return user;
+  });
+*/
+  return await User.find({ username: req.username });
+}
+
+
 module.exports.sociallogin = sociallogin
+module.exports.forgetpassword = forgetpassword
 
 module.exports.me = async(req) => {
   let data;
@@ -72,6 +90,4 @@ module.exports.me = async(req) => {
 
     return user;
   });
-
-
 }
