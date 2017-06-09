@@ -34,19 +34,6 @@ module.exports = async function (req, res) {
     'Access-Control-Allow-Methods',
     'GET,HEAD,OPTIONS,POST,PUT,DELETE'
   );
-  /*const _data = await parse(req);
-  success_url = _data.success_url;
-  key = _data.key;
-  seceret = _data.seceret;
-
-  if(success_url)
-  {
-
-    if(typeof success_url !== 'undefined')
-    {
-      module.exports.redirect_app_url = success_url;
-    }
-  }*/
 
   if (corsRoute(req)) {
     // Send CORS headers
@@ -56,16 +43,55 @@ module.exports = async function (req, res) {
   } else if (signupRoute(req)) {
         return users.setup(req, res);
   } else if(signupGitRoute(req)) {
+      const _data = await parse(req);
+      success_url = _data.success_url;
+      key = _data.key;
+      seceret = _data.seceret;
+
+      if(success_url)
+      {
+
+        if(typeof success_url !== 'undefined')
+        {
+          module.exports.redirect_app_url = success_url;
+        }
+      }
       getGithub(req);
       return github.github(req, res);
     } else if(callbackGitRoute(req)) {
         return github.github(req, res);
   } else if(signupFbRoute(req)) {
+      const _data = await parse(req);
+      success_url = _data.success_url;
+      key = _data.key;
+      seceret = _data.seceret;
+
+      if(success_url)
+      {
+
+        if(typeof success_url !== 'undefined')
+        {
+          module.exports.redirect_app_url = success_url;
+        }
+      }
       getFacebook(req);
       return fb.facebook(req, res);
     } else if(callbackFbRoute(req)) {
         return fb.facebook(req, res);
   } else if(signuptwRoute(req)) {
+      const _data = await parse(req);
+      success_url = _data.success_url;
+      key = _data.key;
+      seceret = _data.seceret;
+
+      if(success_url)
+      {
+
+        if(typeof success_url !== 'undefined')
+        {
+          module.exports.redirect_app_url = success_url;
+        }
+      }    
       getTwitter(req);
       return twitter.twitter(req, res);
     } else if(callbacktwRoute(req)) {

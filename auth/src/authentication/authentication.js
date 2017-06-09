@@ -70,7 +70,15 @@ const forgetpassword = async (req) => {
     return user;
   });
 */
-  return await User.find({ username: req.username });
+  user = await User.find({ username: req.username });
+  console.log(user);
+
+  query = { username: req.username };
+  const update = {
+    $set: {"forgetpassword":"abcdefgh", updated_by:new Date()},
+  };
+   return await User.findOneAndUpdate(query,update,{ returnNewDocument : true })
+
 }
 
 
