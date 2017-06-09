@@ -11,8 +11,8 @@ const User = require('../models/user');
 /**
  * Attempt to authenticate a user.
  */
-const attempt = (username, password) => {
-  return User.find({ username: username }).exec().then((users, err) => {
+const attempt = (email, password) => {
+  return User.find({ email: email }).exec().then((users, err) => {
     if (!users.length) {
       throw createError(401, 'That user does not exist');
     }
@@ -28,8 +28,8 @@ const attempt = (username, password) => {
 /**
  * Authenticate a user and generate a JWT if successful.
  */
-const auth = ({ username, password }) =>
-  attempt(username, password).then(({ id }) => {
+const auth = ({ email, password }) =>
+  attempt(email, password).then(({ id }) => {
   id2 = {
     "userId": id,
     "iat": Math.floor(Date.now() / 1000) - 30,
@@ -39,7 +39,7 @@ const auth = ({ username, password }) =>
     "sub": "anonymous"
   }
     let token = sign(id2, secret);
-    return { id:id, username:username,token: token  };
+    return { id:id, email:email,token: token  };
   });
 
 const decode = token => verify(token, secret);
@@ -57,34 +57,7 @@ const sociallogin = (req) => {
 
 }
 
-const forgetpassword = async (req) => {
-  req = await json(req);
-
-  /*return User.find({ username: req.username }).exec().then((users, err) => {
-    if (!users.length) {
-      throw createError(401, 'That user does not exist');
-    }
-
-    const user = users[0];
-
-    return user;
-  });
-*/
-  user = await User.find({ username: req.username });
-  console.log(user);
-
-  query = { username: req.username };
-  const update = {
-    $set: {"forgetpassword":"abcdefgh", updated_by:new Date()},
-  };
-   return await User.findOneAndUpdate(query,update,{ returnNewDocument : true })
-
-}
-
-
 module.exports.sociallogin = sociallogin
-module.exports.forgetpassword = forgetpassword
-
 module.exports.me = async(req) => {
   let data;
   data = verify(req.headers['authorization'], secret);

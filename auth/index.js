@@ -21,7 +21,8 @@ const signupFbRoute = route('/auth/facebook')
 const callbackFbRoute = route('/auth/facebook/callback')
 const signuptwRoute = route('/auth/twitter')
 const getdetailuser = route('/api/me')
-const forgetpassword = route('/api/account/password')
+const forgetpasswordRoute = route('/api/forgetpassword', 'POST')
+const resetpasswordRoute = route('/api/resetpassword','POST')
 
 const { twitcallbackUrl,twitpath,gitcallbackUrl,gitpath,gitscope,fbcallbackUrl,fbpath,fbscope  } = require('./src/social-config');
 
@@ -91,7 +92,7 @@ module.exports = async function (req, res) {
         {
           module.exports.redirect_app_url = success_url;
         }
-      }    
+      }
       getTwitter(req);
       return twitter.twitter(req, res);
     } else if(callbacktwRoute(req)) {
@@ -100,8 +101,10 @@ module.exports = async function (req, res) {
       if (auth.decode(req, res) !== null) {
         return auth.me(req);
       }
-    } else if(forgetpassword(req)){
-      return auth.forgetpassword(req);
+    } else if(forgetpasswordRoute(req)) {
+      return users.forgetpassword(req, res);
+    }else if(resetpasswordRoute(req)) {
+      return users.resetpassword(req, res);
     }
 
 }
