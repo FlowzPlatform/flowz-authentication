@@ -3,20 +3,23 @@ const { hashSync } = require('bcrypt');
 const { json, send, createError } = require('micro');
 const Promise = require('promise');
 const crypto = require('crypto');
+let responce = require("./responce");
+let config = require('yaml-config');
+let settings = config.readConfig('/home/software/web/async-micro/auth/src/services/config.yaml');
 
 module.exports.list = async () => {
   return await User.find();
 };
 
-
 const signup = ({ username, aboutme, firstname, lastname, email, password, dob, role, signup_type, image_name, image_url }) =>
 {
-
 return getUsername(username).then((res) =>{
    return getEmail(email);
  }).then((res)=>{
    let user = new User({ username:username, aboutme:aboutme, firstname:firstname, lastname:lastname, email:email, password:hashSync(password, 2) , dob:dob, role:role,signup_type:signup_type,image_name:image_name,image_url:image_url,forget_token_created_at:null  });
-   return user.save();
+   user = user.save();
+   const sucessReply = sendSuccessResponce();
+   return sucessReply;
  }).catch((err) => {
    throw createError(401, err);
  })
@@ -112,4 +115,12 @@ function generateToken(stringBase = 'base64') {
       }
     });
   });
+}
+
+function sendRejectResponce(error) {
+  return new responce(settings.keys.error,settings.code.error, settings.service, error);
+}
+
+function sendSuccessResponce(){
+  return new responce(settings.keys.success,settings.code.success, settings.service, settings.message.success);
 }

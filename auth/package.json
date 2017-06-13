@@ -24,7 +24,8 @@
     "microrouter": "^2.1.0",
     "mongoose": "^4.7.8",
     "promise": "^7.1.1",
-    "urlencoded-body-parser": "^2.0.1"
+    "urlencoded-body-parser": "^2.0.1",
+    "yaml-config": "^0.3.0"
   },
   "devDependencies": {
     "eslint-plugin-prettier": "^2.0.0"
