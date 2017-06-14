@@ -1,13 +1,3 @@
-# micro-authentication-starter
-
-small starter project for a REST api with Authentication
-
-### included
-
-* micro
-* jwt
-* bcrypt
-* mongodb
 
 ### usage
 
