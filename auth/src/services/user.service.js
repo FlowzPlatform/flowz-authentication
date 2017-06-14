@@ -17,10 +17,10 @@ return getEmail(email).then((res)=>{
    let user = new User({ aboutme:aboutme, firstname:firstname, lastname:lastname, email:email, password:hashSync(password, 2) , dob:dob, role:role,signup_type:signup_type,image_name:image_name,image_url:image_url,forget_token_created_at:null  });
    user = user.save();
   //  let sendemail = function()
-   let sucessReply = sendSuccessResponce('success','200','you are succesfully register...');
+   let sucessReply = sendSuccessResponce('1','200','you are succesfully register...');
   return sucessReply;
  }).catch((err) => {
-   let rejectReply = sendRejectResponce('error','401','email already exists');
+   let rejectReply = sendRejectResponce('0','401','email already exists');
      return rejectReply;
  })
 }

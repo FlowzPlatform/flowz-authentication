@@ -15,20 +15,25 @@ const User = require('../models/user');
 /**
  * Attempt to authenticate a user.
  */
-const attempt = (email, password) => {
-  return User.find({ email: email }).exec().then((users, err) => {
-      if (!users.length) {
-        return {id:201}
-    }
-    const user = users[0];
-    if (!compareSync(password, user.password)) {
-      return {id:201}
-    }
-    // console.log("userllll",user);
-    return user;
-  });
-};
+ const attempt = (email, password) => {
+   return User.find({ email: email }).exec().then((users, err) => {
+       if (!users.length) {
+         return {id:201}
+     }
+     const user = users[0];
+     if (!compareSync(password, user.password)) {
+       return {id:201}
+     }
+     // console.log("userllll",user);
+     return user;
+   });
+ };
 
+
+const sendingres = async (request, response) => {
+  const data = await json(request)
+  send(response, 200, 'hello world ')
+}
 /**
  * Authenticate a user and generate a JWT if successful.
  */
@@ -45,10 +50,10 @@ attempt(email, password).then(({ id }) => {
   }
     let token = sign(id2, secret);
     //return { id:id, email:email,token: token  };
-     let sucessReply = sendSuccessResponce('success','200','you are successfully login...');
+     let sucessReply = sendSuccessResponce('1','200','you are successfully login...');
      return sucessReply;
 } else {
-  let rejectReply = sendRejectResponce('error','401','you entered wrong credential..');
+  let rejectReply = sendRejectResponce('0','401','you entered wrong credential..');
   return rejectReply;
 }
 });
