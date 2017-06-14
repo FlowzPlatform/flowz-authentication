@@ -49,8 +49,12 @@ attempt(email, password).then(({ id }) => {
     "sub": "anonymous"
   }
     let token = sign(id2, secret);
-    //return { id:id, email:email,token: token  };
-     let sucessReply = sendSuccessResponce('1','200','you are successfully login...');
+    let jsonObj = { token  };
+    // console.log(JSON.stringify(jsonObj.token));
+let logintoken = jsonObj.token;
+// console.log(logintoken);
+    // return { token: token  };
+     let sucessReply = sendSuccessResponce('1','200','you are successfully login...',logintoken);
      return sucessReply;
 } else {
   let rejectReply = sendRejectResponce('0','401','you entered wrong credential..');
@@ -92,7 +96,7 @@ module.exports.me = async(req) => {
 function sendRejectResponce(status,code,message) {
   return new responce(status,code,message);
 }
-function sendSuccessResponce(status,code,message,token){
-  return new responce(status,code,message,token);
+function sendSuccessResponce(status,code,message,logintoken){
+  return new responce(status,code,message,logintoken);
 
 }

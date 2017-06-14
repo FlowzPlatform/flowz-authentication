@@ -3,13 +3,13 @@
 // Responce is a base class
 module.exports = class Responce {
 
-    constructor (status,code,message) {
+    constructor (status,code,message,logintoken) {
         this.status = status;
         this.code = code;
         this.message = message;
-        // this.results = results;
+        this.logintoken = logintoken;
     }
-    
+
 
     print () {
       console.log( this.toString() );
