@@ -1,4 +1,4 @@
-const { send,json } = require('micro');
+const { json, send, createError} = require('micro');
 const users = require('./src/services/user.service');
 const db = require('./src/models/db');
 const route = require('micro-route')
@@ -40,6 +40,7 @@ module.exports = async function (req, res) {
     // Send CORS headers
         return '';
   } else if (loginRoute(req)) {
+    // console.log("login route called");
         return auth.login(req, res);
   } else if (signupRoute(req)) {
         return users.setup(req, res);

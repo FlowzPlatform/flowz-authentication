@@ -1,11 +1,11 @@
 const User = require('../models/user');
 const { hashSync } = require('bcrypt');
-const { json, send, createError } = require('micro');
+const { json, send, createError} = require('micro');
 const Promise = require('promise');
 const crypto = require('crypto');
-let responce = require("./responce");
+let responce = require('./responce');
 let config = require('yaml-config');
-let settings = config.readConfig('/home/software/web/async-micro/auth/src/services/config.yaml');
+let settings = config.readConfig('/home/software1/microjs/auth/src/services/config.yaml');
 
 module.exports.list = async () => {
   return await User.find();
@@ -18,14 +18,14 @@ return getUsername(username).then((res) =>{
  }).then((res)=>{
    let user = new User({ username:username, aboutme:aboutme, firstname:firstname, lastname:lastname, email:email, password:hashSync(password, 2) , dob:dob, role:role,signup_type:signup_type,image_name:image_name,image_url:image_url,forget_token_created_at:null  });
    user = user.save();
-   const sucessReply = sendSuccessResponce();
-   return sucessReply;
+  //  let sendemail = function()
+   let sucessReply = sendSuccessResponce('success','200','you are succesfully registered...');
+  return sucessReply;
  }).catch((err) => {
-   throw createError(401, err);
+   let rejectReply = sendRejectResponce('error','401','email already taken..');
+     return rejectReply;
  })
-
 }
-
 
 module.exports.setup = async (req, res) => await signup(await json(req));
 
@@ -58,18 +58,63 @@ let getEmail = function(email){
   return promise;
 }
 
+// / let sendemail = function(to,newToken){
+//   console.log("sendemail function called");
+//   console.log(to,newToken);
+//       if(to == "" || to == null || newToken == "" || newToken == null) {
+//         console.log(to);
+//         throw createError(401, 'please enter correct email');
+//       }else{
+//         console.log(to);
+//         console.log(newToken);
+//         console.log("111");
+//         let urlToken = "https://api.mydomain.com/dist/#/reset-password/"+newToken
+//         let server 	= emailjs.server.connect({
+//            user:    "acharotariya@officebrain.com",
+//            password:"AJ@123456",
+//            host:    "mail.officebeacon.com",
+//            ssl:     true
+//
+//         });
+//
+//         server.send({
+//            text:    "emailjs",
+//            from:    "acharotariya@officebrain.com",
+//            to:      to,
+//            cc:      "",
+//            subject: "testing emailjs",
+//            attachment:
+//            [
+//              {
+//                data:
+//                "<html><body>Dear "+to+",<br>You have requested to reset your password. Go to the following url, enter the code below, and set your new password.<br><br>"+urlToken+"<br>Thanks,<br>officebrain<br><body></html>", alternative:true }
+//
+//            ]
+//         })
+// }
+// };
+
+
 module.exports.forgetpassword = async (req,res) => {
+      console.log("forgetpassword async method called");
       req = await json(req)
-      let email=req.email;
-      let users = await User.find({ email: email });
+
+      let to=req.email;
+      let users = await User.find({ email: to });
       if(users.length === 0)
       {
         throw createError(401, 'please enter correct email');
       }else{
       const newToken = await generateToken();
-
-      query = { email: email };
-      const update = {
+      let arr = [];
+      let o = {};
+      o.token = newToken;
+      arr.push(o);
+      // console.log('newToken', newToken);
+      // console.log(arr);
+      send(res, 200, o);
+      query = { email: to };
+       const update = {
       $set: {"forget_token":newToken, "forget_token_created_at":new Date()},
     };
      return await User.findOneAndUpdate(query,update,{ returnNewDocument : true, new: true })
@@ -117,10 +162,10 @@ function generateToken(stringBase = 'base64') {
   });
 }
 
-function sendRejectResponce(error) {
-  return new responce(settings.keys.error,settings.code.error, settings.service, error);
+function sendRejectResponce(status,code,message) {
+  return new responce(status,code,message);
 }
+function sendSuccessResponce(status,code,message){
+  return new responce(status,code,message);
 
-function sendSuccessResponce(){
-  return new responce(settings.keys.success,settings.code.success, settings.service, settings.message.success);
 }

@@ -1,26 +1,32 @@
-const { json, send, createError } = require('micro');
+const { json, send, createError, sendError } = require('micro');
 const { compareSync, hash } = require('bcrypt');
 const { sign, verify } = require('jsonwebtoken');
 const users = require('../services/user.service');
 let mongoose = require('mongoose');
 const assert = require('assert');
+let responce = require('../services/responce.js');
+let config = require('yaml-config');
 
 const { secret } = require('../config');
 const User = require('../models/user');
+
+
 
 /**
  * Attempt to authenticate a user.
  */
 const attempt = (email, password) => {
   return User.find({ email: email }).exec().then((users, err) => {
-    if (!users.length) {
-      throw createError(401, 'That user does not exist');
+      if (!users.length) {
+
+      return {id:201}
     }
 
     const user = users[0];
     if (!compareSync(password, user.password)) {
-      throw createError(401, 'Wrong password');
+      return {id:201}
     }
+    // console.log("userllll",user);
     return user;
   });
 };
@@ -29,7 +35,8 @@ const attempt = (email, password) => {
  * Authenticate a user and generate a JWT if successful.
  */
 const auth = ({ email, password }) =>
-  attempt(email, password).then(({ id }) => {
+attempt(email, password).then(({ id }) => {
+  if(parseInt(id) != 201) {
   id2 = {
     "userId": id,
     "iat": Math.floor(Date.now() / 1000) - 30,
@@ -39,7 +46,14 @@ const auth = ({ email, password }) =>
     "sub": "anonymous"
   }
     let token = sign(id2, secret);
-    return { id:id, email:email,token: token  };
+    //return { id:id, email:email,token: token  };
+     let sucessReply = sendSuccessResponce('success','200','you are successfully login...');
+     return sucessReply;
+} else {
+  let rejectReply = sendRejectResponce('error','401','you entered wrong credential..');
+  return rejectReply;
+}
+
   });
 
 const decode = token => verify(token, secret);
@@ -71,4 +85,12 @@ module.exports.me = async(req) => {
 
     return user;
   });
+}
+
+function sendRejectResponce(status,code,message) {
+  return new responce(status,code,message);
+}
+function sendSuccessResponce(status,code,message,token){
+  return new responce(status,code,message,token);
+
 }
