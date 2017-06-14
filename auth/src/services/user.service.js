@@ -1,6 +1,6 @@
 const User = require('../models/user');
 const { hashSync } = require('bcrypt');
-const { json, send, createError} = require('micro');
+const { json, send, createError, } = require('micro');
 const Promise = require('promise');
 const crypto = require('crypto');
 let responce = require('./responce');
@@ -13,9 +13,7 @@ module.exports.list = async () => {
 
 const signup = ({ username, aboutme, firstname, lastname, email, password, dob, role, signup_type, image_name, image_url }) =>
 {
-return getUsername(username).then((res) =>{
-   return getEmail(email);
- }).then((res)=>{
+return getEmail(email).then((res)=>{
    let user = new User({ username:username, aboutme:aboutme, firstname:firstname, lastname:lastname, email:email, password:hashSync(password, 2) , dob:dob, role:role,signup_type:signup_type,image_name:image_name,image_url:image_url,forget_token_created_at:null  });
    user = user.save();
   //  let sendemail = function()
@@ -161,6 +159,7 @@ function generateToken(stringBase = 'base64') {
     });
   });
 }
+
 
 function sendRejectResponce(status,code,message) {
   return new responce(status,code,message);

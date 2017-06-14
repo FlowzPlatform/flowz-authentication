@@ -18,10 +18,8 @@ const User = require('../models/user');
 const attempt = (email, password) => {
   return User.find({ email: email }).exec().then((users, err) => {
       if (!users.length) {
-
-      return {id:201}
+        return {id:201}
     }
-
     const user = users[0];
     if (!compareSync(password, user.password)) {
       return {id:201}
@@ -53,8 +51,7 @@ attempt(email, password).then(({ id }) => {
   let rejectReply = sendRejectResponce('error','401','you entered wrong credential..');
   return rejectReply;
 }
-
-  });
+});
 
 const decode = token => verify(token, secret);
 
