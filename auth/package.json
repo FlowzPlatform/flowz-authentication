@@ -23,11 +23,12 @@
     "microauth-twitter": "^0.1.1",
     "microrouter": "^2.1.0",
     "mongoose": "^4.10.6",
-    "promise": "^7.1.1",
+    "promise": "^7.2.0",
     "urlencoded-body-parser": "^2.0.1",
     "yaml-config": "^0.3.0"
   },
   "devDependencies": {
+    "electron-rebuild": "^1.5.11",
     "eslint-plugin-prettier": "^2.0.0"
   }
 }
