@@ -20,7 +20,7 @@ const callbackGitRoute = route('/auth/github/callback')
 const signupFbRoute = route('/auth/facebook')
 const callbackFbRoute = route('/auth/facebook/callback')
 const signuptwRoute = route('/auth/twitter')
-const getdetailuser = route('/api/userdetails')
+const userdetailsRoute = route('/api/userdetails')
 const forgetpasswordRoute = route('/api/forgetpassword', 'POST')
 const resetpasswordRoute = route('/api/resetpassword','POST')
 const updateuserRoute = route('/api/updateuser','POST')
@@ -41,7 +41,6 @@ module.exports = async function (req, res) {
     // Send CORS headers
         return '';
   } else if (loginRoute(req)) {
-    console.log("login route called");
         return auth.login(req, res);
   } else if (signupRoute(req)) {
         return users.setup(req, res);
@@ -99,10 +98,8 @@ module.exports = async function (req, res) {
       return twitter.twitter(req, res);
     } else if(callbacktwRoute(req)) {
         return twitter.twitter(req, res);
-    } else if(getdetailuser(req)){
-      if (auth.decode(req, res) !== null) {
+    } else if(userdetailsRoute(req)){
         return auth.userdetails(req);
-      }
     } else if(forgetpasswordRoute(req)) {
       return users.forgetpassword(req, res);
     }else if(resetpasswordRoute(req)) {

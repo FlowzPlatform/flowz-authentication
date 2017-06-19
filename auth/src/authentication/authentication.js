@@ -5,11 +5,10 @@ const users = require('../services/user.service');
 let mongoose = require('mongoose');
 const assert = require('assert');
 let responce = require('../services/responce.js');
-let config = require('yaml-config');
+let config = require('../services/config.yaml');
 
 const { secret } = require('../config');
 const User = require('../models/user');
-
 
 
 /**
@@ -49,19 +48,9 @@ attempt(email, password).then(({ id }) => {
     let sucessReply = sendSuccessResponce(1,'200','you are successfully login...',logintoken);
     return sucessReply;
   } else {
-    let rejectReply = sendRejectResponce(0,'401','you entered wrong credential..');
-    return rejectReply;
+    throw createError(401, 'wrong credential');
   }
 });
-
-// try {
-//   let decoded =verify(token, secret);
-//   // console.log(decoded);
-// } catch(err) {
-//   var jsonString = {"status":0,"code":"401","message":"error"}
-// // console.log(jsonString);
-// return jsonString;
-// }
 
 const decode = token => verify(token, secret);
 module.exports.login = async (req, res) => await auth(await json(req));
@@ -77,36 +66,45 @@ const sociallogin = (req) => {
 }
 
 module.exports.sociallogin = sociallogin
+
 module.exports.userdetails = async(req,res) => {
-  console.log("userdetails called..............................");
+  let token = req.headers['authorization'];
+  try {
+    // return wrongtoken(token);
+    let data;
+    data = verify(req.headers['authorization'], secret);
+    return User.find({ _id: data.userId }).exec().then((users, err) => {
+      if (!users.length) {
+         throw createError(401, 'That user does not exist');
+      }
+      const data = users[0];
+      // console.log(data);
+      let jsonString = {"status":1,"code":"201","message":"userdetails","data":data}
+  // console.log(jsonString);
+       return jsonString
+
+    });
+} catch(err) {
+  // err
+    throw createError(401, 'invalid token');
+}
+}
+
+
+module.exports.updateuser = async(req,res) => {
+  req = await json(req)
   let data;
   data = verify(req.headers['authorization'], secret);
-  return User.find({ _id: data.userId }).exec().then((users, err) => {
+  User.find({ _id: data.userId }).exec().then((users, err) => {
     if (!users.length) {
        throw createError(401, 'That user does not exist');
     }
-    const data = users[0];
-    console.log(data);
-    let jsonString = {"status":1,"code":"201","message":"userdetails","data":data}
-// console.log(jsonString);
-     return jsonString
 
-  });
-}
-
-module.exports.updateuser = async(req,res) => {
-  console.log("updateuser called..............................");
-  let data;
-  data = verify(req.headers['authorization'], secret);
-  return User.find({ _id: data.userId }).exec().then((users, err) => {
-    if (!users.length) {
-
-    }
-    const data = users[0];
-    // console.log(data);
-    var jsonString = {"status":1,"code":"201","message":"userdetails","data":data}
-console.log(jsonString);
-return jsonString;
+    query = { _id: data.userId }
+    const update = {
+      $set: {"role":req.role},
+    };
+    return User.Update(query,update,{ returnNewDocument : true , new: true })
 
   });
 }
