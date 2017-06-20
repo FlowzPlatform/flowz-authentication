@@ -5,7 +5,7 @@ const Promise = require('promise');
 const crypto = require('crypto');
 let responce = require('./responce');
 let config = require('yaml-config');
-let settings = config.readConfig('/home/software/microjs_new/auth/src/services/config.yaml');
+let settings = config.readConfig('../auth/src/services/config.yaml');
 const emailjs 	= require("emailjs");
 
 module.exports.list = async () => {
@@ -16,7 +16,7 @@ const signup = ({ aboutme, fullname, firstname, lastname, email, password, dob, 
 {
 return getEmail(email).then((res)=>{
 
-let user = new User({ aboutme:aboutme, fullname:fullname, firstname:firstname, lastname:lastname, email:email, password:hashSync(password, 2) , dob:dob, role:role,signup_type:signup_type,image_name:image_name,image_url:image_url,forget_token_created_at:null  });
+let user = new User({ aboutme:aboutme, fullname:fullname, firstname:firstname, lastname:lastname, email:email, password:hashSync(password, 2), dob:dob, role:role,signup_type:signup_type,image_name:image_name,image_url:image_url,forget_token_created_at:null  });
    user = user.save();
    let sucessReply = sendSuccessResponce(1,'200','you are successfully register...');
    return sucessReply;

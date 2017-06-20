@@ -23,7 +23,8 @@ const signuptwRoute = route('/auth/twitter')
 const userdetailsRoute = route('/api/userdetails')
 const forgetpasswordRoute = route('/api/forgetpassword', 'POST')
 const resetpasswordRoute = route('/api/resetpassword','POST')
-const updateuserRoute = route('/api/updateuser','POST')
+const changepasswordRoute = route('/api/changepassword','POST')
+
 
 const { twitcallbackUrl,twitpath,gitcallbackUrl,gitpath,gitscope,fbcallbackUrl,fbpath,fbscope  } = require('./src/social-config');
 
@@ -104,8 +105,8 @@ module.exports = async function (req, res) {
       return users.forgetpassword(req, res);
     }else if(resetpasswordRoute(req)) {
       return users.resetpassword(req, res);
-    }else if(updateuserRoute(req)) {
-      return auth.updateuser(req, res);
+    }else if(changepasswordRoute(req)) {
+      return auth.changepassword(req, res);
     }
 
 }

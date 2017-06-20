@@ -1,6 +1,8 @@
 const { json, send, createError, sendError } = require('micro');
 const { compareSync, hash } = require('bcrypt');
 const { sign, verify } = require('jsonwebtoken');
+const { hashSync} = require('bcrypt');
+var bcrypt = require('bcrypt');
 const users = require('../services/user.service');
 let mongoose = require('mongoose');
 const assert = require('assert');
@@ -33,6 +35,8 @@ const attempt = (email, password) => {
 */
 const auth = ({ email, password }) =>
 attempt(email, password).then(({ id }) => {
+  console.log(email);
+  console.log(password);
   if(parseInt(id) != 201) {
     id2 = {
       "userId": id,
@@ -86,28 +90,51 @@ module.exports.userdetails = async(req,res) => {
     });
 } catch(err) {
   // err
-    throw createError(401, 'invalid token');
+    throw createError(403, 'invalid token');
 }
 }
 
+module.exports.changepassword = async(req,res) => {
 
-module.exports.updateuser = async(req,res) => {
+// console.log('-----------------------------------------');
+  let token = req.headers['authorization'];
+  console.log(token);
   req = await json(req)
+  let oldpass=req.oldpass;
+  console.log(oldpass);
+  let newpass=req.newpass;
+  console.log(newpass);
+  try{
   let data;
-  data = verify(req.headers['authorization'], secret);
-  User.find({ _id: data.userId }).exec().then((users, err) => {
+  data = verify(token, secret);
+  let users = await User.find({_id: data.userId});
+  // console.log(users[0]);
     if (!users.length) {
        throw createError(401, 'That user does not exist');
     }
-
-    query = { _id: data.userId }
-    const update = {
-      $set: {"role":req.role},
-    };
-    return User.Update(query,update,{ returnNewDocument : true , new: true })
-
-  });
+    console.log(users[0].password);
+    let comparepass = await bcrypt.compare(oldpass, users[0].password);
+    if(comparepass == false){
+      throw createError(401, 'password does not match');
+    }else {
+      query = { _id: data.userId };
+      console.log(query);
+      const update = {$set: {"password":hashSync(newpass, 2), "forget_token_created_at":new Date()}};
+      let fp = await User.findOneAndUpdate(query,update,{ returnNewDocument : true, new: true })
+      let jsonString = {"status":1,"code":"201","message":"change password successfully"}
+      return jsonString
+    }
+}catch(err) {
+  // err
+    throw createError(403, 'invalid token');
 }
+};
+
+
+
+
+
+
 
 
 
