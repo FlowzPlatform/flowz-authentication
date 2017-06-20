@@ -1,4 +1,4 @@
-const { send,json } = require('micro');
+const { json, send, createError} = require('micro');
 const users = require('./src/services/user.service');
 const db = require('./src/models/db');
 const route = require('micro-route')
@@ -20,9 +20,10 @@ const callbackGitRoute = route('/auth/github/callback')
 const signupFbRoute = route('/auth/facebook')
 const callbackFbRoute = route('/auth/facebook/callback')
 const signuptwRoute = route('/auth/twitter')
-const getdetailuser = route('/api/me')
+const userdetailsRoute = route('/api/userdetails')
 const forgetpasswordRoute = route('/api/forgetpassword', 'POST')
 const resetpasswordRoute = route('/api/resetpassword','POST')
+const updateuserRoute = route('/api/updateuser','POST')
 
 const { twitcallbackUrl,twitpath,gitcallbackUrl,gitpath,gitscope,fbcallbackUrl,fbpath,fbscope  } = require('./src/social-config');
 
@@ -97,14 +98,14 @@ module.exports = async function (req, res) {
       return twitter.twitter(req, res);
     } else if(callbacktwRoute(req)) {
         return twitter.twitter(req, res);
-    } else if(getdetailuser(req)){
-      if (auth.decode(req, res) !== null) {
-        return auth.me(req);
-      }
+    } else if(userdetailsRoute(req)){
+        return auth.userdetails(req);
     } else if(forgetpasswordRoute(req)) {
       return users.forgetpassword(req, res);
     }else if(resetpasswordRoute(req)) {
       return users.resetpassword(req, res);
+    }else if(updateuserRoute(req)) {
+      return auth.updateuser(req, res);
     }
 
 }
