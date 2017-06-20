@@ -1,34 +1,47 @@
-const Student = require('../models/user');
+const User = require('../models/user');
 
-module.exports.liststudent = async () => {
-  return await Student.find();
+module.exports.alluserdetails = async () => {
+  let data =  await User.find()
+  let jsonString = {"status":1,"code":"201","message":"alluserdetails","data":data}
+// console.log(jsonString);
+   return jsonString
 };
 
-module.exports.getstudent = async (req,res) => {
-  uname = req.params.uName;
-  return await Student.find({ name: uname });
+module.exports.getuserdetails = async (req,res) => {
+  email = req.params.email;
+  let data = await User.find({ email: email })
+  let jsonString = {"status":1,"code":"201","message":"getuserdetails","data":data}
+// console.log(jsonString);
+   return jsonString
 };
 
-module.exports.savestudent = async (req,res) => {
-  let newStudent = Student({
-    name: req.body.name,
-    password: req.body.password
-  });
-  return await newStudent.save();
-};
+// module.exports.savestudent = async (req,res) => {
+//   let newUser= User({
+//     name: req.body.name,
+//     password: req.body.password
+//   });
+//   return await newStudent.save();
+// };
 
-module.exports.updatestudent = async (req,res) => {
-  uname = req.params.uName;
+module.exports.updateuserdetails = async (req,res) => {
+  email = req.params.email;
   body = req.body;
-  console.log(body);
-  query = { name: uname };
+  // console.log(body);
+  query = { email: email };
   const update = {
     $set: body,
   };
-   return await Student.findOneAndUpdate(query,update,{ returnNewDocument : true })
+
+   let data =  await User.findOneAndUpdate(query,update,{ returnNewDocument : true, new: true })
+   let jsonString = {"status":1,"code":"201","message":"updateuserdetails","data":data}
+ // console.log(jsonString);
+    return jsonString
 };
 
-module.exports.deletestudent = async (req,res) => {
-  uname = req.params.uName;
-  return await Student.findOneAndRemove({ name: uname })
+module.exports.deleteuserdetails = async (req,res) => {
+  email = req.params.email;
+  let data = await User.findOneAndRemove({ email: email })
+  let jsonString = {"status":1,"code":"201","message":"deleteuserdetails","data":data}
+// console.log(jsonString);
+   return jsonString
 };
