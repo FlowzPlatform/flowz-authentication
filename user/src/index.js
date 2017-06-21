@@ -1,6 +1,7 @@
 'use strict'
 const {send,json} = require('micro');
-const student = require('./services/user.service');
+const user_info = require('./services/user.service');
+const user_address = require('./services/user.service.address');
 const db = require('./models/db');
 const User = require('./models/user');
 const cors = require('micro-cors')()
@@ -23,29 +24,24 @@ const handleErrors = fn => async (req, res) => {
 const api = microApi([
   {
     method: 'get',
-    path: '/students',
-    handler: student.liststudent,
-  },
-  {
-    method: 'get',
-    path: '/students/student/:uName',
-    handler: student.getstudent,
-  },
-  {
-    method: 'post',
-    path: '/students',
-    handler: student.savestudent,
+    path: '/userdetails/:uid',
+    handler: user_info.userdetails,
   },
   {
     method: 'put',
-    path: '/students/student/:uName',
-    handler: student.updatestudent,
+    path: '/updatedetails/:uid',
+    handler: user_info.updatedetails,
   },
   {
-    method: 'delete',
-    path: '/students/student/:uName',
-    handler: student.deletestudent,
+    method: 'get',
+    path: '/useraddress/:uid',
+    handler: user_address.useraddress,
   },
+  {
+    method: 'put',
+    path: '/updateaddress/:uid',
+    handler: user_address.updateaddress,
+  }
 ])
 
 

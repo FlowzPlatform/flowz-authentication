@@ -1,34 +1,32 @@
-const Student = require('../models/user');
+const Pinfo = require('../models/user');
 
-module.exports.liststudent = async () => {
-  return await Student.find();
+module.exports.userdetails = async (req,res) => {
+  userid = req.params.uid;
+  try {
+    let data = await Pinfo.find({ userid: userid })
+    let jsonString = {"status":1,"code":201,"message":"UserData","Data":data}
+    return jsonString
+  } catch (err) {
+    let jsonString = {"status":0,"code":400,"message":"Error!"}
+    return jsonString
+  }  
 };
 
-module.exports.getstudent = async (req,res) => {
-  uname = req.params.uName;
-  return await Student.find({ name: uname });
-};
-
-module.exports.savestudent = async (req,res) => {
-  let newStudent = Student({
-    name: req.body.name,
-    password: req.body.password
-  });
-  return await newStudent.save();
-};
-
-module.exports.updatestudent = async (req,res) => {
-  uname = req.params.uName;
+module.exports.updatedetails = async (req,res) => {
+  userid = req.params.uid;
   body = req.body;
-  console.log(body);
-  query = { name: uname };
+  query = { userid: userid };
   const update = {
     $set: body,
   };
-   return await Student.findOneAndUpdate(query,update,{ returnNewDocument : true })
+  try {
+    let data = await Pinfo.findOneAndUpdate(query,update,{ returnNewDocument : true })
+    let jsonString = {"status":1,"code":201,"message":"Personal Details Updated","Data":data}
+    return jsonString
+  } catch (err) {
+    let jsonString = {"status":0,"code":400,"message":"Error!"}
+    return jsonString
+  }
 };
 
-module.exports.deletestudent = async (req,res) => {
-  uname = req.params.uName;
-  return await Student.findOneAndRemove({ name: uname })
-};
+

@@ -1,46 +1,34 @@
-const UserData = require('../models/address');
-// const AddrData = require('../models/address');
+const Addr = require('../models/address');
 
-module.exports.address = async () => {
-  return await UserData.find();
+module.exports.useraddress = async (req,res) => {
+  userid = req.params.uid;
+
+  try {
+      let data =  await Addr.find({ userid: userid });
+      let jsonString = {"status":1,"code":201,"message":"Address","Data":data}
+    return jsonString
+  } catch (err) {
+    let jsonString = {"status":0,"code":400,"message":"Error!"}
+    return jsonString
+  }
 };
-
-// module.exports.address = async () => {
-//   return await AddrData.find();
-// };
-
-module.exports.getbyid = async (req,res) => {
-  userid = req.params.userid;
-  let data =  await UserData.find({ userid: userid });
-  let jsonString = {"status":1,"code":"201","message":"User Details", "data": data}
-// console.log(jsonString);
-   return jsonString
-};
-
-// module.exports.savestudent = async (req,res) => {
-//   let newStudent = Student({
-//     name: req.body.name,
-//     password: req.body.password
-//   });
-//   return await newStudent.save();
-// };
 
 module.exports.updateaddress = async (req,res) => {
-  userid = req.params.userid;
+  userid = req.params.uid;
   body = req.body;
-  console.log(body);
   query = { userid: userid };
   const update = {
     $set: body,
   };
-  
-  let data =  await UserData.findOneAndUpdate(query,update,{ returnNewDocument : true })
-  let jsonString = {"status":1,"code":"201","message":"User's Address Details Updated."}
-// console.log(jsonString);
-   return jsonString
+
+  try {
+      return await Addr.findOneAndUpdate(query,update,{ returnNewDocument : true })
+  } catch (err) {
+    let jsonString = {"status":0,"code":400,"message":"Error!"}
+    return jsonString
+  }
 };
 
-// module.exports.deletestudent = async (req,res) => {
-//   uname = req.params.uName;
-//   return await Student.findOneAndRemove({ name: uname })
-// };
+
+
+

@@ -1,13 +1,13 @@
 let mongoose = require('mongoose');
 let Schema = mongoose.Schema;
 
-let studentSchema = new Schema({
-  name: String,
-  password: { type: String, required: true },
-  created_at: Date,
-  updated_at: Date
+let PersonalInfo = new Schema({
+  firstname : String,
+  lastname : String,
+  email : String,
+  userid : String
 });
 
-let Student = mongoose.model('Student',studentSchema)
+let Pinfo = mongoose.model('tests',PersonalInfo)
 
-module.exports = Student
+module.exports = Pinfo
