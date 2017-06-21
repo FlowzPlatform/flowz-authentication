@@ -96,31 +96,27 @@ module.exports.userdetails = async(req,res) => {
 
 module.exports.changepassword = async(req,res) => {
 
-// console.log('-----------------------------------------');
   let token = req.headers['authorization'];
-  console.log(token);
   req = await json(req)
   let oldpass=req.oldpass;
-  console.log(oldpass);
   let newpass=req.newpass;
-  console.log(newpass);
   try{
-  let data;
-  data = verify(token, secret);
+  let data = verify(token, secret);
   let users = await User.find({_id: data.userId});
-  // console.log(users[0]);
+  // console.log(users[0])
     if (!users.length) {
        throw createError(401, 'That user does not exist');
     }
-    console.log(users[0].password);
+    // console.log(users[0].password);
     let comparepass = await bcrypt.compare(oldpass, users[0].password);
+    // console.log(comparepass);
     if(comparepass == false){
       throw createError(401, 'password does not match');
     }else {
       query = { _id: data.userId };
-      console.log(query);
-      const update = {$set: {"password":hashSync(newpass, 2), "forget_token_created_at":new Date()}};
-      let fp = await User.findOneAndUpdate(query,update,{ returnNewDocument : true, new: true })
+      // console.log(query);
+      const update = {$set: {"password":hashSync(newpass, 2), "updated_at":new Date() }};
+      let up= await User.findOneAndUpdate(query,update,{ returnNewDocument : true, new: true })
       let jsonString = {"status":1,"code":"201","message":"change password successfully"}
       return jsonString
     }
@@ -129,16 +125,6 @@ module.exports.changepassword = async(req,res) => {
     throw createError(403, 'invalid token');
 }
 };
-
-
-
-
-
-
-
-
-
-
 
 function sendRejectResponce(status,code,message) {
   return new responce(status,code,message);
