@@ -58,18 +58,9 @@ let getEmail = function(email){
   return promise;
 }
 
-let sendemail = function(to,newToken){
-  console.log("sendemail function called");
-  console.log(to,newToken);
-      if(to == "" || to == null || newToken == "" || newToken == null) {
-        console.log(to);
-        throw createError(401, 'please enter correct email');
-      }else{
-        console.log(to);
-        console.log(newToken);
-        console.log("111");
-        let urlToken = "https://api.mydomain.com/dist/#/reset-password/"+newToken
-        console.log("2222");
+let sendemail = function(fullname,to,newToken,url){
+        let link = url
+        let resetlink = link+ "/" +newToken
         let server 	= emailjs.server.connect({
            user:    "acharotariya@officebrain.com",
            password:"AJ@123456",
@@ -87,11 +78,11 @@ let sendemail = function(to,newToken){
            [
              {
                data:
-               "<html><body>Dear "+to+",<br>You have requested to reset your password. Go to the following url, enter the code below, and set your new password.<br><br>"+urlToken+"<br>Thanks,<br>officebrain<br><body></html>", alternative:true}
-
+               "<html><body>Dear "+fullname+" ,<br>You have requested to reset your password. Go to the following url and set your new password.<br><br>"+resetlink+"<br>Thanks,<br>officebeacon llc <br><body></html>", alternative:true}
            ]
 })
-}
+
+
 };
 
 
@@ -100,7 +91,15 @@ module.exports.forgetpassword = async (req,res) => {
   req = await json(req)
 
   let to=req.email;
+  let url=req.url;
+  if(to == "" || to == null)
+  {
+    throw createError(401, 'please enter email');
+  }else if(url == "" || url == null){
+    throw createError(401, 'please enter reset url');
+  }
   let users = await User.find({ email: to });
+  let fullname = users[0].fullname;
   if(users.length === 0)
   {
     throw createError(401, 'please enter correct email');
@@ -110,12 +109,13 @@ module.exports.forgetpassword = async (req,res) => {
     let o = {};
     o.token = newToken;
     arr.push(o);
-    // console.log('newToken', newToken);
     // console.log(arr);
     query = { email: to };
     const update = {$set: {"forget_token":newToken, "forget_token_created_at":new Date()}};
     await User.findOneAndUpdate(query,update,{ returnNewDocument : true, new: true })
-    return sendemail(to,newToken)
+    send(res,200,"your request for forgetpassword sent to your email")
+    return sendemail(fullname,to,newToken,url)
+
   }
 };
 
