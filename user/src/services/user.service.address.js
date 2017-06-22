@@ -5,13 +5,20 @@ module.exports.useraddress = async (req,res) => {
 
   try {
       let data =  await Addr.find({ userid: userid });
-      let jsonString = {"status":1,"code":201,"message":"Address","Data":data}
-    return jsonString
+      if (data != '') {
+        let response = {"status":1,"code":201,"message":"Address","Data":data}
+        return response
+      } else{
+        let response = {"status":0,"code":404,"message":"Data not found"}
+        return response
+      }
   } catch (err) {
-    let jsonString = {"status":0,"code":400,"message":"Error!"}
-    return jsonString
+    let response = {"status":0,"code":400,"message":"Error!"}
+    return response
   }
 };
+
+
 
 module.exports.updateaddress = async (req,res) => {
   userid = req.params.uid;
@@ -20,14 +27,23 @@ module.exports.updateaddress = async (req,res) => {
   const update = {
     $set: body,
   };
-
   try {
-      return await Addr.findOneAndUpdate(query,update,{ returnNewDocument : true })
+    let data = await Addr.findOneAndUpdate(query,update,{ returnNewDocument : true })
+    if (data != '') {
+        let response = {"status":1,"code":201,"message":"Address is updated","Data":data}
+        return response
+      } else{
+        let response = {"status":0,"code":404,"message":"Data not found"}
+        return response
+      }
   } catch (err) {
-    let jsonString = {"status":0,"code":400,"message":"Error!"}
-    return jsonString
+    let response = {"status":0,"code":400,"message":"Error!"}
+    return response
   }
 };
+
+
+
 
 
 

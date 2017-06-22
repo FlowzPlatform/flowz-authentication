@@ -6,8 +6,10 @@ let PersonalInfo = new Schema({
   lastname : String,
   email : String,
   userid : String
+}, {
+    collection: 'personalInformation'
 });
 
-let Pinfo = mongoose.model('tests',PersonalInfo)
+let Pinfo = mongoose.model('personalInformation',PersonalInfo)
 
 module.exports = Pinfo

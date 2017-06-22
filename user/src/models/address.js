@@ -15,8 +15,10 @@ let Address = new Schema({
 	mobileNumber: String,
 	UserId: String,
 	CreatedOn: String
+}, {
+    collection: 'address'
 });
 
-let Addr = mongoose.model('students',Address)
+let Addr = mongoose.model('address',Address)
 
 module.exports = Addr

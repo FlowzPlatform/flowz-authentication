@@ -4,11 +4,16 @@ module.exports.userdetails = async (req,res) => {
   userid = req.params.uid;
   try {
     let data = await Pinfo.find({ userid: userid })
-    let jsonString = {"status":1,"code":201,"message":"UserData","Data":data}
-    return jsonString
+    if (data != '') {
+        let response = {"status":1,"code":201,"message":"User details","Data":data}
+        return response
+      } else{
+        let response = {"status":0,"code":404,"message":"Data not found"}
+        return response
+      }
   } catch (err) {
-    let jsonString = {"status":0,"code":400,"message":"Error!"}
-    return jsonString
+    let response = {"status":0,"code":400,"message":"Error!"}
+    return response
   }  
 };
 
@@ -21,11 +26,16 @@ module.exports.updatedetails = async (req,res) => {
   };
   try {
     let data = await Pinfo.findOneAndUpdate(query,update,{ returnNewDocument : true })
-    let jsonString = {"status":1,"code":201,"message":"Personal Details Updated","Data":data}
-    return jsonString
+    if (data != '') {
+        let response = {"status":1,"code":201,"message":"Update User details","Data":data}
+        return response
+      } else{
+        let response = {"status":0,"code":404,"message":"Data not found"}
+        return response
+      }
   } catch (err) {
-    let jsonString = {"status":0,"code":400,"message":"Error!"}
-    return jsonString
+    let response = {"status":0,"code":400,"message":"Error!"}
+    return response
   }
 };
 
