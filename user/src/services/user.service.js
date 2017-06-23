@@ -1,10 +1,12 @@
 const User = require('../models/user');
+
 module.exports.alluserdetails = async () => {
   let data =  await User.find()
   let jsonString = {"status":1,"code":"201","message":"alluserdetails","data":data}
 // console.log(jsonString);
    return jsonString
 };
+
 module.exports.getuserdetails = async (req,res) => {
   email = req.params.email;
   let data = await User.find({ email: email })
@@ -12,6 +14,7 @@ module.exports.getuserdetails = async (req,res) => {
 // console.log(jsonString);
    return jsonString
 };
+
 // module.exports.savestudent = async (req,res) => {
 //   let newUser= User({
 //     name: req.body.name,
@@ -19,6 +22,7 @@ module.exports.getuserdetails = async (req,res) => {
 //   });
 //   return await newStudent.save();
 // };
+
 module.exports.updateuserdetails = async (req,res) => {
   email = req.params.email;
   body = req.body;
@@ -27,11 +31,13 @@ module.exports.updateuserdetails = async (req,res) => {
   const update = {
     $set: body,
   };
+
    let data =  await User.findOneAndUpdate(query,update,{ returnNewDocument : true, new: true })
    let jsonString = {"status":1,"code":"201","message":"updateuserdetails","data":data}
  // console.log(jsonString);
     return jsonString
 };
+
 module.exports.deleteuserdetails = async (req,res) => {
   email = req.params.email;
   let data = await User.findOneAndRemove({ email: email })
