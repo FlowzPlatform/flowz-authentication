@@ -1,8 +1,6 @@
 'use strict'
 const {send,json} = require('micro');
 const user = require('./services/user.service');
-const user_info = require('./services/user.service.personaldetails');
-const user_address = require('./services/user.service.address');
 const db = require('./models/db');
 const User = require('./models/user');
 const cors = require('micro-cors')()
@@ -10,6 +8,8 @@ const visualize = require('micro-visualize')
 const jwtAuth = require('micro-jwt-auth')
 const rateLimit = require('micro-ratelimit')
 const microApi = require('micro-api')
+const user_info = require('./services/user.service.personaldetails');
+const user_address = require('./services/user.service.address');
 
 
 const compose = (...fns) => fns.reduce((f, g) => (...args) => f(g(...args)))
@@ -33,6 +33,11 @@ const api = microApi([
     path: '/getuserdetails/:email',
     handler: user.getuserdetails,
   },
+  // {
+  //   method: 'post',
+  //   path: '/students',
+  //   handler: user.savestudent,
+  // },
   {
     method: 'put',
     path: '/updateuserdetails/:email',
