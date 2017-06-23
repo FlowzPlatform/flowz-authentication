@@ -10,6 +10,6 @@ let PersonalInfo = new Schema({
     collection: 'personalInformation'
 });
 
-let Pinfo = mongoose.model('personalInformation',PersonalInfo)
+let Pinfo = mongoose.model('personalInfo',PersonalInfo)
 
 module.exports = Pinfo

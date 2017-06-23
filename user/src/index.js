@@ -1,6 +1,7 @@
 'use strict'
 const {send,json} = require('micro');
-const user_info = require('./services/user.service');
+const user = require('./services/user.service');
+const user_info = require('./services/user.service.personaldetails');
 const user_address = require('./services/user.service.address');
 const db = require('./models/db');
 const User = require('./models/user');
@@ -22,6 +23,26 @@ const handleErrors = fn => async (req, res) => {
 }
 
 const api = microApi([
+  {
+    method: 'get',
+    path: '/alluserdetails',
+    handler: user.alluserdetails,
+  },
+  {
+    method: 'get',
+    path: '/getuserdetails/:email',
+    handler: user.getuserdetails,
+  },
+  {
+    method: 'put',
+    path: '/updateuserdetails/:email',
+    handler: user.updateuserdetails,
+  },
+  {
+    method: 'delete',
+    path: '/deleteuserdetails/:email',
+    handler: user.deleteuserdetails,
+  },
   {
     method: 'get',
     path: '/userdetails/:uid',
