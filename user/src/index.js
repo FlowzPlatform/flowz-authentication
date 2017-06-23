@@ -11,7 +11,6 @@ const microApi = require('micro-api')
 const user_info = require('./services/user.service.personaldetails');
 const user_address = require('./services/user.service.address');
 
-
 const compose = (...fns) => fns.reduce((f, g) => (...args) => f(g(...args)))
 
 const handleErrors = fn => async (req, res) => {
@@ -33,11 +32,6 @@ const api = microApi([
     path: '/getuserdetails/:email',
     handler: user.getuserdetails,
   },
-  // {
-  //   method: 'post',
-  //   path: '/students',
-  //   handler: user.savestudent,
-  // },
   {
     method: 'put',
     path: '/updateuserdetails/:email',
@@ -67,7 +61,7 @@ const api = microApi([
     method: 'put',
     path: '/updateaddress/:uid',
     handler: user_address.updateaddress,
-  }
+  },
 ])
 
 
