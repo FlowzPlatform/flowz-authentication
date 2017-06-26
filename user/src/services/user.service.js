@@ -3,17 +3,21 @@ const User = require('../models/user');
 module.exports.alluserdetails = async () => {
   let data =  await User.find()
   let jsonString = {"status":1,"code":"201","message":"alluserdetails","data":data}
-// console.log(jsonString);
    return jsonString
 };
 
 module.exports.getuserdetails = async (req,res) => {
   email = req.params.email;
   let data = await User.find({ email: email })
-  let jsonString = {"status":1,"code":"201","message":"getuserdetails","data":data}
-// console.log(jsonString);
-   return jsonString
+  if (data != '') {
+       let response = {"status":1,"code":201,"message":"getuserdetails","Data":data}
+       return response
+     } else{
+       let response = {"status":0,"code":404,"message":"Data not found"}
+       return response
+     }
 };
+
 
 // module.exports.savestudent = async (req,res) => {
 //   let newUser= User({
@@ -34,7 +38,6 @@ module.exports.updateuserdetails = async (req,res) => {
 
    let data =  await User.findOneAndUpdate(query,update,{ returnNewDocument : true, new: true })
    let jsonString = {"status":1,"code":"201","message":"updateuserdetails","data":data}
- // console.log(jsonString);
     return jsonString
 };
 
@@ -42,6 +45,5 @@ module.exports.deleteuserdetails = async (req,res) => {
   email = req.params.email;
   let data = await User.findOneAndRemove({ email: email })
   let jsonString = {"status":1,"code":"201","message":"deleteuserdetails","data":data}
-// console.log(jsonString);
    return jsonString
 };

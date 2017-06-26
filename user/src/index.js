@@ -46,6 +46,7 @@ const api = microApi([
     path: '/deleteuserdetails/:email',
     handler: user.deleteuserdetails,
   },
+
 ])
 
 
