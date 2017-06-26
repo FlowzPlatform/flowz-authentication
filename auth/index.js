@@ -24,6 +24,7 @@ const userdetailsRoute = route('/api/userdetails')
 const forgetpasswordRoute = route('/api/forgetpassword', 'POST')
 const resetpasswordRoute = route('/api/resetpassword','POST')
 const changepasswordRoute = route('/api/changepassword','POST')
+const sendemailapiRoute = route('/api/sendemail','POST')
 
 
 const { twitcallbackUrl,twitpath,gitcallbackUrl,gitpath,gitscope,fbcallbackUrl,fbpath,fbscope  } = require('./src/social-config');
@@ -33,10 +34,8 @@ module.exports = async function (req, res) {
   res.setHeader('Content-Type', 'application/json');
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Credentials', 'true');
-  res.setHeader(
-    'Access-Control-Allow-Methods',
-    'GET,HEAD,OPTIONS,POST,PUT,DELETE'
-  );
+  res.setHeader('Access-Control-Allow-Methods','GET,HEAD,OPTIONS,POST,PUT,DELETE');
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With")
 
   if (corsRoute(req)) {
     // Send CORS headers
@@ -107,6 +106,8 @@ module.exports = async function (req, res) {
       return users.resetpassword(req, res);
     }else if(changepasswordRoute(req)) {
       return auth.changepassword(req, res);
+    }else if(sendemailapiRoute (req)) {
+      return users.sendemailapi(req, res);
     }
 
 }
