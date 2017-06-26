@@ -70,7 +70,7 @@ let sendemail = function(fullname,to,newToken,url){
         });
 
         server.send({
-           text:    "i hope this works",
+           text:    "reset your password",
            from:   "acharotariya@officebrain.com",
            to:      to,
            subject: "testing emailjs",
@@ -85,9 +85,42 @@ let sendemail = function(fullname,to,newToken,url){
 
 };
 
+module.exports.sendemailapi = async (req,res) => {
+  try{
+  req = await json(req)
+  console.log("sendemailapi called");
+
+  let server2 	= emailjs.server.connect({
+     host: req.host,
+     user: req.user,
+     password: req.password ,
+     ssl: true
+});
+console.log(req.host +" "+ req.user +" "+ req.password );
+let  message	= {
+   text:	req.text,
+   from:	req.from,
+   to:		req.to,
+   subject:	req.subject,
+   attachment:
+  [
+     {data:"<html>"+req.body+"</html>", alternative:true}
+  ]
+};
+
+// send the message and get a callback with an error or details of the message that was sent
+const send = await server2.send(message);
+let jsonString = {"status":1,"code":"201","message":"email succesfully send"}
+ return jsonString
+}catch(err)
+{
+  console.log(err);
+  throw createError(500,"email sending error") ;
+}
+}
+
 
 module.exports.forgetpassword = async (req,res) => {
-      // console.log("forgetpassword async method called");
   req = await json(req)
 
   let to=req.email;
@@ -124,12 +157,12 @@ module.exports.resetpassword = async (req,res) => {
   let password=req.new_password;
   let token=req.token;
   if( token == "" || token == null ){
-      throw createError(401, 'invalid token...');
+      throw createError(403, 'invalid token...');
   }
   let users = await User.find({forget_token: token});
 
   if(users.length === 0){
-    throw createError(401, 'invalid token...');
+    throw createError(403, 'invalid token...');
   }else{
   let date1 = new Date(users[0].forget_token_created_at);
   let date2 = new Date();
@@ -144,7 +177,7 @@ module.exports.resetpassword = async (req,res) => {
      return sucessReply;
   }
   else {
-    throw createError(401, 'your token is expired..request another..!!!');
+    throw createError(403, 'invalid token');
   }
 }
 };

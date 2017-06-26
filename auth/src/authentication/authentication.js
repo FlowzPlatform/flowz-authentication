@@ -96,8 +96,8 @@ module.exports.changepassword = async(req,res) => {
 
   let token = req.headers['authorization'];
   req = await json(req)
-  let oldpassword=req.oldpass;
-  let newpassword=req.newpass;
+  let oldpass=req.oldpass;
+  let newpass=req.newpas
   try{
   let data = verify(token, secret);
   let users = await User.find({_id: data.userId});
@@ -106,20 +106,19 @@ module.exports.changepassword = async(req,res) => {
        throw createError(401, 'That user does not exist');
     }
     // console.log(users[0].password);
-    let comparepass = await bcrypt.compare(oldpassword, users[0].password);
+    let comparepass = await bcrypt.compare(oldpass, users[0].password);
     // console.log(comparepass);
     if(comparepass == false){
       throw createError(401, 'password does not match');
     }else {
       query = { _id: data.userId };
       // console.log(query);
-      const update = {$set: {"password":hashSync(newpassword, 2), "updated_at":new Date() }};
+      const update = {$set: {"password":hashSync(newpass, 2), "updated_at":new Date() }};
       let up= await User.findOneAndUpdate(query,update,{ returnNewDocument : true, new: true })
       let jsonString = {"status":1,"code":"201","message":"change password successfully"}
       return jsonString
     }
 }catch(err) {
-  console.log(err);
   // err
     throw createError(403, 'invalid token');
 }
