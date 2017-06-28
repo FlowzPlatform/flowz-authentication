@@ -1,20 +1,21 @@
+const { json, send, createError, sendError } = require('micro');
 const Pinfo = require('../models/personalinfo');
+let responce = require('./responce');
 
 module.exports.userdetails = async (req,res) => {
   userid = req.params.uid;
   try {
     let data = await Pinfo.find({ userid: userid })
-    if (data != '') {
-        let response = {"status":1,"code":201,"message":"User details","Data":data}
-        return response
+    if (data != null) {
+      let sucessReply = sendSuccessResponce(1,'201','User details',data);
+      return sucessReply;
       } else{
-        let response = {"status":0,"code":404,"message":"Data not found"}
-        return response
+        let rejectReply = sendRejectResponce(0,'404','data not found');
+        return rejectReply;
       }
   } catch (err) {
-    let response = {"status":0,"code":400,"message":"Error!"}
-    return response
-  }  
+    throw createError(403, 'error!');
+  }
 };
 
 module.exports.updatedetails = async (req,res) => {
@@ -25,18 +26,22 @@ module.exports.updatedetails = async (req,res) => {
     $set: body,
   };
   try {
-    let data = await Pinfo.findOneAndUpdate(query,update,{ returnNewDocument : true })
-    if (data != '') {
-        let response = {"status":1,"code":201,"message":"Update User details","Data":data}
-        return response
+    let data = await Pinfo.findOneAndUpdate(query,update,{ returnNewDocument : true, new: true })
+    if (data != null) {
+      let sucessReply = sendSuccessResponce(1,'201','Update User details',data);
+      return sucessReply;
       } else{
-        let response = {"status":0,"code":404,"message":"Data not found"}
-        return response
+        let rejectReply = sendRejectResponce(0,'404','data not found');
+        return rejectReply;
       }
   } catch (err) {
-    let response = {"status":0,"code":400,"message":"Error!"}
-    return response
+    throw createError(403, 'error!');
   }
 };
 
-
+function sendRejectResponce(status,code,message) {
+  return new responce(status,code,message);
+}
+function sendSuccessResponce(status,code,message,data){
+  return new responce(status,code,message,data);
+}
