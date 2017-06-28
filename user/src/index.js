@@ -8,7 +8,8 @@ const visualize = require('micro-visualize')
 const jwtAuth = require('micro-jwt-auth')
 const rateLimit = require('micro-ratelimit')
 const microApi = require('micro-api')
-
+const user_info = require('./services/user.service.personaldetails');
+const user_address = require('./services/user.service.address');
 
 const compose = (...fns) => fns.reduce((f, g) => (...args) => f(g(...args)))
 
@@ -31,11 +32,6 @@ const api = microApi([
     path: '/getuserdetails/:email',
     handler: user.getuserdetails,
   },
-  // {
-  //   method: 'post',
-  //   path: '/students',
-  //   handler: user.savestudent,
-  // },
   {
     method: 'put',
     path: '/updateuserdetails/:email',
@@ -45,6 +41,26 @@ const api = microApi([
     method: 'delete',
     path: '/deleteuserdetails/:email',
     handler: user.deleteuserdetails,
+  },
+  {
+    method: 'get',
+    path: '/userdetails/:uid',
+    handler: user_info.userdetails,
+  },
+  {
+    method: 'put',
+    path: '/updatedetails/:uid',
+    handler: user_info.updatedetails,
+  },
+  {
+    method: 'get',
+    path: '/useraddress/:uid',
+    handler: user_address.useraddress,
+  },
+  {
+    method: 'put',
+    path: '/updateaddress/:uid',
+    handler: user_address.updateaddress,
   },
 
 ])
