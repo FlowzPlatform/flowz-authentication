@@ -25,7 +25,6 @@ const attempt = (email, password) => {
     if (!compareSync(password, user.password)) {
       return {id:201}
     }
-    // console.log("userllll",user);
     return user;
   });
 };
@@ -74,7 +73,6 @@ module.exports.sociallogin = sociallogin
 module.exports.userdetails = async(req,res) => {
   let token = req.headers['authorization'];
   try {
-    // return wrongtoken(token);
     let data;
     data = verify(req.headers['authorization'], secret);
     return User.find({ _id: data.userId }).exec().then((users, err) => {
@@ -88,7 +86,7 @@ module.exports.userdetails = async(req,res) => {
     });
 } catch(err) {
   // err
-    throw createError(403, 'invalid token');
+    throw createError(401, 'invalid token');
 }
 }
 
@@ -97,30 +95,25 @@ module.exports.changepassword = async(req,res) => {
   let token = req.headers['authorization'];
   req = await json(req)
   let oldpass=req.oldpass;
-  let newpass=req.newpas
+  let newpass=req.newpass;
   try{
   let data = verify(token, secret);
   let users = await User.find({_id: data.userId});
-  // console.log(users[0])
     if (!users.length) {
        throw createError(401, 'That user does not exist');
     }
-    // console.log(users[0].password);
     let comparepass = await bcrypt.compare(oldpass, users[0].password);
-    // console.log(comparepass);
     if(comparepass == false){
       throw createError(401, 'password does not match');
     }else {
       query = { _id: data.userId };
-      // console.log(query);
       const update = {$set: {"password":hashSync(newpass, 2), "updated_at":new Date() }};
       let up= await User.findOneAndUpdate(query,update,{ returnNewDocument : true, new: true })
       let jsonString = {"status":1,"code":"201","message":"change password successfully"}
       return jsonString
     }
 }catch(err) {
-  // err
-    throw createError(403, 'invalid token');
+    throw createError(401, 'invalid token');
 }
 };
 
