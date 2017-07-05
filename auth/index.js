@@ -10,6 +10,7 @@ let github;
 let fb;
 let key;
 let seceret;
+let Gplus;
 
 const corsRoute = route('*', 'OPTIONS')
 const loginRoute = route('/api/login', 'POST')
@@ -20,6 +21,8 @@ const callbackGitRoute = route('/auth/github/callback')
 const signupFbRoute = route('/auth/facebook')
 const callbackFbRoute = route('/auth/facebook/callback')
 const signuptwRoute = route('/auth/twitter')
+const signupGpRoute = route('/auth/Gplus')
+const callbackGpRoute = route('/oauthCallback')
 const userdetailsRoute = route('/api/userdetails')
 const forgetpasswordRoute = route('/api/forgetpassword', 'POST')
 const resetpasswordRoute = route('/api/resetpassword','POST')
@@ -27,7 +30,7 @@ const changepasswordRoute = route('/api/changepassword','POST')
 const sendemailapiRoute = route('/api/sendemail','POST')
 
 
-const { twitcallbackUrl,twitpath,gitcallbackUrl,gitpath,gitscope,fbcallbackUrl,fbpath,fbscope  } = require('./src/social-config');
+const { twitcallbackUrl,twitpath,gitcallbackUrl,gitpath,gitscope,fbcallbackUrl,fbpath,fbscope,gpluscallbackUrl,gpluspath,gplusscope } = require('./src/social-config');
 
 module.exports = async function (req, res) {
 
@@ -49,7 +52,6 @@ module.exports = async function (req, res) {
       success_url = _data.success_url;
       key = _data.key;
       seceret = _data.seceret;
-
       if(success_url)
       {
 
@@ -98,7 +100,24 @@ module.exports = async function (req, res) {
       return twitter.twitter(req, res);
     } else if(callbacktwRoute(req)) {
         return twitter.twitter(req, res);
-    } else if(userdetailsRoute(req)){
+    }else if(signupGpRoute(req)) {
+        const _data = await parse(req);
+        success_url = _data.success_url;
+        key = _data.key;
+        seceret = _data.seceret;
+        if(success_url)
+        {
+
+          if(typeof success_url !== 'undefined')
+          {
+            module.exports.redirect_app_url = success_url;
+          }
+        }
+        getGplus(req);
+        return Gplus.Gplus(req, res);
+      } else if(callbackGpRoute(req)) {
+          return Gplus.Gplus(req, res);
+      } else if(userdetailsRoute(req)){
         return auth.userdetails(req);
     } else if(forgetpasswordRoute(req)) {
       return users.forgetpassword(req, res);
@@ -151,4 +170,19 @@ function getFacebook(req){
 
     module.exports.options = options;
     fb = require('./src/authentication/facebook');
+}
+
+function getGplus(req){
+
+  const options = {
+    clientId: key,
+    clientSecret: seceret,
+    callbackUrl: gpluscallbackUrl,
+    path: gpluspath,
+    scope: gplusscope,
+    access_type:'offline'
+  };
+
+    module.exports.options = options;
+    Gplus = require('./src/authentication/Gplus');
 }

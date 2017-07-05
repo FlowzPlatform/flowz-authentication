@@ -65,6 +65,7 @@ const sociallogin = (req) => {
 
   let token = sign(id, secret);
   return { token: token };
+  // console.log(token);
 
 }
 

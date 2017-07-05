@@ -7,6 +7,9 @@ const index = require('../../index')
 const facebookAuth = microAuthFacebook(index.options);
 
 module.exports.facebook = facebookAuth(async (req, res, auth) => {
+  // var auth_data = auth;
+  //   let user = new User({title: auth_data});
+  //   user = user.save();
 
   if (!auth) {
     return send(res, 404, 'Not Found');

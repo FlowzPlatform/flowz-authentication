@@ -15,5 +15,11 @@ module.exports = {
     fbappSecret: 'a6ae93bfa7ba0d597a33b523291f455a',
     fbcallbackUrl: 'http://localhost:3000/auth/facebook/callback',
     fbpath: '/auth/facebook',
-    fbfields: 'name,email,cover,first_name' // Check fields list here: https://developers.facebook.com/docs/graph-api/reference/v2.8/user
+    fbfields: 'name,email,cover,first_name',// Check fields list here: https://developers.facebook.com/docs/graph-api/reference/v2.8/user
+    //google auth details
+    gplusclientId: '381524561267-3agj2flmlj546qsnufj8d6283e6eismb.apps.googleusercontent.com',
+    gplusclientSecret: 'KFzqxuDKfGnF91QMRHiirZwW',
+    gpluscallbackUrl: 'http://localhost:3000/oauthCallback',
+    gpluspath: '/auth/Gplus',
+    gplusscope: 'https://www.googleapis.com/auth/plus.me'
 };
