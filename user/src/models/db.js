@@ -1,6 +1,7 @@
 let mongoose = require("mongoose");
 
+const { database, secret } = require('../config');
 mongoose.Promise = global.Promise;
-mongoose.connect('mongodb://localhost:27017');
+mongoose.connect(database);
 
 module.exports = mongoose;
