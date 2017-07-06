@@ -5,7 +5,7 @@ const Promise = require('promise');
 const crypto = require('crypto');
 let responce = require('./responce');
 let config = require('yaml-config');
-let settings = config.readConfig('../auth/src/services/config.yaml');
+let settings = config.readConfig('src/services/config.yaml');
 const emailjs 	= require("emailjs");
 
 module.exports.list = async () => {
