@@ -5,18 +5,18 @@ const Promise = require('promise');
 const crypto = require('crypto');
 let responce = require('./responce');
 let config = require('yaml-config');
-let settings = config.readConfig('../auth/src/services/config.yaml');
+let settings = config.readConfig('src/services/config.yaml');
 const emailjs 	= require("emailjs");
 
 module.exports.list = async () => {
   return await User.find();
 };
 
-const signup = ({ aboutme, fullname, firstname, lastname, email, password, dob, role, signup_type, image_name, image_url }) =>
+const signup = ({ aboutme, fullname, firstname, lastname, email, password, dob, role, signup_type, image_name, image_url ,provider,access_token,picture}) =>
 {
 return getEmail(email).then((res)=>{
 
-let user = new User({ aboutme:aboutme, fullname:fullname, firstname:firstname, lastname:lastname, email:email, password:hashSync(password, 2), dob:dob, role:role,signup_type:signup_type,image_name:image_name,image_url:image_url,forget_token_created_at:null  });
+let user = new User({ aboutme:aboutme, fullname:fullname, firstname:firstname, lastname:lastname, email:email, password:hashSync(password, 2), dob:dob, role:role,signup_type:signup_type,image_name:image_name,image_url:image_url,forget_token_created_at:null,provider: null,access_token:null,picture:null  });
    user = user.save();
    let sucessReply = sendSuccessResponce(1,'200','you are successfully register...');
    return sucessReply;
@@ -95,16 +95,16 @@ module.exports.sendemailapi = async (req,res) => {
      password: req.password ,
      ssl: true
 });
-let  message	= {
-   text:	req.text,
-   from:	req.from,
-   to:		req.to,
-   subject:	req.subject,
-   attachment:
-  [
-     {data:"<html>"+req.body+"</html>", alternative:true}
-  ]
-};
+  let  message	= {
+     text:	req.text,
+     from:	req.from,
+     to:		req.to,
+     subject:	req.subject,
+     attachment:
+    [
+       {data:"<html>"+req.body+"</html>", alternative:true}
+    ]
+  };
 
 const send = await server2.send(message);
 let jsonString = {"status":1,"code":"201","message":"email succesfully send"}
