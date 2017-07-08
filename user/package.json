@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "main": "src/index.js",
   "scripts": {
-    "start": "micro -p 3005",
+    "start": "micro -p 3002",
     "lint": "xo",
     "test": "npm run lint && ava"
   },
@@ -21,7 +21,7 @@
     "micro-jwt-auth": "^1.6.0",
     "micro-ratelimit": "^0.2.0",
     "micro-visualize": "^3.0.1",
-    "mongoose": "^4.9.9"
+    "mongoose": "^4.10.7"
   },
   "license": "MIT",
   "devDependencies": {

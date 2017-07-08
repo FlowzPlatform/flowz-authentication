@@ -11,4 +11,4 @@ default:
   keys:
     blank: ""
     error: error
-    success: sucess
+    success: success
