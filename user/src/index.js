@@ -79,7 +79,7 @@ const handler = async(req, res) => {
 module.exports = compose(
   handleErrors,
   cors,
-  rateLimit,
+  rateLimit({window: 10000, limit: 2}),
   jwtAuth("abcdefgabcdefg"),
   visualize
 )(api)
