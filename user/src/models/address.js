@@ -19,6 +19,6 @@ let Address = new Schema({
     collection: 'address'
 });
 
-let Addr = mongoose.model('address',Address)
+let Address = mongoose.model('address',Address)
 
-module.exports = Addr
+module.exports = Address
