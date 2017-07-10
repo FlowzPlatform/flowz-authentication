@@ -5,7 +5,7 @@ node {
         checkout scm
     }
     stage('Build image for auth') {
-       app = docker.build("$user_id/microservices_for_auth","./auth/")
+       app = docker.build("fl0wz/microservices_for_auth","./auth/")
     }
     stage('Push image for auth') {
             docker.withRegistry('https://registry.hub.docker.com', 'flows_account') {
