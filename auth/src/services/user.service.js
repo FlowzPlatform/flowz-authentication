@@ -62,9 +62,9 @@ let sendemail = function(fullname,to,newToken,url){
         let link = url
         let resetlink = link+ "/" +newToken
         let server 	= emailjs.server.connect({
-           user:    "obsoftcare@gmail.com",
-           password:"Welcome123@",
-           host:    "smtp.gmail.com",
+           user:    "testnewpo@officebrain.com",
+           password:"7#&stNewP0",
+           host:    "mail.officebrain.com",
            ssl:     true
 
         });
@@ -87,33 +87,34 @@ let sendemail = function(fullname,to,newToken,url){
 
 module.exports.sendemailapi = async (req,res) => {
   try{
-  req = await json(req)
+    req = await json(req)
 
-  let server2 	= emailjs.server.connect({
-     host: req.host,
-     user: req.user,
-     password: req.password ,
-     ssl: true
-});
-  let  message	= {
-     text:	req.text,
-     from:	req.from,
-     to:		req.to,
-     subject:	req.subject,
-     attachment:
-    [
-       {data:"<html>"+req.body+"</html>", alternative:true}
-    ]
-  };
-
-const send = await server2.send(message);
-let jsonString = {"status":1,"code":"201","message":"email succesfully send"}
- return jsonString
-}catch(err)
-{
-  console.log(err);
-  throw createError(500,"email sending error") ;
-}
+    let server2 	= emailjs.server.connect({
+       host: req.host,
+       user: req.user,
+       password: req.password ,
+       ssl: true
+    });
+    let  message	= {
+       text:	req.text,
+       from:	req.from,
+       to:		req.to,
+       cc:   req.cc,
+       subject:	req.subject,
+       attachment:
+      [
+         {data:"<html>"+req.body+"</html>", alternative:true},
+         {path:req.path, type:req.type, name:req.name}
+      ]
+    };
+    const send = await server2.send(message);
+    let jsonString = {"status":1,"code":"201","message":"email succesfully send"}
+    return jsonString
+  }catch(err)
+  {
+    console.log(err);
+    throw createError(500,"email sending error") ;
+  }
 }
 
 
