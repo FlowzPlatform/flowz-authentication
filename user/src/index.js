@@ -1,4 +1,4 @@
-/*This is a micro-service for user details in microjs node framework*/
+/*This is a micro-service for user details in microjs node js framework*/
 'use strict'
 const {send,json} = require('micro');
 const user = require('./services/user.service');
