@@ -18,7 +18,7 @@ node
       }
       finally
       {
-          step([$class: 'Mailer', notifyEveryUnstableBuild: true, recipients: '$my_email_id', sendToIndividuals: true])
+          step([$class: 'Mailer', notifyEveryUnstableBuild: true, recipients: '$dev_email_id', sendToIndividuals: true])
       }
     }
    }
@@ -29,7 +29,7 @@ node
        {
          try
          {
-           app = docker.build("$user_id/microservices_for_auth","./auth/")
+           app = docker.build("$user_id_dev/microservices_for_auth","./auth/")
            currentBuild.result = 'SUCCESS'
          }
          catch(any)
@@ -39,7 +39,7 @@ node
          }
          finally
          {
-           step([$class: 'Mailer', notifyEveryUnstableBuild: true, recipients: '$my_email_id', sendToIndividuals: true])
+           step([$class: 'Mailer', notifyEveryUnstableBuild: true, recipients: '$dev_email_id', sendToIndividuals: true])
          }
        }
    }
@@ -50,10 +50,10 @@ node
        {
          try
          {
-            docker.withRegistry('https://registry.hub.docker.com', 'flows_account')
+            docker.withRegistry('https://registry.hub.docker.com', 'docker-hub')
             {
              app.push("${env.BUILD_NUMBER}")
-             app.push("latest")
+             app.push("dev")
             }
             currentBuild.result = 'SUCCESS'
          }
@@ -64,7 +64,7 @@ node
          }
          finally
          {
-           step([$class: 'Mailer', notifyEveryUnstableBuild: true, recipients: '$my_email_id', sendToIndividuals: true])
+           step([$class: 'Mailer', notifyEveryUnstableBuild: true, recipients: '$dev_email_id', sendToIndividuals: true])
          }
        }
     }
