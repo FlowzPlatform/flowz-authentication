@@ -11,7 +11,4 @@ RUN npm install
 COPY . /usr/src/app
 
 EXPOSE 3001
-#ENV MONGODB=mongodb://localhost:27017
-#ENV SECRET=abcdefgabcdefg
-
 CMD [ "npm", "start" ]
