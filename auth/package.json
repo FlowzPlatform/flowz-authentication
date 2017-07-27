@@ -16,6 +16,7 @@
     "emailjs": "^1.0.10",
     "eslint": "^3.14.1",
     "googleapis": "^20.0.1",
+    "googleauth-micro": "^1.0.8",
     "jsonwebtoken": "^7.4.1",
     "lodash": "^4.17.4",
     "micro": "^6.2.1",
