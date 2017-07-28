@@ -36,10 +36,11 @@ module.exports.Gplus = googleAuth(async (req, res, auth) => {
   }
 
     token = authGoogle.sociallogin(auth);
-    // console.log(token.token);
+    console.log(token.token);
     const statusCode = 302
-    const location = index.redirect_app_url+'?token='+token.token
-    // console.log(location);
+    const status = "200"
+    const location = index.redirect_app_url+'?status='+status
+    console.log(location);
     redirect(res, statusCode, location)
 
 //send(res, 200, authGit.sociallogin(auth));
