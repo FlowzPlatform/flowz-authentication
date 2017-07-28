@@ -62,11 +62,16 @@ module.exports.decode = (req, res) => decode(req.headers['authorization']);
 
 const sociallogin = (req) => {
   id = req.result.info.id;
-
-  let token = sign(id, secret);
+  id2 = {
+    "userId": id,
+    "iat": Math.floor(Date.now() / 1000) - 30,
+    "exp": Math.floor(Date.now() / 1000) + (60 * 60),
+    "aud": "https://yourdomain.com",
+    "iss": "feathers",
+    "sub": "anonymous"
+  }
+  let token = sign(id2, secret);
   return { token: token };
-  // console.log(token);
-
 }
 
 module.exports.sociallogin = sociallogin
