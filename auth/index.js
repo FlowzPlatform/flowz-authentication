@@ -11,6 +11,11 @@ let fb;
 let key;
 let seceret;
 let Gplus;
+let gpluscallbackUrl;
+let gitcallbackUrl;
+let fbcallbackUrl;
+let twitcallbackUrl;
+
 
 const corsRoute = route('*', 'OPTIONS')
 const loginRoute = route('/api/login', 'POST')
@@ -30,7 +35,7 @@ const changepasswordRoute = route('/api/changepassword','POST')
 const sendemailapiRoute = route('/api/sendemail','POST')
 
 
-const { twitcallbackUrl,twitpath,gitcallbackUrl,gitpath,gitscope,fbcallbackUrl,fbpath,fbscope,gpluscallbackUrl,gpluspath,gplusscope } = require('./src/social-config');
+// const { twitcallbackUrl,twitpath,gitcallbackUrl,gitpath,gitscope,fbcallbackUrl,fbpath,fbscope,gpluscallbackUrl,gpluspath,gplusscope } = require('./src/social-config');
 
 module.exports = async function (req, res) {
 
@@ -52,6 +57,7 @@ module.exports = async function (req, res) {
       success_url = _data.success_url;
       key = _data.key;
       seceret = _data.seceret;
+      gitcallbackUrl = _data.callbackUrl;
       if(success_url)
       {
 
@@ -69,7 +75,7 @@ module.exports = async function (req, res) {
       success_url = _data.success_url;
       key = _data.key;
       seceret = _data.seceret;
-
+      fbcallbackUrl = _data.callbackUrl;
       if(success_url)
       {
 
@@ -87,7 +93,7 @@ module.exports = async function (req, res) {
       success_url = _data.success_url;
       key = _data.key;
       seceret = _data.seceret;
-
+      twitcallbackUrl = _data.callbackUrl;
       if(success_url)
       {
 
@@ -105,6 +111,7 @@ module.exports = async function (req, res) {
         success_url = _data.success_url;
         key = _data.key;
         seceret = _data.seceret;
+        gpluscallbackUrl = _data.callbackUrl;
         if(success_url)
         {
 
@@ -136,7 +143,7 @@ function getTwitter(req){
     consumerKey: key,
     consumerSecret: seceret,
     callbackUrl: twitcallbackUrl,
-    path: twitpath
+    path: '/auth/twitter'
   };
 
     module.exports.options = options;
@@ -150,8 +157,8 @@ function getGithub(req){
     clientId: key,
     clientSecret: seceret,
     callbackUrl: gitcallbackUrl,
-    path: gitpath,
-    scope: gitscope
+    path: '/auth/github',
+    scope: 'user'
   };
 
     module.exports.options = options;
@@ -164,9 +171,10 @@ function getFacebook(req){
     appId: key,
     appSecret: seceret,
     callbackUrl: fbcallbackUrl,
-    path: fbpath,
-    fields: fbscope
+    path: '/auth/facebook',
+    fields:'name,email,cover,first_name'
   };
+  console.log(options);
 
     module.exports.options = options;
     fb = require('./src/authentication/facebook');
@@ -178,8 +186,8 @@ function getGplus(req){
     clientId: key,
     clientSecret: seceret,
     callbackUrl: gpluscallbackUrl,
-    path: gpluspath,
-    scope: gplusscope,
+    path:  '/auth/Gplus',
+    scope: 'https://www.googleapis.com/auth/plus.me',
     access_type:'offline'
   };
 
