@@ -30,7 +30,7 @@ const api = microApi([
   },
   {
     method: 'get',
-    path: '/getuserdetails',
+    path: '/getuserdetails/:uid',
     handler: user.getuserdetails,
   },
   {
@@ -40,27 +40,27 @@ const api = microApi([
   },
   {
     method: 'delete',
-    path: '/deleteuserdetails',
+    path: '/deleteuserdetails/:uid',
     handler: user.deleteuserdetails,
   },
   {
     method: 'get',
-    path: '/userdetails',
+    path: '/userdetails/:uid',
     handler: user_info.userdetails,
   },
   {
     method: 'put',
-    path: '/updatedetails',
+    path: '/updatedetails/:uid',
     handler: user_info.updatedetails,
   },
   {
     method: 'get',
-    path: '/useraddress',
+    path: '/useraddress/:uid',
     handler: user_address.useraddress,
   },
   {
     method: 'put',
-    path: '/updateaddress',
+    path: '/updateaddress/:uid',
     handler: user_address.updateaddress,
   },
   {
