@@ -19,7 +19,7 @@ let logintoken;
 const attempt = (email, password) => {
   return User.find({ email: email }).exec().then((users, err) => {
     if (!users.length) {
-       return {id:201}
+      return {id:201}
     }
     const user = users[0];
     if (!compareSync(password, user.password)) {
@@ -90,41 +90,45 @@ module.exports.userdetails = async(req,res) => {
     data = verify(req.headers['authorization'], secret);
     return User.find({ _id: data.userId }).exec().then((users, err) => {
       if (!users.length) {
-         throw createError(401, 'That user does not exist');
+        throw createError(401, 'That user does not exist');
       }
       const data = users[0];
       let jsonString = {"status":1,"code":"201","message":"userdetails","data":data}
-       return jsonString
+      return jsonString
 
     });
-} catch(err) {
-  // err
+  } catch(err) {
+    // err
     throw createError(401, 'invalid token');
-}
+  }
 }
 
 module.exports.googleauthprocess = async (req,res) => {
   // console.log("kkkkkkk",logintoken);
   try{
-  req = await json(req)
-  let aboutme=req.aboutme;
-  let email=req.email;
-  let users = await User.find({social_logintoken: logintoken});
-  // console.log(users);
-  query = { social_logintoken: logintoken }
-  const update = {
-    $set: {"aboutme": aboutme,"email": email, "isEmailConfirm":1,"updated_at":new Date() }
-  };
+    req = await json(req)
+    let aboutme=req.aboutme;
+    let email=req.email;
+    let users = await User.find({ email: email });
+    console.log(users.length);
+    if(users.length !== 0 ){
+      query = { email: email }
+      const update = {
+        $set: {"aboutme": aboutme,"email": email, "isEmailConfirm":1,"updated_at":new Date() }
+      };
 
-    let up= await User.findOneAndUpdate(query,update,{ returnNewDocument : true , new: true })
-    // console.log(up);
-    // console.log(up.social_logintoken);
-    const token = up.social_logintoken;
-    return {"status":1,"code":"201","message":"success","logintoken":token};
+      let up= await User.findOneAndUpdate(query,update,{ returnNewDocument : true , new: true })
+      const token = up.social_logintoken;
+      return {"status":1,"code":"201","message":"user verified successfully","logintoken":token};
+
+
+    }else{
+      return {"status":0,"code":"401","message":"wrong email"};
+    }
   }catch(err){
-    return {"status":0,"code":"401","message":"authentication failed"};
+    return {"status":0,"code":"401","message":"authenticate failed"};
   }
-  };
+};
 
 module.exports.changepassword = async(req,res) => {
 
@@ -133,10 +137,10 @@ module.exports.changepassword = async(req,res) => {
   let oldpass=req.oldpass;
   let newpass=req.newpass;
   try{
-  let data = verify(token, secret);
-  let users = await User.find({_id: data.userId});
+    let data = verify(token, secret);
+    let users = await User.find({_id: data.userId});
     if (!users.length) {
-       throw createError(401, 'That user does not exist');
+      throw createError(401, 'That user does not exist');
     }
     let comparepass = await bcrypt.compare(oldpass, users[0].password);
     if(comparepass == false){
@@ -148,9 +152,9 @@ module.exports.changepassword = async(req,res) => {
       let jsonString = {"status":1,"code":"201","message":"change password successfully"}
       return jsonString
     }
-}catch(err) {
+  }catch(err) {
     throw createError(401, 'invalid token');
-}
+  }
 };
 
 function sendRejectResponce(status,code,message) {
