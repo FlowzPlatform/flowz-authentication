@@ -11,7 +11,7 @@ let config = require('../services/config.yaml');
 
 const { secret } = require('../config');
 const User = require('../models/user');
-
+let logintoken;
 
 /**
 * Attempt to authenticate a user.
@@ -70,11 +70,18 @@ const sociallogin = (req) => {
     "iss": "feathers",
     "sub": "anonymous"
   }
-  let token = sign(id2, secret);
-  return { token: token };
+  const token = sign(id2, secret);
+  let jsonObj = { token  };
+  logintoken = jsonObj.token;
+  // console.log("logintoken",logintoken);
+
+  return { token: logintoken };
 }
 
 module.exports.sociallogin = sociallogin
+
+
+
 
 module.exports.userdetails = async(req,res) => {
   let token = req.headers['authorization'];
@@ -95,6 +102,29 @@ module.exports.userdetails = async(req,res) => {
     throw createError(401, 'invalid token');
 }
 }
+
+module.exports.googleauthprocess = async (req,res) => {
+  // console.log("kkkkkkk",logintoken);
+  try{
+  req = await json(req)
+  let aboutme=req.aboutme;
+  let email=req.email;
+  let users = await User.find({social_logintoken: logintoken});
+  // console.log(users);
+  query = { social_logintoken: logintoken }
+  const update = {
+    $set: {"aboutme": aboutme,"email": email, "isEmailConfirm":1,"updated_at":new Date() }
+  };
+
+    let up= await User.findOneAndUpdate(query,update,{ returnNewDocument : true , new: true })
+    // console.log(up);
+    // console.log(up.social_logintoken);
+    const token = up.social_logintoken;
+    return {"status":1,"code":"201","message":"success","logintoken":token};
+  }catch(err){
+    return {"status":0,"code":"401","message":"authentication failed"};
+  }
+  };
 
 module.exports.changepassword = async(req,res) => {
 
