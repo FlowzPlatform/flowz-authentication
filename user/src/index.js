@@ -35,7 +35,7 @@ const api = microApi([
   },
   {
     method: 'put',
-    path: '/updateuserdetails',
+    path: '/updateuserdetails/:uid',
     handler: user.updateuserdetails,
   },
   {
