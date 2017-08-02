@@ -12,6 +12,7 @@ let config = require('../services/config.yaml');
 const { secret } = require('../config');
 const User = require('../models/user');
 let logintoken;
+let id;
 
 /**
 * Attempt to authenticate a user.
@@ -104,15 +105,20 @@ module.exports.userdetails = async(req,res) => {
 }
 
 module.exports.googleauthprocess = async (req,res) => {
-  // console.log("kkkkkkk",logintoken);
-  try{
     req = await json(req)
     let aboutme=req.aboutme;
     let email=req.email;
-    let users = await User.find({ email: email });
-    console.log(users.length);
-    if(users.length !== 0 ){
-      query = { email: email }
+    let id = req.id;
+    let users = await User.find({ userid: id });
+    let l = users[0].email == email
+    if(l == false){
+      throw createError(401, 'wrong email');
+    }
+    if(users.length == 0){
+      throw createError(401, 'user not exist');
+    }
+    if(users.length !== 0 || l == true ){
+      query = { userid: id }
       const update = {
         $set: {"aboutme": aboutme,"email": email, "isEmailConfirm":1,"updated_at":new Date() }
       };
@@ -120,14 +126,9 @@ module.exports.googleauthprocess = async (req,res) => {
       let up= await User.findOneAndUpdate(query,update,{ returnNewDocument : true , new: true })
       const token = up.social_logintoken;
       return {"status":1,"code":"201","message":"user verified successfully","logintoken":token};
-
-
     }else{
-      return {"status":0,"code":"401","message":"wrong email"};
+        throw createError(401, 'authentication failed');
     }
-  }catch(err){
-    return {"status":0,"code":"401","message":"authenticate failed"};
-  }
 };
 
 module.exports.changepassword = async(req,res) => {

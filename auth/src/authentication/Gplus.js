@@ -18,7 +18,7 @@ module.exports.Gplus = googleAuth(async (req, res, auth) => {
   var access_token = auth.result.access_token
 
   let data_length = await User.find({userid: id});
-  // console.log(data_length.length );
+  console.log(data_length.length );
   //
 
   if (!auth) {
@@ -40,8 +40,7 @@ module.exports.Gplus = googleAuth(async (req, res, auth) => {
     let user = new User({ aboutme:null, fullname:fullname, firstname:firstname, lastname:lastname, email:null, password:null, dob:null, role:null,signup_type:null,image_name:null,image_url:picture,forget_token_created_at:null,provider:provider,access_token:access_token, userid : id, social_logintoken:logintoken,isEmailConfirm:0 });
     user = user.save();
     const statusCode = 302
-    const status = "200"
-    const location = index.redirect_app_url+'?status='+status
+    const location = index.redirect_app_url+'?id='+id
     // console.log(location);
     redirect(res, statusCode, location)
     //send(res, 200, authGit.sociallogin(auth));
