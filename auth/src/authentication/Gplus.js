@@ -6,8 +6,10 @@ const redirect = require('micro-redirect')
 const index = require('../../index')
 const googleAuth = microAuthGoogle(index.options);
 const User = require('../models/user');
+let mid;
+let users;
 
-module.exports.Gplus = googleAuth(async (req, res, auth) => {
+module.exports.Gplus = googleAuth(async(req, res, auth) => {
 
   var id = auth.result.info.id
   var provider = auth.result.provider
@@ -17,9 +19,9 @@ module.exports.Gplus = googleAuth(async (req, res, auth) => {
   var fullname = auth.result.info.name
   var access_token = auth.result.access_token
 
-  let data_length = await User.find({userid: id});
-  console.log(data_length.length );
-  //
+ let data_length = await User.find({ userid: id });
+ let data = data_length[0];
+
 
   if (!auth) {
     return send(res, 404, 'Not Found');
@@ -31,30 +33,29 @@ module.exports.Gplus = googleAuth(async (req, res, auth) => {
     return send(res, 403, 'Forbidden');
   }
 
-  token = authGoogle.sociallogin(auth);
-
-
-  const logintoken  = token.token;
+// console.log("googletoken",token);
   if( data_length.length == 0){
-
-    let user = new User({ aboutme:null, fullname:fullname, firstname:firstname, lastname:lastname, email:null, password:null, dob:null, role:null,signup_type:null,image_name:null,image_url:picture,forget_token_created_at:null,provider:provider,access_token:access_token, userid : id, social_logintoken:logintoken,isEmailConfirm:0 });
-    user = user.save();
-    const statusCode = 302
-    const location = index.redirect_app_url+'?id='+id
-    // console.log(location);
-    redirect(res, statusCode, location)
-    //send(res, 200, authGit.sociallogin(auth));
-  }else if(data_length.length !== 0){
-
-    query = { userid: id }
-    const update = {
-      $set: {"social_logintoken":null,"updated_at":new Date() }
-    };
-
-    let up= await User.findOneAndUpdate(query,update,{ returnNewDocument : true , new: true })
-    const statusCode = 302
-    const location = index.redirect_app_url+'?token='+logintoken
-    redirect(res, statusCode, location)
-  }
-
+    let user = new User({ aboutme:null, fullname:fullname, firstname:null, lastname:null, email:null, password:null, dob:null, role:null,signup_type:null,image_name:null,image_url:null,forget_token_created_at:null,provider:provider,access_token:access_token, userid : id,isEmailConfirm:0});
+      user.save(function(err){
+        if(err)
+        {
+          console.log(err);
+        }
+        else{
+          //console.log(user._id);
+          mid = user._id;
+          console.log("mid",mid);
+          const statusCode = 302
+          const location = index.redirect_app_url+'?mid='+mid
+          redirect(res, statusCode, location)
+        }
+      });
+    }else{
+      let ob_id = data._id;
+      token = authGoogle.sociallogin(ob_id);
+      const logintoken  = token.token;
+      const statusCode = 302
+      const location = index.redirect_app_url+'?token='+logintoken
+      redirect(res, statusCode, location)
+    }
 });

@@ -35,8 +35,9 @@ const attempt = (email, password) => {
 */
 const auth = ({ email, password }) =>
 attempt(email, password).then(({ id }) => {
-  console.log(email);
-  console.log(password);
+  console.log('id:', id);
+  console.log('email:',email);
+  console.log('password:',password);
   if(parseInt(id) != 201) {
     id2 = {
       "userId": id,
@@ -61,8 +62,8 @@ module.exports.login = async (req, res) => await auth(await json(req));
 module.exports.decode = (req, res) => decode(req.headers['authorization']);
 
 
-const sociallogin = (req) => {
-  id = req.result.info.id;
+const sociallogin = (id) => {
+
   id2 = {
     "userId": id,
     "iat": Math.floor(Date.now() / 1000) - 30,
@@ -74,15 +75,11 @@ const sociallogin = (req) => {
   const token = sign(id2, secret);
   let jsonObj = { token  };
   logintoken = jsonObj.token;
-  // console.log("logintoken",logintoken);
-
   return { token: logintoken };
-}
+  //return "abcdedffdjfladsjflads";
+};
 
 module.exports.sociallogin = sociallogin
-
-
-
 
 module.exports.userdetails = async(req,res) => {
   let token = req.headers['authorization'];
@@ -104,24 +101,42 @@ module.exports.userdetails = async(req,res) => {
   }
 }
 
+let getuserid = function(mid){
+
+  /*id2 = {
+    "userId": mid,
+    "iat": Math.floor(Date.now() / 1000) - 30,
+    "exp": Math.floor(Date.now() / 1000) + (60 * 60),
+    "aud": "https://yourdomain.com",
+    "iss": "feathers",
+    "sub": "anonymous"
+  }
+  const token = sign(id2, secret); */
+  let token = sociallogin(mid)
+  let jsonObj = { token  };
+  logintoken = jsonObj.token;
+  let jsonString = {"status":1,"code":"201","message":"user verified and login successfully","logintoken":logintoken}
+  return jsonString
+}
+
 module.exports.googleauthprocess = async (req,res) => {
   try{
     req = await json(req)
     let aboutme=req.aboutme;
     let email=req.email;
     let id = req.id;
-    let users = await User.find({ userid: id });
+    let users = await User.find({ _id: id });
     if(users.length == 0){
       throw createError(401, 'user not exist');
     }else{
-      query = { userid: id }
+      query = { _id: id }
       const update = {
         $set: {"aboutme": aboutme,"email": email, "isEmailConfirm":1,"updated_at":new Date() }
       };
 
       let up= await User.findOneAndUpdate(query,update,{ returnNewDocument : true , new: true })
-      const token = up.social_logintoken;
-      return {"status":1,"code":"201","message":"user verified successfully","logintoken":token};
+      const mid = up._id;
+      return getuserid(mid)
     }
   }catch(err){
     throw createError(401, 'authentication failed');
