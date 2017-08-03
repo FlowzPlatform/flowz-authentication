@@ -113,8 +113,7 @@ let getuserid = function(mid){
   }
   const token = sign(id2, secret); */
   let token = sociallogin(mid)
-  let jsonObj = { token  };
-  logintoken = jsonObj.token;
+  logintoken = token.token;
   let jsonString = {"status":1,"code":"201","message":"user verified and login successfully","logintoken":logintoken}
   return jsonString
 }
