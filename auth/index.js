@@ -33,7 +33,7 @@ const forgetpasswordRoute = route('/api/forgetpassword', 'POST')
 const resetpasswordRoute = route('/api/resetpassword','POST')
 const changepasswordRoute = route('/api/changepassword','POST')
 const sendemailapiRoute = route('/api/sendemail','POST')
-const googleauthprocessapiRoute = route('/googleauthprocess','POST')
+const googleauthprocessapiRoute = route('api/googleauthprocess','POST')
 
 // const { twitcallbackUrl,twitpath,gitcallbackUrl,gitpath,gitscope,fbcallbackUrl,fbpath,fbscope,gpluscallbackUrl,gpluspath,gplusscope } = require('./src/social-config');
 
