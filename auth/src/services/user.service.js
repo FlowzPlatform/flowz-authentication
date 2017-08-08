@@ -12,11 +12,11 @@ module.exports.list = async () => {
   return await User.find();
 };
 
-const signup = ({ aboutme, fullname, firstname, lastname, email, password, dob, role, signup_type, image_name, image_url ,provider,access_token,picture}) =>
+const signup = ({ username,aboutme, fullname, firstname, lastname, email, password, dob, role, signup_type, image_name, image_url ,provider,access_token,picture}) =>
 {
 return getEmail(email).then((res)=>{
 
-let user = new User({ aboutme:aboutme, fullname:fullname, firstname:firstname, lastname:lastname, email:email, password:hashSync(password, 2), dob:dob, role:role,signup_type:signup_type,image_name:image_name,image_url:image_url,forget_token_created_at:null,provider: null,access_token:null,picture:null  });
+let user = new User({ username:username, aboutme:aboutme, fullname:fullname, firstname:firstname, lastname:lastname, email:email, password:hashSync(password, 2), dob:dob, role:role,signup_type:signup_type,image_name:image_name,image_url:image_url,forget_token_created_at:null,provider: null,access_token:null,picture:null  });
    user = user.save();
    let sucessReply = sendSuccessResponce(1,'200','you are successfully register...');
    return sucessReply;
