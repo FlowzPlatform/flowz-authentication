@@ -20,26 +20,19 @@ let id;
 const attempt = (email, password) => {
   return User.find({ email: email }).exec().then((users, err) => {
     if (!users.length) {
-      return {id:201}
+      throw createError(401, 'That user does not exist');
     }
     const user = users[0];
     if (!compareSync(password, user.password)) {
-      return {id:201}
+throw createError(401, "password doesn't match");
     }
     return user;
   });
 };
 
-/**
-* Authenticate a user and generate a JWT if successful.
-*/
-const auth = ({ email, password }) =>
-attempt(email, password).then(({ id }) => {
-  console.log('id:', id);
-  console.log('email:',email);
-  console.log('password:',password);
-  if(parseInt(id) != 201) {
-    id2 = {
+let loginprocess = function(id){
+  try{
+    payload = {
       "userId": id,
       "iat": Math.floor(Date.now() / 1000) - 30,
       "exp": Math.floor(Date.now() / 1000) + (60 * 60),
@@ -47,36 +40,32 @@ attempt(email, password).then(({ id }) => {
       "iss": "feathers",
       "sub": "anonymous"
     }
-    let token = sign(id2, secret);
-    let jsonObj = { token  };
-    let logintoken = jsonObj.token;
-    let sucessReply = sendSuccessResponce(1,'200','you are successfully login...',logintoken);
-    return sucessReply;
-  } else {
-    throw createError(401, 'wrong credential');
+    let token = sign(payload, secret);
+    return {"status":1,"code":"201","message":"login succesfully",logintoken: token };
+  }catch(err){
+      throw createError(401, 'wrong credential');
   }
+}
+
+
+/**
+* Authenticate a user and generate a JWT if successful.
+*/
+const auth = ({ email, password }) =>
+attempt(email, password).then(({ id }) => {
+  // console.log('auth_id:', id);
+  // console.log('email:',email);
+  // console.log('password:',password);
+  return loginprocess(id);
 });
 
 const decode = token => verify(token, secret);
 module.exports.login = async (req, res) => await auth(await json(req));
 module.exports.decode = (req, res) => decode(req.headers['authorization']);
 
-
 const sociallogin = (id) => {
-
-  id2 = {
-    "userId": id,
-    "iat": Math.floor(Date.now() / 1000) - 30,
-    "exp": Math.floor(Date.now() / 1000) + (60 * 60),
-    "aud": "https://yourdomain.com",
-    "iss": "feathers",
-    "sub": "anonymous"
-  }
-  const token = sign(id2, secret);
-  let jsonObj = { token  };
-  logintoken = jsonObj.token;
-  return { token: logintoken };
-  //return "abcdedffdjfladsjflads";
+  // console.log('social_id:',id);
+  return loginprocess(id);
 };
 
 module.exports.sociallogin = sociallogin
@@ -101,46 +90,37 @@ module.exports.userdetails = async(req,res) => {
   }
 }
 
-let getuserid = function(mid){
-
-  /*id2 = {
-    "userId": mid,
-    "iat": Math.floor(Date.now() / 1000) - 30,
-    "exp": Math.floor(Date.now() / 1000) + (60 * 60),
-    "aud": "https://yourdomain.com",
-    "iss": "feathers",
-    "sub": "anonymous"
-  }
-  const token = sign(id2, secret); */
-  let token = sociallogin(mid)
-  logintoken = token.token;
-  let jsonString = {"status":1,"code":"201","message":"user verified and login successfully","logintoken":logintoken}
-  return jsonString
-}
-
 module.exports.googleauthprocess = async (req,res) => {
-  try{
     req = await json(req)
     let aboutme=req.aboutme;
     let email=req.email;
-    let id = req.id;
-    let users = await User.find({ _id: id });
+    let ob_id = req.id;
+    // console.log(ob_id);
+    let users = await User.find({ _id: ob_id });
+    // console.log(users);
+    let data = users[0];
+    // console.log("data:",data);
+
     if(users.length == 0){
       throw createError(401, 'user not exist');
     }else{
-      query = { _id: id }
-      const update = {
-        $set: {"aboutme": aboutme,"email": email, "isEmailConfirm":1,"updated_at":new Date() }
+        // console.log("data:",data);
+        let emailCheck = await User.find({ email: email });
+        if(emailCheck.length != 0)
+        {
+          throw createError(409, 'Email already exist');
+        }
+        query = { _id: ob_id }
+        const update = {
+        $set: {"aboutme": aboutme, "email": email, "isEmailConfirm":1,"updated_at":new Date() }
       };
 
       let up= await User.findOneAndUpdate(query,update,{ returnNewDocument : true , new: true })
-      const mid = up._id;
-      return getuserid(mid)
+      const id = up._id;
+      return loginprocess(id);
     }
-  }catch(err){
-    throw createError(401, 'authentication failed');
   }
-};
+// };
 
 module.exports.changepassword = async(req,res) => {
 
