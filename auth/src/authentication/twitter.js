@@ -12,28 +12,47 @@ module.exports.twitter = twitterAuth( async (req, res, auth) => {
   let fullname = auth.result.info.name
   let picture = auth.result.info.profile_image_url
   let access_token = auth.result.accessToken
-  let data_length = await User.find({userid: id});
-  if(data_length.length !== 0){
-    throw createError(401, 'user already exist');
-  }else{
-    let user = new User({ aboutme:null, fullname:fullname, firstname:null, lastname:null, email:null, password:null, dob:null, role:null,signup_type:null,image_name:null,image_url:picture,forget_token_created_at:null,provider:provider,access_token:access_token, userid : id});
-    user = user.save();
-    console.log(auth);
-    console.log("Access_Token " + access_token)
-  }
 
-  if (!auth) {
-    return send(res, 404, 'Not Found');
-  }
+   let data_length = await User.find({ social_uid: id });
+   let data = data_length[0];
 
-  if (auth.err) {
-    // Error handler
-    return send(res, 403, 'Forbidden');
-  }
+   if (!auth) {
+     return send(res, 404, 'Not Found');
+   }
 
-  token = authTwitter.sociallogin(auth);
-  const statusCode = 302
-  const location = index.redirect_app_url+'?token='+token.token
-  redirect(res, statusCode, location)
+   if (auth.err){
+     // Error handler
+     //fail url
+     return send(res, 403, 'Forbidden');
+   }
 
+ // console.log("googletoken",token);
+   if( data_length.length == 0){
+     let user = new User({ aboutme:null, fullname:fullname, firstname:null, lastname:null, email:null, password:null, dob:null, role:null,signup_type:null,image_name:null,image_url:null,forget_token_created_at:null,provider:provider,access_token:access_token,isEmailConfirm:0,social_uid:id});
+       user.save(function(err){
+         if(err)
+         {
+           console.log(err);
+         }
+         else{
+           //console.log(user._id);
+           let ob_id = user._id;
+           const statusCode = 302
+           const location = index.redirect_app_url+'?ob_id='+ob_id
+           redirect(res, statusCode, location)
+         }
+       });
+     }else if(data.isEmailConfirm == 1){
+       let ob_id = data._id;
+       token = authGoogle.sociallogin(ob_id);
+       const logintoken  = token.logintoken;
+       const statusCode = 302
+       const location = index.redirect_app_url+'?token='+logintoken
+       redirect(res, statusCode, location)
+     }else{
+       let ob_id = data._id;
+       const statusCode = 302
+       const location = index.redirect_app_url+'?ob_id='+ob_id
+       redirect(res, statusCode, location)
+     }
 });
