@@ -38,13 +38,14 @@ module.exports.twitter = twitterAuth( async (req, res, auth) => {
            //console.log(user._id);
            let ob_id = user._id;
            const statusCode = 302
+
            const location = index.redirect_app_url+'?ob_id='+ob_id
            redirect(res, statusCode, location)
          }
        });
      }else if(data.isEmailConfirm == 1){
        let ob_id = data._id;
-       token = authGoogle.sociallogin(ob_id);
+       token = authTwitter.sociallogin(ob_id);
        const logintoken  = token.logintoken;
        const statusCode = 302
        const location = index.redirect_app_url+'?token='+logintoken
