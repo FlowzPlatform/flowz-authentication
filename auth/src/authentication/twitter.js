@@ -7,6 +7,7 @@ const twitterAuth = microAuthTwitter(index.options);
  const User = require('../models/user');
 
 module.exports.twitter = twitterAuth( async (req, res, auth) => {
+  console.log(auth);
   let id = auth.result.info.id
   let provider = auth.result.provider
   let fullname = auth.result.info.name
@@ -28,7 +29,7 @@ module.exports.twitter = twitterAuth( async (req, res, auth) => {
 
  // console.log("googletoken",token);
    if( data_length.length == 0){
-     let user = new User({ aboutme:null, fullname:fullname, firstname:null, lastname:null, email:null, password:null, dob:null, role:null,signup_type:null,image_name:null,image_url:null,forget_token_created_at:null,provider:provider,access_token:access_token,isEmailConfirm:0,social_uid:id});
+     let user = new User({ aboutme:null, fullname:fullname, firstname:null, lastname:null, email:null, password:null, dob:null, role:null,signup_type:null,image_name:picture,image_url:null,forget_token_created_at:null,provider:provider,access_token:access_token,isEmailConfirm:0,social_uid:id});
        user.save(function(err){
          if(err)
          {
