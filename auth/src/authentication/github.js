@@ -7,10 +7,12 @@ const User = require('../models/user');
 const githubAuth = microAuthGithub(index.options);
 
 module.exports.github = githubAuth(async (req, res, auth) => {
+  console.log(auth);
   let id = auth.result.info.id
    let provider = auth.result.provider
-   let fullname = auth.result.info.name
+   let fullname = auth.result.info.login
    let access_token = auth.result.accessToken
+   var avatar_url = auth.result.info.avatar_url
 
     let data_length = await User.find({ social_uid: id });
     let data = data_length[0];
@@ -28,7 +30,7 @@ module.exports.github = githubAuth(async (req, res, auth) => {
 
    // console.log("googletoken",token);
      if( data_length.length == 0){
-       let user = new User({ aboutme:null, fullname:fullname, firstname:null, lastname:null, email:null, password:null, dob:null, role:null,signup_type:null,image_name:null,image_url:null,forget_token_created_at:null,provider:provider,access_token:access_token,isEmailConfirm:0,social_uid:id});
+       let user = new User({ aboutme:null, fullname:fullname, firstname:null, lastname:null, email:null, password:null, dob:null, role:null,signup_type:null,image_name:null,image_url:avatar_url,forget_token_created_at:null,provider:provider,access_token:access_token,isEmailConfirm:0,social_uid:id});
          user.save(function(err){
            if(err)
            {
