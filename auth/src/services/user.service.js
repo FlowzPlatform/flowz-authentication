@@ -62,9 +62,9 @@ let sendemail = function(fullname,to,newToken,url){
         let link = url
         let resetlink = link+ "/" +newToken
         let server 	= emailjs.server.connect({
-           user:    "testnewpo@officebrain.com",
-           password:"7#&stNewP0",
-           host:    "mail.officebrain.com",
+           user:    "obsoftcare@gmail.com",
+           password:"Welcome123@",
+           host:    "smtp.gmail.com",
            ssl:     true
 
         });
