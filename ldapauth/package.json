@@ -1,0 +1,33 @@
+{
+  "name": "ldapauth",
+  "version": "0.0.0",
+  "main": "src/index.js",
+  "scripts": {
+    "dev": "micro-dev",
+    "start": "micro",
+    "lint": "xo",
+    "test": "npm run lint && ava"
+  },
+  "env": {
+    "NODE_ENV": "production"
+  },
+  "xo": {
+    "extends": "prettier"
+  },
+  "dependencies": {
+    "ldapjs": "^1.0.1",
+    "micro": "latest",
+    "micro-http-router": "^1.2.1",
+    "microrouter": "^2.2.3"
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "ava": "0.21.0",
+    "eslint-config-prettier": "2.3.0",
+    "micro-dev": "latest",
+    "prettier": "1.5.3",
+    "request-promise": "4.2.1",
+    "test-listen": "1.0.2",
+    "xo": "0.18.2"
+  }
+}
