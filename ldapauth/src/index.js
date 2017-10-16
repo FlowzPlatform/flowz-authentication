@@ -2,21 +2,24 @@ const { send } = require('micro')
 const { router, get, post } = require('microrouter')
 const user = require('./services/user.service');
 
-const hello = async (req, res) =>
-send(res, 200, await Promise.resolve(`Hello ${req.params.who}`))
+const hello = async(req, res) =>
+    send(res, 200, await Promise.resolve(`Hello ${req.params.who}`))
 
-const hellopost = async (req, res) =>
-send(res, 200, await Promise.resolve(`Hello post`))
+const hellopost = async(req, res) =>
+    send(res, 200, await Promise.resolve(`Hello post`))
 
 const notfound = (req, res) =>
-  send(res, 404, 'Not found route')
+    send(res, 404, 'Not found route')
 
 module.exports = router(
-  get('/userslist', user.userlist),
-  post('/userauth', user.userauth),
-  //post('/hellopost', hellopost),
-  get('/hello/:who', hello),
-  get('/*', notfound)
+    get('/userslist', user.userlist),
+    post('/userauth', user.userauth),
+    post('/useradd', user.useradd),
+    post('/setpermission', user.setPermission),
+    post('/getpermission', user.getPermission),
+    //post('/hellopost', hellopost),
+    get('/hello/:who', hello),
+    get('/*', notfound)
 )
 
 //const Router = require('micro-http-router');
