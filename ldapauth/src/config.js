@@ -5,5 +5,7 @@ module.exports = {
     adminPass: "123456",
     approot: "apps",
     tasktype: "tasktype",
-    resources: "resources"
+    resources: "resources",
+    groupDn: "ou=groups,dc=ldaptest,dc=local",
+    jwtKey: "abcdefgabcdefg"
 };

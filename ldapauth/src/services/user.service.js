@@ -155,6 +155,39 @@ var self = {
         */
     },
 
+    getroles: async() => {
+
+        var searchOptions = {
+            filter: '(objectClass=posixGroup)',
+            scope: 'sub',
+            attributes: ['cn']
+        };
+
+        var strDn = ldapConfig.groupDn;
+        var result = await self.ldapsearch(strDn, searchOptions);
+
+        console.log("result :::::::::::::::::::::");
+        console.log(result);
+
+        var roles = [];
+        for (var p in result.response) {
+            if (result.response.hasOwnProperty(p)) {
+                console.log("=========" + result.response[p].cn);
+                roles.push(result.response[p].cn)
+            }
+        }
+        console.log(roles);
+
+        let allRoles = {
+            'status': 1,
+            'data': {
+                'roles': roles
+            }
+        }
+
+        return allRoles;
+    },
+
     userroles: async(uid) => {
 
         var searchOptions = {
@@ -327,7 +360,7 @@ var self = {
             }
             let resAcc = await self.ldapsearch(dnRolePath, opts);
 
-            if (resAcc && !_.isEmpty(resAcc)) {
+            if (resAcc && !_.isEmpty(resAcc.response)) {
                 // replace current res with new accessVal
                 console.log(resAcc.response[0].l);
 
@@ -394,11 +427,21 @@ var self = {
                 var res = await self.ldapsearch(searchPath, opt);
 
                 console.log('===============================');
-
+                console.log(res);
+                console.log('################################');
                 let resourceAccess;
-                if (!_.isEmpty(res)) {
+                if (!_.isEmpty(res.response)) {
+
                     console.log(res.response[0].l);
-                    resourceAccess = _.find(res.response[0].l, function(str) {
+                    let objAttrL;
+                    if (_.isObject(res.response[0].l)) {
+                        objAttrL = res.response[0].l
+                    } else {
+                        objAttrL = [res.response[0].l];
+                    }
+                    console.log('===========--------------');
+                    console.log(objAttrL);
+                    resourceAccess = _.find(objAttrL, function(str) {
                         let strL = str.substring(0, str.indexOf(':'));
                         console.log("***" + req.params.resourceId);
                         console.log("=============" + strL + "***" + str + "---");
@@ -454,6 +497,7 @@ var self = {
         return true;
     },
 
+    /*
     createOrgUnit: async(unitName, strDn) => {
 
         let entry = {
@@ -471,6 +515,7 @@ var self = {
         }
         self.ldapentry(strDn, entry);
     },
+    */
 
     userauth: async(req, res) => {
         try {
@@ -511,15 +556,15 @@ var self = {
 
                     if (isUserAuth.auth) {
                         console.log("fetch user groups ::::::::::: ");
-                        var userAssignedRoles = await self.userroles(body.userid);
+                        ///var userAssignedRoles = await self.userroles(body.userid);
 
                         var userData = {
                             'authenticated': true,
                             'uid': body.userid,
-                            'roles': userAssignedRoles
+                            ///'roles': userAssignedRoles
                         }
 
-                        var token = sign(userData, 'aaa');
+                        var token = sign(userData, ldapConfig.jwtKey);
 
                         var authRes = { 'token': token };
 

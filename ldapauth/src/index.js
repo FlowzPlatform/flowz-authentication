@@ -13,6 +13,7 @@ const notfound = (req, res) =>
 
 module.exports = router(
     get('/userslist', user.userlist),
+    get('/getroles', user.getroles),
     post('/userauth', user.userauth),
     post('/useradd', user.useradd),
     post('/setpermission', user.setPermission),
