@@ -1,8 +1,12 @@
 const { json, send } = require('micro')
 const { sign, verify } = require('jsonwebtoken');
 const _ = require('lodash')
-
 const ldapConfig = require('../config.js');
+var Ajv = require('ajv');
+var ajv = new Ajv({ allErrors: true });
+
+const ldapschema = require('../schema/schema.js')
+// console.log("setPermissionSchema",ldapschema)
 
 var ldap = require('ldapjs');
 console.log(ldapConfig.ldapUrl);
@@ -15,13 +19,13 @@ var client = ldap.createClient({
 //console.log(client);
 
 var self = {
-    userlist: async(req, res) => {
+    userlist: async (req, res) => {
         try {
             console.log(req);
             console.log(res);
 
             console.log(ldapConfig.adminDn);
-            client.bind(ldapConfig.adminDn, ldapConfig.adminPass, function(err) {
+            client.bind(ldapConfig.adminDn, ldapConfig.adminPass, function (err) {
                 //assert.ifError(err);
                 console.log(err);
             });
@@ -34,18 +38,18 @@ var self = {
         }
     },
 
-    abc: async(a) => {
+    abc: async (a) => {
         console.log(a);
     },
 
-    ldapbind: async(strBindDn, strPass) => {
+    ldapbind: async (strBindDn, strPass) => {
 
         console.log("==========================================");
         console.log("ldapbind :: " + strBindDn);
         console.log("==========================================");
         let isAuth = false;
         return new Promise((resolve, reject) => {
-            client.bind(strBindDn, strPass, function(err) {
+            client.bind(strBindDn, strPass, function (err) {
                 //assert.ifError(err);
                 if (!err) {
                     isAuth = true;
@@ -57,7 +61,7 @@ var self = {
 
     },
 
-    ldapentry: async(strDn, entry) => {
+    ldapentry: async (strDn, entry) => {
 
         console.log("==========================================");
         console.log("entry into :: " + strDn);
@@ -65,7 +69,7 @@ var self = {
         console.log("==========================================");
 
         return new Promise((resolve, reject) => {
-            client.add(strDn, entry, function(err, res) {
+            client.add(strDn, entry, function (err, res) {
                 console.log("err :: " + err);
                 console.log("res :: " + res);
 
@@ -77,7 +81,7 @@ var self = {
         });
     },
 
-    ldapmodify: async(strDn, attrs, operation) => {
+    ldapmodify: async (strDn, attrs, operation) => {
 
         console.log("==========================================");
         console.log("ldapmodify :: " + strDn + "==" + operation);
@@ -91,7 +95,7 @@ var self = {
                 modification: attrs
             });
 
-            client.modify(strDn, change, function(err, res) {
+            client.modify(strDn, change, function (err, res) {
                 if (err) {
                     console.error("modify err %j", err);
                     resolve(false);
@@ -104,7 +108,7 @@ var self = {
 
     },
 
-    ldapsearch: async(strDn, options) => {
+    ldapsearch: async (strDn, options) => {
 
         console.log("==========================================");
         console.log("searching for :: " + strDn);
@@ -114,25 +118,25 @@ var self = {
         let searchData = [];
         return new Promise((resolve, reject) => {
 
-            client.search(strDn, options, function(err, res) {
+            client.search(strDn, options, function (err, res) {
                 //assert.ifError(err);
                 console.log(err);
 
-                res.on('searchEntry', function(entry) {
+                res.on('searchEntry', function (entry) {
                     console.log('entry: ' + JSON.stringify(entry.object));
                     searchData.push(entry.object)
-                        //resolve({'event':'searchEntry','reponse':entry.object});
+                    //resolve({'event':'searchEntry','reponse':entry.object});
                 });
-                res.on('searchReference', function(referral) {
+                res.on('searchReference', function (referral) {
                     console.log('referral: ' + referral.uris.join());
                     //resolve({'event':'searchReference','reponse':referral.uris.join()});
                 });
-                res.on('error', function(err) {
+                res.on('error', function (err) {
                     console.error('error: ' + err.message);
                     resolve({});
                     //resolve({'event':'error','reponse':err.message});
                 });
-                res.on('end', function(result) {
+                res.on('end', function (result) {
                     console.log('status: ' + result.status);
                     resolve({ 'response': searchData });
                 });
@@ -155,7 +159,7 @@ var self = {
         */
     },
 
-    getroles: async() => {
+    getroles: async () => {
 
         var searchOptions = {
             filter: '(objectClass=posixGroup)',
@@ -188,7 +192,7 @@ var self = {
         return allRoles;
     },
 
-    userroles: async(uid) => {
+    userroles: async (uid) => {
 
         var searchOptions = {
             filter: '(memberUid=' + uid + ')',
@@ -214,7 +218,7 @@ var self = {
         return userRoles;
     },
 
-    useradd: async(req, res) => {
+    useradd: async (req, res) => {
 
         try {
             const body = await json(req)
@@ -232,7 +236,7 @@ var self = {
                     filter: '(uid=' + body.userid + ')',
                     //filter: '(cn=*)',
                     scope: 'sub'
-                        //attributes: ['dn', 'sn', 'cn']
+                    //attributes: ['dn', 'sn', 'cn']
                 };
 
                 var strDn = 'ou=users,' + ldapConfig.ldapDc;
@@ -259,10 +263,10 @@ var self = {
                         uid: 'brett1',
                         uidNumber: 1006,
                         userpassword: '123'
-                            //  email: ['foo@bar.com', 'foo1@bar.com'],
-                            //  objectclass: 'fooPerson'
+                        //  email: ['foo@bar.com', 'foo1@bar.com'],
+                        //  objectclass: 'fooPerson'
                     };
-                    client.add('cn=brett1,ou=users,dc=ldaptest,dc=local', entry, function(err) {
+                    client.add('cn=brett1,ou=users,dc=ldaptest,dc=local', entry, function (err) {
                         console.log(err);
                     });
                 }
@@ -275,14 +279,22 @@ var self = {
         send(res, 200, {})
     },
 
-    setPermission: async(req, res) => {
+    setPermission: async (req, res) => {
         try {
             const body = await json(req)
             console.log(body);
+            console.log("schema",ldapschema.setPermission)
 
+
+            var valid = ajv.validate(ldapschema.setPermission, body);
+            if (!valid) {
+                let resCode = 404;
+               let resBody = { 'status': 0, 'code':404, 'error':ajv.errors }
+                send(res, resCode ,resBody)
+            }
             let resCode = 200;
             let resBody = {};
-
+            
             var isAdminAuth = isUserAuth = false;
             isAdminAuth = await self.ldapbind(ldapConfig.adminDn, ldapConfig.adminPass);
 
@@ -347,7 +359,7 @@ var self = {
         }
     },
 
-    updateResourceAccess: async(dnRolePath, resourceId, accessValue) => {
+    updateResourceAccess: async (dnRolePath, resourceId, accessValue) => {
 
         console.log("inside updateResourceAccess............")
         try {
@@ -364,7 +376,7 @@ var self = {
                 // replace current res with new accessVal
                 console.log(resAcc.response[0].l);
 
-                let currentAttr = _.find(resAcc.response[0].l, function(str) {
+                let currentAttr = _.find(resAcc.response[0].l, function (str) {
                     let strL = str.substring(0, str.indexOf(':'));
                     console.log("***" + resourceId);
                     console.log("=============" + strL + "***" + str + "---");
@@ -399,7 +411,7 @@ var self = {
         }
     },
 
-    getPermission: async(req, res) => {
+    getPermission: async (req, res) => {
         try {
             //const body = await json(req)
             console.log(req.params);
@@ -441,7 +453,7 @@ var self = {
                     }
                     console.log('===========--------------');
                     console.log(objAttrL);
-                    resourceAccess = _.find(objAttrL, function(str) {
+                    resourceAccess = _.find(objAttrL, function (str) {
                         let strL = str.substring(0, str.indexOf(':'));
                         console.log("***" + req.params.resourceId);
                         console.log("=============" + strL + "***" + str + "---");
@@ -463,7 +475,8 @@ var self = {
         }
     },
 
-    checkOrgUnit: async(unitName, strDn) => {
+    checkOrgUnit: async (unitName, strDn) => {
+        console.log("unitname:", unitName)
 
         var result = await self.ldapsearch(strDn, {});
 
@@ -479,7 +492,7 @@ var self = {
         return true;
     },
 
-    checkOrgRole: async(roleName, strDn) => {
+    checkOrgRole: async (roleName, strDn) => {
 
         var result = await self.ldapsearch(strDn, {});
 
@@ -517,13 +530,25 @@ var self = {
     },
     */
 
-    userauth: async(req, res) => {
+    userauth: async (req, res) => {
         try {
             const body = await json(req)
-                //send(res, 200, body)
+            //send(res, 200, body)
 
             console.log(body);
             //console.log(res);
+
+            console.log("schema",ldapschema.userAuth)
+
+
+            var valid = ajv.validate(ldapschema.userAuth, body);
+
+            if (!valid) {
+               let resCode = 404;
+               let resBody = { 'status': 0, 'code':404, 'error':ajv.errors }
+                send(res, resCode ,resBody)
+                // console.log('Invalid: ', ajv.errors);
+            }
 
             //self.abc("1111111111111111111");
             //return;
@@ -539,7 +564,7 @@ var self = {
                     filter: '(uid=' + body.userid + ')',
                     //filter: '(cn=*)',
                     scope: 'sub'
-                        //attributes: ['dn', 'sn', 'cn']
+                    //attributes: ['dn', 'sn', 'cn']
                 };
 
                 var strDn = 'ou=users,' + ldapConfig.ldapDc;
@@ -566,18 +591,18 @@ var self = {
 
                         var token = sign(userData, ldapConfig.jwtKey);
 
-                        var authRes = { 'token': token };
+                        var authRes = { 'status':1 ,'code':200,'message':'succesfully authenticated','token': token };
 
                         send(res, 200, authRes);
 
                         return;
                         //return isUserAuth;
                     } else {
-                        send(res, 404, { 'auth': false });
+                        send(res, 404, { 'status':0,'code':404,'message':'authentication failed','error':'invalid credentials'});
                         return;
                     }
                 } else {
-                    send(res, 404, { 'auth': false });
+                    send(res, 404, { 'status':0,'code':404,'message':'authentication failed','error':'invalid credentials' });
                     return;
                 }
             }
