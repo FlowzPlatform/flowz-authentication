@@ -19,15 +19,3 @@ module.exports = {
     "required": ["userid", "passwd"]
   }
 }
-// var schema = {
-//   "properties": {
-//     "resouceId": { "type": "string" },
-//     "roleId": { "type": "string" },
-//     "taskType": { "type": "string" },
-//     "accessValue": { "type": "number" },
-//     "app": { "type": "string" }
-//   },
-//   "required": ["resouceId", "roleId", "taskType", "accessValue", "app"]
-// }
-
-// module.exports.schema = schema;
