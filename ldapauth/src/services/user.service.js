@@ -296,8 +296,8 @@ var self = {
                         if (await self.checkOrgRole(body.roleId, dnRolePath)) {
 
                             // check/create given resource exist or not
-                            var dnResourcePath = "ou=" + body.resouceId + ",ou=resources," + dnAppPath;
-                            if (await self.checkOrgUnit(body.resouceId, dnResourcePath)) {
+                            var dnResourcePath = "ou=" + body.resourceId + ",ou=resources," + dnAppPath;
+                            if (await self.checkOrgUnit(body.resourceId, dnResourcePath)) {
 
                                 console.log("if..");
                                 var attrs = {
@@ -307,7 +307,7 @@ var self = {
 
                                 // check if changing attr "l" already exist
 
-                                await self.updateResourceAccess(dnRolePath, body.resouceId, body.accessValue);
+                                await self.updateResourceAccess(dnRolePath, body.resourceId, body.accessValue);
 
                             } else {
                                 console.log("else..");
@@ -487,6 +487,49 @@ var self = {
         }
 
         return true;
+    },
+
+    init: async(req, res) => {
+        console.log('inside init....');
+        const body = await json(req)
+        console.log(body);
+
+        var isAdminAuth = isUserAuth = false;
+        isAdminAuth = await self.ldapbind(ldapConfig.adminDn, ldapConfig.adminPass);
+
+        if (isAdminAuth.auth) {
+
+            appName = body.app;
+            // check if unit "apps" exist or not
+            const dnAppRootPath = "ou=" + ldapConfig.approot + "," + ldapConfig.ldapDc;
+            await self.checkOrgUnit(ldapConfig.approot, dnAppRootPath)
+
+            // console.log('============================================');
+            // console.log('Please provide app name');
+            // console.log('============================================');
+
+            // check if unit given app exist or not
+            const dnAppPath = "ou=" + appName + "," + dnAppRootPath;
+            await self.checkOrgUnit(appName, dnAppPath)
+
+            // check "taskType" as "resources" as unit inside given app
+            const dnTaskTypeNs = "ou=" + ldapConfig.tasktype + "," + dnAppPath;
+            await self.checkOrgUnit(ldapConfig.tasktype, dnTaskTypeNs);
+
+            const dnResourceNs = "ou=" + ldapConfig.resources + "," + dnAppPath;
+            await self.checkOrgUnit(ldapConfig.resources, dnResourceNs);
+
+            const dnUserPath = ldapConfig.userNs + "," + ldapConfig.ldapDc;
+            await self.checkOrgUnit(ldapConfig.groupNs, dnUserPath)
+
+            const dnRolePath = ldapConfig.groupNs + "," + ldapConfig.ldapDc;
+            await self.checkOrgUnit(ldapConfig.groupNs, dnRolePath)
+
+            send(res, 200, { message: 'Ldap server initalized.' })
+        } else {
+            send(res, 403, { message: 'Authentication error.' })
+        }
+
     },
 
     userauth: async(req, res) => {

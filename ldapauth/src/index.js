@@ -18,6 +18,7 @@ module.exports = router(
     post('/useradd', user.useradd),
     post('/setpermission', user.setPermission),
     get('/getpermission/:app/:taskType/:roleId/:resourceId', user.getPermission),
+    post('/init', user.init),
     //post('/hellopost', hellopost),
     get('/hello/:who', hello),
     get('/*', notfound)

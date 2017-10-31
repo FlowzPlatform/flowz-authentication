@@ -6,6 +6,8 @@ module.exports = {
     approot: "apps",
     tasktype: "tasktype",
     resources: "resources",
+    userNs: "users",
+    groupNs: "groups",
     groupDn: "ou=groups,dc=ldaptest,dc=local",
     jwtKey: "abcdefgabcdefg"
 };
