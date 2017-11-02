@@ -2,6 +2,8 @@ const { json, send } = require('micro')
 const { sign, verify } = require('jsonwebtoken');
 const _ = require('lodash')
 const ldapConfig = require('../config.js');
+const cors = require('micro-cors')()
+
 var Ajv = require('ajv');
 var ajv = new Ajv({ allErrors: true });
 
@@ -113,7 +115,7 @@ var self = {
 
             client.search(strDn, options, function(err, res) {
                 //assert.ifError(err);
-                console.log(err);
+                //console.log(err);
 
                 res.on('searchEntry', function(entry) {
                     console.log('entry: ' + JSON.stringify(entry.object));
@@ -348,30 +350,41 @@ var self = {
                 // replace current res with new accessVal
                 console.log(resAcc.response[0].l);
 
-                let objAttrL;
-                if (_.isObject(resAcc.response[0].l)) {
-                    objAttrL = resAcc.response[0].l
-                } else {
-                    objAttrL = [resAcc.response[0].l];
-                }
-
-                let currentAttr = _.find(objAttrL, function(str) {
-                    let strL = str.substring(0, str.indexOf(':'));
-                    console.log("***" + resourceId);
-                    console.log("=============" + strL + "***" + str + "---");
-
-                    //return num % 2 == 0;
-                    return (strL == resourceId);
-                })
-
-                console.log('====currentAttr====');
-                console.log(currentAttr);
-
-                if (currentAttr) {
-                    var attrs = {
-                        l: [currentAttr]
+                if (resAcc.response[0].l) {
+                    console.log('***********************----------------------');
+                    console.log(resAcc);
+                    let objAttrL;
+                    if (_.isObject(resAcc.response[0].l)) {
+                        console.log('inside if.....................................');
+                        objAttrL = resAcc.response[0].l
+                    } else {
+                        console.log('inside else.....................................');
+                        objAttrL = [resAcc.response[0].l];
                     }
-                    await self.ldapmodify(dnRolePath, attrs, 'delete');
+
+                    let currentAttr;
+                    console.log('========================' + objAttrL + '-------------------------');
+                    if (objAttrL) {
+                        console.log('=======================================@@@@@===================================');
+                        currentAttr = _.find(objAttrL, function(str) {
+                            let strL = str.substring(0, str.indexOf(':'));
+                            console.log("***" + resourceId);
+                            console.log("=============" + strL + "***" + str + "---");
+
+                            //return num % 2 == 0;
+                            return (strL == resourceId);
+                        })
+                    }
+
+                    console.log('====currentAttr====');
+                    console.log(currentAttr);
+
+                    if (currentAttr) {
+                        var attrs = {
+                            l: [currentAttr]
+                        }
+                        await self.ldapmodify(dnRolePath, attrs, 'delete');
+                    }
                 }
 
             }
@@ -532,7 +545,14 @@ var self = {
 
     },
 
-    userauth: async(req, res) => {
+    userauth: cors(async(req, res) => {
+
+        /*
+        res.setHeader('Access-Control-Allow-Origin', '*');
+        res.setHeader('Access-Control-Allow-Credentials', 'true');
+        res.setHeader('Access-Control-Allow-Methods', 'GET,HEAD,OPTIONS,POST,PUT,DELETE');
+        res.setHeader("Access-Control-Allow-Headers", "Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With")
+        */
         try {
             const body = await json(req)
                 //send(res, 200, body)
@@ -550,6 +570,7 @@ var self = {
                 let resBody = { 'status': 0, 'code': 404, 'error': ajv.errors }
                 send(res, resCode, resBody)
                     // console.log('Invalid: ', ajv.errors);
+                return;
             }
 
             //self.abc("1111111111111111111");
@@ -632,12 +653,18 @@ var self = {
 
         } catch (err) {
             console.log(err);
+            /*
+            res.setHeader('Access-Control-Allow-Origin', '*');
+            res.setHeader('Access-Control-Allow-Credentials', 'true');
+            res.setHeader('Access-Control-Allow-Methods', 'GET,HEAD,OPTIONS,POST,PUT,DELETE');
+            res.setHeader("Access-Control-Allow-Headers", "Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With")
+            */
             send(res, 403, { 'auth': false, 'error': err });
             //throw createError(403, 'error!');
         }
 
         return;
-    }
+    })
 };
 
 module.exports = self;

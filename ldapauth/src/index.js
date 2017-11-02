@@ -2,8 +2,17 @@ const { send } = require('micro')
 const { router, get, post } = require('microrouter')
 const user = require('./services/user.service');
 
-const hello = async(req, res) =>
+const hello = async(req, res) => {
+
+    console.log('hello.......');
+    //   res.setHeader('Content-Type', 'application/json');
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+    res.setHeader('Access-Control-Allow-Methods', 'GET,HEAD,OPTIONS,POST,PUT,DELETE');
+    res.setHeader("Access-Control-Allow-Headers", "Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With")
+
     send(res, 200, await Promise.resolve(`Hello ${req.params.who}`))
+}
 
 const hellopost = async(req, res) =>
     send(res, 200, await Promise.resolve(`Hello post`))
