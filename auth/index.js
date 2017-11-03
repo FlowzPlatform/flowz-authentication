@@ -34,7 +34,7 @@ const resetpasswordRoute = route('/api/resetpassword','POST')
 const changepasswordRoute = route('/api/changepassword','POST')
 const sendemailapiRoute = route('/api/sendemail','POST')
 const googleauthprocessapiRoute = route('/api/googleauthprocess','POST')
-
+const ldapauthRoute = route('/api/ldapauth','POST')
 // const { twitcallbackUrl,twitpath,gitcallbackUrl,gitpath,gitscope,fbcallbackUrl,fbpath,fbscope,gpluscallbackUrl,gpluspath,gplusscope } = require('./src/social-config');
 
 module.exports = async function (req, res) {
@@ -136,6 +136,8 @@ module.exports = async function (req, res) {
       return users.sendemailapi(req, res);
     }else if (googleauthprocessapiRoute(req)) {
           return auth.googleauthprocess(req, res);
+    }else if (ldapauthRoute(req)) {
+          return auth.ldapauthprocess(req, res);
     }
 
 }
