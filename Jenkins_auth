@@ -52,8 +52,7 @@ node
          {
             docker.withRegistry('https://registry.hub.docker.com', 'flows_account')
             {
-             app.push("${env.BUILD_NUMBER}")
-             app.push("latest")
+            app.push("latest")
             }
             currentBuild.result = 'SUCCESS'
          }
