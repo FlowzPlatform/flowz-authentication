@@ -230,6 +230,8 @@ module.exports.ldapauthprocess = async (req, res) => {
 
           let data_length = await User.find({ email: uid });
           let data = data_length[0];
+          console.log("data", data)
+
 
           // var userData = {
           //   'authenticated': true,
@@ -239,18 +241,17 @@ module.exports.ldapauthprocess = async (req, res) => {
 
           // var token = loginprocess(userData.uid)
 
+
           // // var authRes = { token };
+
+
 
           if (data_length.length == 0) {
             let user = new User({ aboutme: null, fullname: cn, firstname: givenName, lastname: sn, email: uid, password: userPassword, dob: null, role: null, signup_type: null, image_name: null, image_url: null, forget_token_created_at: null, provider: "ldap", access_token: null, isEmailConfirm: 0, social_uid: null });
-            user.save(function (err) {
-              if (err) {
-                throw createError(401, 'data insertaion failure');
-              }
-            })
+            await user.save()
+            let data_length = await User.find({ email: uid });
+            let data = data_length[0];
 
-          let data_length = await User.find({ email: uid });
-          let data = data_length[0];
             var userData = {
               'authenticated': true,
               'uid': data._id,
@@ -272,7 +273,7 @@ module.exports.ldapauthprocess = async (req, res) => {
             return;
 
           }
-          
+
           //return isUserAuth;
         } else {
           send(res, 404, { 'status': 0, 'code': 404, 'message': 'authentication failed', 'error': 'invalid credentials' });
