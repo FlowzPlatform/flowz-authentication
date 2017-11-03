@@ -61,8 +61,8 @@ let sendemail = function (fullname, to, newToken, url) {
   let link = url
   let resetlink = link + "/" + newToken
   let server = emailjs.server.connect({
-    user: "avasaniob@gmail.com",
-    password: "OB@123456",
+    user: "avasaniobxxx@gmail.com",
+    password: "xxxxxx",
     host: "smtp.gmail.com",
     ssl: true
 
