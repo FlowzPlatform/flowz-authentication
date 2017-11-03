@@ -10,6 +10,7 @@
   "author": "Thomas Sattlecker",
   "license": "ISC",
   "dependencies": {
+    "assert": "^1.4.1",
     "bcrypt": "^1.0.2",
     "body-parser": "^1.17.2",
     "crypto": "0.0.3",
@@ -18,6 +19,7 @@
     "googleapis": "^20.0.1",
     "googleauth-micro": "^1.0.8",
     "jsonwebtoken": "^7.4.1",
+    "ldapjs": "^1.0.1",
     "lodash": "^4.17.4",
     "micro": "^6.2.1",
     "micro-redirect": "^1.0.0",
