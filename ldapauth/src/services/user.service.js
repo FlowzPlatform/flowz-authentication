@@ -260,7 +260,7 @@ var self = {
         send(res, 200, {})
     },
 
-    setPermission: async(req, res) => {
+    setPermission: cors(async(req, res) => {
         try {
             const body = await json(req)
             console.log(body);
@@ -331,7 +331,7 @@ var self = {
         } catch (err) {
             console.log(err);
         }
-    },
+    }),
 
     updateResourceAccess: async(dnRolePath, resourceId, accessValue) => {
 
@@ -403,7 +403,7 @@ var self = {
         }
     },
 
-    getPermission: async(req, res) => {
+    getPermission: cors(async(req, res) => {
         try {
             //const body = await json(req)
             console.log(req.params);
@@ -465,7 +465,7 @@ var self = {
         } catch (err) {
             console.log(err)
         }
-    },
+    }),
 
     checkOrgUnit: async(unitName, strDn) => {
         console.log("unitname:", unitName)
@@ -502,7 +502,7 @@ var self = {
         return true;
     },
 
-    init: async(req, res) => {
+    init: cors(async(req, res) => {
         console.log('inside init....');
         const body = await json(req)
         console.log(body);
@@ -532,10 +532,10 @@ var self = {
             const dnResourceNs = "ou=" + ldapConfig.resources + "," + dnAppPath;
             await self.checkOrgUnit(ldapConfig.resources, dnResourceNs);
 
-            const dnUserPath = ldapConfig.userNs + "," + ldapConfig.ldapDc;
+            const dnUserPath = "ou=" + ldapConfig.userNs + "," + ldapConfig.ldapDc;
             await self.checkOrgUnit(ldapConfig.groupNs, dnUserPath)
 
-            const dnRolePath = ldapConfig.groupNs + "," + ldapConfig.ldapDc;
+            const dnRolePath = "ou=" + ldapConfig.groupNs + "," + ldapConfig.ldapDc;
             await self.checkOrgUnit(ldapConfig.groupNs, dnRolePath)
 
             send(res, 200, { message: 'Ldap server initalized.' })
@@ -543,7 +543,7 @@ var self = {
             send(res, 403, { message: 'Authentication error.' })
         }
 
-    },
+    }),
 
     userauth: cors(async(req, res) => {
 
