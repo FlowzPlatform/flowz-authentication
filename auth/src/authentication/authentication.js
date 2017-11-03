@@ -83,7 +83,6 @@ const sociallogin = (id) => {
 module.exports.sociallogin = sociallogin
 
 module.exports.userdetails = async (req, res) => {
-  console.log("hello")
   let token = req.headers['authorization'];
   try {
     let data;
@@ -223,21 +222,7 @@ module.exports.ldapauthprocess = async (req, res) => {
         let uidNumber = result.response[0].uidNumber;
         let uid = result.response[0].uid;
 
-        console.log("UserDn=" + UserDn)
-        console.log("controls=" + controls)
-        console.log("cn=" + cn)
-        console.log("givenName=" + givenName)
-        console.log("gidNumber=" + gidNumber)
-        console.log("homeDirectory=" + homeDirectory)
-        console.log("sn=" + sn)
-        console.log("objectClass=" + objectClass)
-        console.log("userPassword=" + userPassword)
-        console.log("uidNumber=" + uidNumber)
-        console.log("uid=" + uid)
-
-
         isUserAuth = await self.ldapbind(UserDn, body.passwd);
-
 
         if (isUserAuth.auth) {
           console.log("fetch user groups ::::::::::: ");
@@ -246,15 +231,15 @@ module.exports.ldapauthprocess = async (req, res) => {
           let data_length = await User.find({ email: uid });
           let data = data_length[0];
 
-          var userData = {
-            'authenticated': true,
-            'uid': data._id,
-            ///'roles': userAssignedRoles
-          }
+          // var userData = {
+          //   'authenticated': true,
+          //   'uid': data._id,
+          //   ///'roles': userAssignedRoles
+          // }
 
-          var token = loginprocess(userData.uid)
+          // var token = loginprocess(userData.uid)
 
-          // var authRes = { token };
+          // // var authRes = { token };
 
           if (data_length.length == 0) {
             let user = new User({ aboutme: null, fullname: cn, firstname: givenName, lastname: sn, email: uid, password: userPassword, dob: null, role: null, signup_type: null, image_name: null, image_url: null, forget_token_created_at: null, provider: "ldap", access_token: null, isEmailConfirm: 0, social_uid: null });
@@ -264,6 +249,8 @@ module.exports.ldapauthprocess = async (req, res) => {
               }
             })
 
+          let data_length = await User.find({ email: uid });
+          let data = data_length[0];
             var userData = {
               'authenticated': true,
               'uid': data._id,
@@ -285,8 +272,7 @@ module.exports.ldapauthprocess = async (req, res) => {
             return;
 
           }
-
-
+          
           //return isUserAuth;
         } else {
           send(res, 404, { 'status': 0, 'code': 404, 'message': 'authentication failed', 'error': 'invalid credentials' });
