@@ -467,6 +467,80 @@ var self = {
         }
     }),
 
+    getAllPermission: cors(async(req, res) => {
+        try {
+            //const body = await json(req)
+            console.log(req.params);
+
+            var isAdminAuth = isUserAuth = false;
+            isAdminAuth = await self.ldapbind(ldapConfig.adminDn, ldapConfig.adminPass);
+
+            if (isAdminAuth.auth) {
+
+                const dnAppRootPath = "ou=" + ldapConfig.approot + "," + ldapConfig.ldapDc;
+                const dnAppPath = "ou=" + req.params.app + "," + dnAppRootPath;
+                const dnTaskTypeNs = "ou=" + ldapConfig.tasktype + "," + dnAppPath;
+                const dnTaskTypePath = "ou=" + req.params.taskType + "," + dnTaskTypeNs;
+
+                //  cn=113dbe20-588c-4e48-bb35-35cb17a3fd65,ou=roles,ou=cd930dbb-9e11-42f2-80d2-fa9862f55e12,ou=tasktype,ou=todoapp,ou=apps,dc=ldaptest,dc=local
+                const searchPath = "cn=" + req.params.roleId + ",ou=roles," + dnTaskTypePath;
+                const roleOcc = "ou=" + req.params.resourceId + ",ou=resources," + dnAppPath;
+
+                var opt = {
+                    filter: '(objectClass=organizationalRole)',
+                    scope: 'sub',
+                    //attributes: ['cn', 'l']
+                };
+
+                var res = await self.ldapsearch(dnTaskTypeNs, opt);
+
+                console.log('===============================');
+                console.log(res.response);
+                console.log('################################');
+                let resourceAccess;
+                let allPerm = [];
+                if (!_.isEmpty(res.response)) {
+
+                    _.forEach(res.response, function(value) {
+                        console.log(value.dn);
+                        var reTasktype = value.dn.match("ou=roles,ou=(.*),ou=tasktype");
+                        console.log(reTasktype[1]);
+                        let strTasktype = reTasktype[1];
+
+                        console.log('************');
+                        console.log(value.l);
+                        console.log('--------------');
+
+                        let objAttrL;
+                        if (_.isObject(value.l)) {
+                            objAttrL = value.l
+                        } else {
+                            objAttrL = [value.l];
+                        }
+
+                        _.forEach(objAttrL, function(valL) {
+                            let objResAcc = _.split(valL, ':');
+                            let obj = {
+                                    'taskType': strTasktype,
+                                    'roleId': value.cn,
+                                    'resourceId': objResAcc[0],
+                                    'access_value': objResAcc[1],
+                                }
+                                //console.log('inner for.....' + valL);
+                            allPerm.push(obj);
+                        })
+                    });
+
+                }
+                console.log(allPerm);
+
+                return { 'status': 1, 'data': allPerm };
+            }
+        } catch (err) {
+            console.log(err)
+        }
+    }),
+
     checkOrgUnit: async(unitName, strDn) => {
         console.log("unitname:", unitName)
 
