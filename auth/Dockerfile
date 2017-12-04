@@ -1,4 +1,4 @@
-FROM bitnami/node:8.1.2-r0
+FROM bitnami/node:latest
 
 RUN mkdir -p /usr/src/app
 
@@ -11,4 +11,5 @@ RUN npm install
 COPY . /usr/src/app
 
 EXPOSE 3001
+
 CMD [ "npm", "start" ]

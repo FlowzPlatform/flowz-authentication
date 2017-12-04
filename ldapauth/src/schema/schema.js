@@ -12,9 +12,9 @@ module.exports = {
 
     userAuth: {
         "properties": {
-            "userid": { "type": "string" },
+            "email": { "type": "string", "minLength": 1 },
             "passwd": { "type": "string", "minLength": 1 }
         },
-        "required": ["userid", "passwd"]
+        "required": ["email", "passwd"]
     }
 }

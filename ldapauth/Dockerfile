@@ -10,8 +10,6 @@ RUN npm install
 
 COPY . /usr/src/app
 
-EXPOSE 3002
-#ENV MONGODB=mongodb://localhost:27017
-#ENV SECRET=abcdefgabcdefg
+EXPOSE 3000
 
 CMD [ "npm", "start" ]

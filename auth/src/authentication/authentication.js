@@ -8,18 +8,17 @@ let mongoose = require('mongoose');
 const assert = require('assert');
 let responce = require('../services/responce.js');
 let config = require('../services/config.yaml');
-
 const { secret } = require('../config');
-var ldapConfig = require('../config.js');
-// console.log("ldapConfig",ldapConfig)
-
-
 const User = require('../models/user');
+const ldapConfig = require('../models/auth_configs');
 var ldap = require('ldapjs');
+
+
+/*
+var ldapurl = "ldap://" + "ldapserver"
 var client = ldap.createClient({
-  url: ldapConfig.ldapUrl
-});
-// console.log(client)
+  url: ldapurl
+}); */
 let logintoken;
 let id;
 
@@ -132,14 +131,13 @@ module.exports.googleauthprocess = async (req, res) => {
   }
 }
 
-
-
 var self = {
 
-  ldapbind: async (strBindDn, strPass) => {
+  ldapbind: async (client, strBindDn, strPass) => {
     let isAuth = false;
     return new Promise((resolve, reject) => {
       client.bind(strBindDn, strPass, function (err) {
+       console.log(strBindDn);
         //assert.ifError(err);
         if (!err) {
           isAuth = true;
@@ -150,7 +148,7 @@ var self = {
     });
   },
 
-  ldapsearch: async (strDn, options) => {
+  ldapsearch: async (client, strDn, options) => {
 
     let searchData = [];
     return new Promise((resolve, reject) => {
@@ -187,24 +185,36 @@ var self = {
 module.exports.ldapauthprocess = async (req, res) => {
   try {
     const body = await json(req)
-    console.log(body.userid)
-    //  console.log("admin dn :: " + ldapConfig.adminDn);
-    //  console.log("admin pass :: " + ldapConfig.adminPass);
+    console.log(body.email)
+    let datasearch = await ldapConfig.find({ userid: "100" });
+    let data = datasearch[0];
+    var ldapUrl = data._doc.social_configs.ldap.ldapUrl
+    var adminDn = data._doc.social_configs.ldap.adminDn;
+    var adminPass = data._doc.social_configs.ldap.adminPass;
+    var ldapDc = data._doc.social_configs.ldap.ldapDc
+    // console.log("data",Object.keys(data))
+    
+    var client = ldap.createClient({
+      url: ldapUrl
+    });
+
+    console.log(ldapUrl)
+    
     var isAdminAuth = isUserAuth = false;
-    isAdminAuth = await self.ldapbind(ldapConfig.adminDn, ldapConfig.adminPass);
+    isAdminAuth = await self.ldapbind(client, adminDn, adminPass);
 
     console.log("admin auth :: " + isAdminAuth.auth);
 
     if (isAdminAuth.auth) {
       //  admin is authenticated, search for given user
       var searchOptions = {
-        filter: '(uid=' + body.userid + ')',
+        filter: '(mail=' + body.email + ')',
         //filter: '(cn=*)',
         scope: 'sub'
         //attributes: ['dn', 'sn', 'cn']
       };
-      var strDn = 'ou=users,' + ldapConfig.ldapDc;
-      var result = await self.ldapsearch(strDn, searchOptions);
+      var strDn = 'ou=users,' + ldapDc;
+      var result = await self.ldapsearch(client, strDn, searchOptions);
 
       console.log('==================================');
       if (result.response.length) {
@@ -220,36 +230,24 @@ module.exports.ldapauthprocess = async (req, res) => {
         let objectClass = result.response[0].objectClass;
         let userPassword = result.response[0].userPassword;
         let uidNumber = result.response[0].uidNumber;
-        let uid = result.response[0].uid;
+        let email = result.response[0].mail;
 
-        isUserAuth = await self.ldapbind(UserDn, body.passwd);
+        isUserAuth = await self.ldapbind(client, UserDn, body.passwd);
 
         if (isUserAuth.auth) {
           console.log("fetch user groups ::::::::::: ");
           ///var userAssignedRoles = await self.userroles(body.userid);
 
-          let data_length = await User.find({ email: uid });
+          let data_length = await User.find({ email: email });
           let data = data_length[0];
           console.log("data", data)
 
 
-          // var userData = {
-          //   'authenticated': true,
-          //   'uid': data._id,
-          //   ///'roles': userAssignedRoles
-          // }
-
-          // var token = loginprocess(userData.uid)
-
-
-          // // var authRes = { token };
-
-
 
           if (data_length.length == 0) {
-            let user = new User({ aboutme: null, fullname: cn, firstname: givenName, lastname: sn, email: uid, password: userPassword, dob: null, role: null, signup_type: null, image_name: null, image_url: null, forget_token_created_at: null, provider: "ldap", access_token: null, isEmailConfirm: 0, social_uid: null });
+            let user = new User({ aboutme: null, fullname: cn, firstname: givenName, lastname: sn, email: email, password: userPassword, dob: null, role: null, signup_type: null, image_name: null, image_url: null, forget_token_created_at: null, provider: "ldap", access_token: null, isEmailConfirm: 0, social_uid: null });
             await user.save()
-            let data_length = await User.find({ email: uid });
+            let data_length = await User.find({ email: email });
             let data = data_length[0];
 
             var userData = {
