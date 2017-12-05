@@ -1,9 +1,9 @@
 
 module.exports = {
-    ldapUrl:"ldap://localhost:389", 
+    ldapUrl: process.env.LDAPURL, 
     ldapDc: "dc=ldapdocker,dc=doc",
     adminDn: "cn=admin,dc=ldapdocker,dc=doc",
-    adminPass: "admin password",
+    adminPass: process.env.ADMINPASS,
     approot: "apps",
     tasktype: "tasktype",
     resources: "resources",
@@ -11,8 +11,8 @@ module.exports = {
     groupNs: "groups",
     groupDn: "ou=groups,dc=ldapdocker,dc=doc",
     groupRoles : "groupRoles",
-    jwtKey: "abcdefgabcdefg",
+    jwtKey: process.env.SECRET,
     directorypath: "/home/users/",
-    userPass:"user password",
-    importUserUrl: 'http://xxx.xx.xxx.xx:xxxx/api/xero/contacts?name=Krishna&app=Private%20Demo%20Company'
+    userPass: process.env.USERPASS,
+    importUserUrl: process.env.IMPORTUSERURL + '/api/xero/contacts?name=Krishna&app=Private%20Demo%20Company'
 };
