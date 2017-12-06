@@ -11,7 +11,7 @@ var ajv = new Ajv({ allErrors: true });
 const ldapschema = require('../schema/schema.js')
 
 var ldap = require('ldapjs');
-// console.log(ldapConfig.ldapUrl);
+console.log("binding :: " + ldapConfig.ldapUrl);
 // ldap://localhost:389
 // var ldapUrl = "ldap://" + "ldapserver"
 var client = ldap.createClient({
@@ -19,13 +19,13 @@ var client = ldap.createClient({
 });
 
 var self = {
-    userlist: async (req, res) => {
+    userlist: async(req, res) => {
         try {
             console.log(req);
             console.log(res);
 
             console.log(ldapConfig.adminDn);
-            client.bind(ldapConfig.adminDn, ldapConfig.adminPass, function (err) {
+            client.bind(ldapConfig.adminDn, ldapConfig.adminPass, function(err) {
                 console.log(err);
             });
 
@@ -36,18 +36,18 @@ var self = {
         }
     },
 
-    abc: async (a) => {
+    abc: async(a) => {
         console.log(a);
     },
 
-    ldapbind: async (strBindDn, strPass) => {
+    ldapbind: async(strBindDn, strPass) => {
 
         console.log("==========================================");
         console.log("ldapbind :: " + strBindDn);
         console.log("==========================================");
         let isAuth = false;
         return new Promise((resolve, reject) => {
-            client.bind(strBindDn, strPass, function (err) {
+            client.bind(strBindDn, strPass, function(err) {
                 //assert.ifError(err);
                 if (!err) {
                     isAuth = true;
@@ -59,7 +59,7 @@ var self = {
 
     },
 
-    ldapentry: async (strDn, entry) => {
+    ldapentry: async(strDn, entry) => {
 
         console.log("==========================================");
         console.log("entry into :: " + strDn);
@@ -67,7 +67,7 @@ var self = {
         console.log("==========================================");
 
         return new Promise((resolve, reject) => {
-            client.add(strDn, entry, function (err, res) {
+            client.add(strDn, entry, function(err, res) {
                 console.log("err :: " + err);
                 console.log("res :: " + res);
                 // console.log("entry :: " + entry)
@@ -81,7 +81,7 @@ var self = {
     },
 
 
-    ldapmodify: async (strDn, attrs, operation) => {
+    ldapmodify: async(strDn, attrs, operation) => {
 
         console.log("==========================================");
         console.log("ldapmodify :: " + strDn + "==" + operation);
@@ -95,7 +95,7 @@ var self = {
                 modification: attrs
             });
 
-            client.modify(strDn, change, function (err, res) {
+            client.modify(strDn, change, function(err, res) {
                 if (err) {
                     console.error("modify err %j", err);
                     resolve(false);
@@ -108,7 +108,7 @@ var self = {
 
     },
 
-    ldapsearch: async (strDn, options) => {
+    ldapsearch: async(strDn, options) => {
 
         console.log("==========================================");
         console.log("searching for :: " + strDn);
@@ -118,25 +118,25 @@ var self = {
         let searchData = [];
         return new Promise((resolve, reject) => {
 
-            client.search(strDn, options, function (err, res) {
+            client.search(strDn, options, function(err, res) {
                 //assert.ifError(err);
                 //console.log(err);
 
-                res.on('searchEntry', function (entry) {
+                res.on('searchEntry', function(entry) {
                     console.log('entry: ' + JSON.stringify(entry.object));
                     searchData.push(entry.object)
-                    //resolve({'event':'searchEntry','reponse':entry.object});
+                        //resolve({'event':'searchEntry','reponse':entry.object});
                 });
-                res.on('searchReference', function (referral) {
+                res.on('searchReference', function(referral) {
                     console.log('referral: ' + referral.uris.join());
                     //resolve({'event':'searchReference','reponse':referral.uris.join()});
                 });
-                res.on('error', function (err) {
+                res.on('error', function(err) {
                     console.error('error: ' + err.message);
                     resolve({});
                     //resolve({'event':'error','reponse':err.message});
                 });
-                res.on('end', function (result) {
+                res.on('end', function(result) {
                     console.log('status: ' + result.status);
                     resolve({ 'response': searchData });
                 });
@@ -145,25 +145,31 @@ var self = {
 
     },
 
-    getroles: async () => {
+    getroles: async() => {
 
         var searchOptions = {
             filter: '(objectClass=posixGroup)',
             scope: 'sub',
             attributes: ['cn']
         };
-
-        var strDn = ldapConfig.groupDn;
-        var result = await self.ldapsearch(strDn, searchOptions);
-
-        console.log("result :::::::::::::::::::::");
-        console.log(result);
-
         var roles = [];
-        for (var p in result.response) {
-            if (result.response.hasOwnProperty(p)) {
-                console.log("=========" + result.response[p].cn);
-                roles.push(result.response[p].cn)
+
+        isAdminAuth = await self.ldapbind(ldapConfig.adminDn, ldapConfig.adminPass);
+
+        if (isAdminAuth.auth) {
+            console.log(isAdminAuth);
+
+            var strDn = ldapConfig.groupDn;
+            var result = await self.ldapsearch("ou=groups,dc=ldapdocker,dc=doc", searchOptions);
+
+            console.log("result :::::::::::::::::::::");
+            console.log(result);
+
+            for (var p in result.response) {
+                if (result.response.hasOwnProperty(p)) {
+                    console.log("=========" + result.response[p].cn);
+                    roles.push(result.response[p].cn)
+                }
             }
         }
         console.log(roles);
@@ -178,7 +184,7 @@ var self = {
         return allRoles;
     },
 
-    userroles: async (uid) => {
+    userroles: async(uid) => {
 
         var searchOptions = {
             filter: '(memberUid=' + uid + ')',
@@ -204,7 +210,7 @@ var self = {
         return userRoles;
     },
 
-    useradd: cors(async (req, res) => {
+    useradd: cors(async(req, res) => {
 
         try {
             const body = await json(req)
@@ -222,7 +228,7 @@ var self = {
                     filter: '(mail=' + body.email + ')',
                     //filter: '(cn=*)',
                     scope: 'sub'
-                    //attributes: ['dn', 'sn', 'cn']
+                        //attributes: ['dn', 'sn', 'cn']
                 };
 
                 var strDn = 'ou=' + ldapConfig.userNs + ',' + ldapConfig.ldapDc;
@@ -252,7 +258,7 @@ var self = {
                     var clientAddPath = 'cn=' + entry.cn + "," + "ou=" + ldapConfig.userNs + "," + ldapConfig.ldapDc;
                     // console.log("clientAddPath", clientAddPath)
                     return new Promise((resolve, reject) => {
-                        client.add(clientAddPath, entry, function (err, res) {
+                        client.add(clientAddPath, entry, function(err, res) {
 
                             if (!err) {
                                 resolve({ "status": 1, "code": 200, "message": "user registerd succesfully" })
@@ -272,7 +278,7 @@ var self = {
         // send(res, 200, {})
     }),
 
-    importuserentry: async (userdata) => {
+    importuserentry: async(userdata) => {
         for (var key in userdata) {
             if (userdata.hasOwnProperty(key)) {
                 var val = userdata[key];
@@ -285,7 +291,7 @@ var self = {
                         filter: '(mail=' + val[i].data.EmailAddress + ')',
                         //filter: '(cn=*)',
                         scope: 'sub'
-                        //attributes: ['dn', 'sn', 'cn']
+                            //attributes: ['dn', 'sn', 'cn']
                     };
                     var strDn = "ou=" + ldapConfig.userNs + "," + ldapConfig.ldapDc;
                     var result = await self.ldapsearch(strDn, searchOptions);
@@ -315,7 +321,7 @@ var self = {
                         // return(true)
                     } else {
                         console.log("user found")
-                        // return (false)
+                            // return (false)
                     }
                 }
             }
@@ -323,7 +329,7 @@ var self = {
         return (true)
     },
 
-    importuser: cors(async (req, res) => {
+    importuser: cors(async(req, res) => {
 
         var isAdminAuth = isUserAuth = false;
         isAdminAuth = await self.ldapbind(ldapConfig.adminDn, ldapConfig.adminPass);
@@ -336,10 +342,10 @@ var self = {
         send(res, "200", { "status": 1, "code": "200", "message": "import users succsfully" })
     }),
 
-    getuserdata: async () => {
+    getuserdata: async() => {
 
         return new Promise((resolve, reject) => {
-            request(ldapConfig.importUserUrl, function (error, response, body) {
+            request(ldapConfig.importUserUrl, function(error, response, body) {
                 // console.log('error:', error); // Print the error if one occurred
                 // console.log('statusCode:', response && response.statusCode); // Print the response status code if a response was received
                 // console.log('body:', JSON.parse(body).data);
@@ -350,7 +356,7 @@ var self = {
 
     },
 
-    setPermission: cors(async (req, res) => {
+    setPermission: cors(async(req, res) => {
         try {
             const body = await json(req)
             console.log(body);
@@ -423,7 +429,7 @@ var self = {
         }
     }),
 
-    updateResourceAccess: async (dnRolePath, resourceId, accessValue) => {
+    updateResourceAccess: async(dnRolePath, resourceId, accessValue) => {
 
         console.log("inside updateResourceAccess............")
         try {
@@ -456,7 +462,7 @@ var self = {
                     console.log('========================' + objAttrL + '-------------------------');
                     if (objAttrL) {
                         console.log('=======================================@@@@@===================================');
-                        currentAttr = _.find(objAttrL, function (str) {
+                        currentAttr = _.find(objAttrL, function(str) {
                             let strL = str.substring(0, str.indexOf(':'));
                             console.log("***" + resourceId);
                             console.log("=============" + strL + "***" + str + "---");
@@ -493,16 +499,16 @@ var self = {
         }
     },
 
-    getPermission: cors(async (req, res) => {
+    getPermission: cors(async(req, res) => {
         try {
             //const body = await json(req)
             console.log(req.params);
-
+            console.log(ldapConfig.adminDn + '=====================' + ldapConfig.adminPass)
             var isAdminAuth = isUserAuth = false;
             isAdminAuth = await self.ldapbind(ldapConfig.adminDn, ldapConfig.adminPass);
 
             if (isAdminAuth.auth) {
-
+                console.log("============================2222222222222222222222222222222222222");
                 const dnAppRootPath = "ou=" + ldapConfig.approot + "," + ldapConfig.ldapDc;
                 const dnAppPath = "ou=" + req.params.app + "," + dnAppRootPath;
                 const dnTaskTypeNs = "ou=" + ldapConfig.tasktype + "," + dnAppPath;
@@ -535,7 +541,7 @@ var self = {
                     }
                     console.log('===========--------------');
                     console.log(objAttrL);
-                    resourceAccess = _.find(objAttrL, function (str) {
+                    resourceAccess = _.find(objAttrL, function(str) {
                         let strL = str.substring(0, str.indexOf(':'));
                         console.log("***" + req.params.resourceId);
                         console.log("=============" + strL + "***" + str + "---");
@@ -557,7 +563,7 @@ var self = {
         }
     }),
 
-    getAllPermission: cors(async (req, res) => {
+    getAllPermission: cors(async(req, res) => {
         try {
             //const body = await json(req)
             console.log(req.params);
@@ -591,7 +597,7 @@ var self = {
                 let allPerm = [];
                 if (!_.isEmpty(res.response)) {
 
-                    _.forEach(res.response, function (value) {
+                    _.forEach(res.response, function(value) {
                         console.log(value.dn);
                         var reTasktype = value.dn.match("ou=roles,ou=(.*),ou=tasktype");
                         console.log(reTasktype[1]);
@@ -608,15 +614,15 @@ var self = {
                             objAttrL = [value.l];
                         }
 
-                        _.forEach(objAttrL, function (valL) {
+                        _.forEach(objAttrL, function(valL) {
                             let objResAcc = _.split(valL, ':');
                             let obj = {
-                                'taskType': strTasktype,
-                                'roleId': value.cn,
-                                'resourceId': objResAcc[0],
-                                'access_value': objResAcc[1],
-                            }
-                            //console.log('inner for.....' + valL);
+                                    'taskType': strTasktype,
+                                    'roleId': value.cn,
+                                    'resourceId': objResAcc[0],
+                                    'access_value': objResAcc[1],
+                                }
+                                //console.log('inner for.....' + valL);
                             allPerm.push(obj);
                         })
                     });
@@ -631,7 +637,7 @@ var self = {
         }
     }),
 
-    checkOrgUnit: async (unitName, strDn) => {
+    checkOrgUnit: async(unitName, strDn) => {
         console.log("unitname:", unitName)
 
         var result = await self.ldapsearch(strDn, {});
@@ -648,7 +654,7 @@ var self = {
         return true;
     },
 
-    checkOrgRole: async (roleName, strDn) => {
+    checkOrgRole: async(roleName, strDn) => {
 
         var result = await self.ldapsearch(strDn, {});
 
@@ -666,7 +672,7 @@ var self = {
         return true;
     },
 
-    checkgroupOfUniqueNames: async (groupname, strDn, uniqueMember, owner) => {
+    checkgroupOfUniqueNames: async(groupname, strDn, uniqueMember, owner) => {
 
         var result = await self.ldapsearch(strDn, {});
 
@@ -682,7 +688,7 @@ var self = {
 
     },
 
-    init: cors(async (req, res) => {
+    init: cors(async(req, res) => {
         console.log('inside init....');
         const body = await json(req)
         console.log(body);
@@ -725,7 +731,7 @@ var self = {
 
     }),
 
-    addRoles: cors(async (req, res) => {
+    addRoles: cors(async(req, res) => {
         const body = await json(req)
         var groupname = body.groupname;
         var uniqueMember = body.um;
@@ -747,7 +753,7 @@ var self = {
         }
     }),
 
-    groupRoles: cors(async (req, res) => {
+    groupRoles: cors(async(req, res) => {
         var isAdminAuth = isUserAuth = false;
         isAdminAuth = await self.ldapbind(ldapConfig.adminDn, ldapConfig.adminPass);
         if (isAdminAuth.auth) {
@@ -765,7 +771,7 @@ var self = {
             var result = await self.ldapsearch(strDn, searchOptions);
             //    console.log("result",result.response)
             var grouproles = result.response
-            // console.log("grouproles", grouproles)
+                // console.log("grouproles", grouproles)
             var mapdata = grouproles.map(a => a.owner);
             // console.log("mapdata", mapdata)
             var matchowner = newData(mapdata)
@@ -777,8 +783,8 @@ var self = {
                     // console.log(i + "", mapdata[i])
                     if (data[i] instanceof Array) {
                         let multiData = newData(data[i])
-                        // console.log("multidata",multiData)
-                        // matchowner = matchowner.concat(multiData)
+                            // console.log("multidata",multiData)
+                            // matchowner = matchowner.concat(multiData)
                         matchowner.push(multiData)
                     } else if (data[i]) {
                         // console.log(i + "", mapdata[i])
@@ -807,7 +813,7 @@ var self = {
         }
     }),
 
-    userauth: cors(async (req, res) => {
+    userauth: cors(async(req, res) => {
 
         /*
         res.setHeader('Access-Control-Allow-Origin', '*');
@@ -817,7 +823,7 @@ var self = {
         */
         try {
             const body = await json(req)
-            //send(res, 200, body)
+                //send(res, 200, body)
 
             console.log(body);
             //console.log(res);
@@ -831,7 +837,7 @@ var self = {
                 let resCode = 404;
                 let resBody = { 'status': 0, 'code': 404, 'error': ajv.errors }
                 send(res, resCode, resBody)
-                // console.log('Invalid: ', ajv.errors);
+                    // console.log('Invalid: ', ajv.errors);
                 return;
             }
 
@@ -849,7 +855,7 @@ var self = {
                     filter: '(uid=' + body.userid + ')',
                     //filter: '(cn=*)',
                     scope: 'sub'
-                    //attributes: ['dn', 'sn', 'cn']
+                        //attributes: ['dn', 'sn', 'cn']
                 };
 
                 var strDn = 'ou=users,' + ldapConfig.ldapDc;
