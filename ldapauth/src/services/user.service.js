@@ -3,6 +3,7 @@ const { sign, verify } = require('jsonwebtoken');
 const _ = require('lodash')
 const ldapConfig = require('../config.js');
 const cors = require('micro-cors')()
+var request = require('request');
 
 var Ajv = require('ajv');
 var ajv = new Ajv({ allErrors: true });
@@ -10,7 +11,9 @@ var ajv = new Ajv({ allErrors: true });
 const ldapschema = require('../schema/schema.js')
 
 var ldap = require('ldapjs');
-console.log(ldapConfig.ldapUrl);
+console.log("binding :: " + ldapConfig.ldapUrl);
+// ldap://localhost:389
+// var ldapUrl = "ldap://" + "ldapserver"
 var client = ldap.createClient({
     url: ldapConfig.ldapUrl
 });
@@ -67,14 +70,16 @@ var self = {
             client.add(strDn, entry, function(err, res) {
                 console.log("err :: " + err);
                 console.log("res :: " + res);
+                // console.log("entry :: " + entry)
 
                 if (!err)
                     resolve(true);
-
+                // resolve(err);
                 resolve(false);
             });
         });
     },
+
 
     ldapmodify: async(strDn, attrs, operation) => {
 
@@ -147,18 +152,24 @@ var self = {
             scope: 'sub',
             attributes: ['cn']
         };
-
-        var strDn = ldapConfig.groupDn;
-        var result = await self.ldapsearch(strDn, searchOptions);
-
-        console.log("result :::::::::::::::::::::");
-        console.log(result);
-
         var roles = [];
-        for (var p in result.response) {
-            if (result.response.hasOwnProperty(p)) {
-                console.log("=========" + result.response[p].cn);
-                roles.push(result.response[p].cn)
+
+        isAdminAuth = await self.ldapbind(ldapConfig.adminDn, ldapConfig.adminPass);
+
+        if (isAdminAuth.auth) {
+            console.log(isAdminAuth);
+
+            var strDn = ldapConfig.groupDn;
+            var result = await self.ldapsearch("ou=groups,dc=ldapdocker,dc=doc", searchOptions);
+
+            console.log("result :::::::::::::::::::::");
+            console.log(result);
+
+            for (var p in result.response) {
+                if (result.response.hasOwnProperty(p)) {
+                    console.log("=========" + result.response[p].cn);
+                    roles.push(result.response[p].cn)
+                }
             }
         }
         console.log(roles);
@@ -199,7 +210,7 @@ var self = {
         return userRoles;
     },
 
-    useradd: async(req, res) => {
+    useradd: cors(async(req, res) => {
 
         try {
             const body = await json(req)
@@ -214,42 +225,49 @@ var self = {
             if (isAdminAuth.auth) {
                 //  admin is authenticated, search for given user
                 var searchOptions = {
-                    filter: '(uid=' + body.userid + ')',
+                    filter: '(mail=' + body.email + ')',
                     //filter: '(cn=*)',
                     scope: 'sub'
                         //attributes: ['dn', 'sn', 'cn']
                 };
 
-                var strDn = 'ou=users,' + ldapConfig.ldapDc;
+                var strDn = 'ou=' + ldapConfig.userNs + ',' + ldapConfig.ldapDc;
                 console.log(strDn);
                 var result = await self.ldapsearch(strDn, searchOptions);
 
                 console.log('==================================');
+                console.log(result.response.length)
                 if (result.response.length) {
                     console.log('user found..');
 
                 } else {
                     console.log('add user..');
-
                     var entry = {
-                        cn: 'brett1',
-                        sn: 'abc',
-                        gidNumber: 501,
-                        givenname: 'brett1',
-                        homedirectory: '/home/users/brett1',
+                        cn: body.cn,
+                        sn: body.sn,
+                        gidNumber: body.gidNumber,
+                        givenname: body.givenname,
+                        homedirectory: ldapConfig.directorypath + body.givenname,
                         objectclass: ['inetOrgPerson', 'posixAccount', 'top'],
-                        //  objectclass: 'posixAccount',
-                        //  objectclass: 'top',
-                        sn: 'abc',
-                        uid: 'brett1',
-                        uidNumber: 1006,
-                        userpassword: '123'
-                            //  email: ['foo@bar.com', 'foo1@bar.com'],
-                            //  objectclass: 'fooPerson'
+                        mail: body.mail,
+                        uid: body.uid,
+                        uidNumber: body.uidNumber,
+                        userpassword: body.userpassword
                     };
-                    client.add('cn=brett1,ou=users,dc=ldaptest,dc=local', entry, function(err) {
-                        console.log(err);
-                    });
+                    // console.log("entry", entry)
+                    var clientAddPath = 'cn=' + entry.cn + "," + "ou=" + ldapConfig.userNs + "," + ldapConfig.ldapDc;
+                    // console.log("clientAddPath", clientAddPath)
+                    return new Promise((resolve, reject) => {
+                        client.add(clientAddPath, entry, function(err, res) {
+
+                            if (!err) {
+                                resolve({ "status": 1, "code": 200, "message": "user registerd succesfully" })
+                            } else {
+                                console.log(err);
+                                resolve({ "status": 0, "code": 404, "message": "user registration failed", "error": err })
+                            }
+                        });
+                    })
                 }
             }
         } catch (err) {
@@ -257,7 +275,85 @@ var self = {
             console.log(err);
         }
 
-        send(res, 200, {})
+        // send(res, 200, {})
+    }),
+
+    importuserentry: async(userdata) => {
+        for (var key in userdata) {
+            if (userdata.hasOwnProperty(key)) {
+                var val = userdata[key];
+                // console.log("length", val.length)
+                for (var i = 0; i < val.length; i++) {
+                    // console.log("i->", i, val[i])
+                    // console.log("contct",parseFloat(val[i].data.ContactID))
+                    // console.log("type",typeof(parseFloat(val[i].data.ContactID)))
+                    var searchOptions = {
+                        filter: '(mail=' + val[i].data.EmailAddress + ')',
+                        //filter: '(cn=*)',
+                        scope: 'sub'
+                            //attributes: ['dn', 'sn', 'cn']
+                    };
+                    var strDn = "ou=" + ldapConfig.userNs + "," + ldapConfig.ldapDc;
+                    var result = await self.ldapsearch(strDn, searchOptions);
+                    // console.log("result", result.response)
+                    // console.log(result.response.length)
+
+                    if (!result.response.length) {
+                        console.log('add user..');
+                        var entry = {
+                            cn: val[i].data.Name,
+                            sn: val[i].data.Name,
+                            gidNumber: 503,
+                            givenname: val[i].data.Name,
+                            homedirectory: ldapConfig.directorypath + val[i].data.Name,
+                            objectclass: ['inetOrgPerson', 'posixAccount', 'top'],
+                            mail: val[i].data.EmailAddress,
+                            telephoneNumber: val[i].data.Phones[3].PhoneNumber,
+                            uid: val[i].data.Name,
+                            uidNumber: 5055,
+                            userpassword: ldapConfig.userPass
+                        };
+                        // console.log("entry", entry)
+                        var clientAddPath = 'cn=' + entry.cn + "," + "ou=" + ldapConfig.userNs + "," + ldapConfig.ldapDc;
+                        var entryresponse = await self.ldapentry(clientAddPath, entry);
+                        // console.log("entryresponse", entryresponse)
+
+                        // return(true)
+                    } else {
+                        console.log("user found")
+                            // return (false)
+                    }
+                }
+            }
+        }
+        return (true)
+    },
+
+    importuser: cors(async(req, res) => {
+
+        var isAdminAuth = isUserAuth = false;
+        isAdminAuth = await self.ldapbind(ldapConfig.adminDn, ldapConfig.adminPass);
+
+        let userdata = await self.getuserdata();
+
+        let importuserentry = await self.importuserentry(userdata);
+        // console.log("importuserentry", importuserentry)
+
+        send(res, "200", { "status": 1, "code": "200", "message": "import users succsfully" })
+    }),
+
+    getuserdata: async() => {
+
+        return new Promise((resolve, reject) => {
+            request(ldapConfig.importUserUrl, function(error, response, body) {
+                // console.log('error:', error); // Print the error if one occurred
+                // console.log('statusCode:', response && response.statusCode); // Print the response status code if a response was received
+                // console.log('body:', JSON.parse(body).data);
+                var impdata = JSON.parse(body).data;
+                resolve(impdata);
+            });
+        });
+
     },
 
     setPermission: cors(async(req, res) => {
@@ -407,12 +503,12 @@ var self = {
         try {
             //const body = await json(req)
             console.log(req.params);
-
+            console.log(ldapConfig.adminDn + '=====================' + ldapConfig.adminPass)
             var isAdminAuth = isUserAuth = false;
             isAdminAuth = await self.ldapbind(ldapConfig.adminDn, ldapConfig.adminPass);
 
             if (isAdminAuth.auth) {
-
+                console.log("============================2222222222222222222222222222222222222");
                 const dnAppRootPath = "ou=" + ldapConfig.approot + "," + ldapConfig.ldapDc;
                 const dnAppPath = "ou=" + req.params.app + "," + dnAppRootPath;
                 const dnTaskTypeNs = "ou=" + ldapConfig.tasktype + "," + dnAppPath;
@@ -576,6 +672,22 @@ var self = {
         return true;
     },
 
+    checkgroupOfUniqueNames: async(groupname, strDn, uniqueMember, owner) => {
+
+        var result = await self.ldapsearch(strDn, {});
+
+
+        let entry = {
+            cn: groupname,
+            objectclass: ['groupOfUniqueNames'],
+            owner: owner,
+            uniqueMember: uniqueMember
+        }
+
+        return await self.ldapentry(strDn, entry);
+
+    },
+
     init: cors(async(req, res) => {
         console.log('inside init....');
         const body = await json(req)
@@ -617,6 +729,88 @@ var self = {
             send(res, 403, { message: 'Authentication error.' })
         }
 
+    }),
+
+    addRoles: cors(async(req, res) => {
+        const body = await json(req)
+        var groupname = body.groupname;
+        var uniqueMember = body.um;
+        var owner = body.owner;
+        var strDn = "ou=" + ldapConfig.groupRoles + "," + ldapConfig.ldapDc
+
+        var isAdminAuth = isUserAuth = false;
+        isAdminAuth = await self.ldapbind(ldapConfig.adminDn, ldapConfig.adminPass);
+
+        if (isAdminAuth.auth) {
+            await self.checkOrgUnit(ldapConfig.groupRoles, strDn)
+            var addrolepath = "cn=" + body.groupname + "," + strDn;
+            var result = await self.checkgroupOfUniqueNames(groupname, addrolepath, uniqueMember, owner)
+            if (result == true) {
+                send(res, 200, { "status": "1", "code": "200", "message": "Role added succesfully" })
+            } else {
+                send(res, 404, { "status": "0", "code": "404", "message": "adding entry failed", "result": result })
+            }
+        }
+    }),
+
+    groupRoles: cors(async(req, res) => {
+        var isAdminAuth = isUserAuth = false;
+        isAdminAuth = await self.ldapbind(ldapConfig.adminDn, ldapConfig.adminPass);
+        if (isAdminAuth.auth) {
+
+            //  ou=groupRoles,dc=ldapserver,dc=local
+            var strDn = "ou=" + ldapConfig.groupRoles + "," + ldapConfig.ldapDc;
+            await self.checkOrgUnit(ldapConfig.groupRoles, strDn)
+
+            var searchOptions = {
+                filter: 'objectclass=*',
+                scope: 'sub',
+                attributes: ['cn', 'owner']
+            };
+
+            var result = await self.ldapsearch(strDn, searchOptions);
+            //    console.log("result",result.response)
+            var grouproles = result.response
+                // console.log("grouproles", grouproles)
+            var mapdata = grouproles.map(a => a.owner);
+            // console.log("mapdata", mapdata)
+            var matchowner = newData(mapdata)
+
+            function newData(data) {
+                var matchowner = [];
+                for (var i in data) {
+                    // console.log(i);
+                    // console.log(i + "", mapdata[i])
+                    if (data[i] instanceof Array) {
+                        let multiData = newData(data[i])
+                            // console.log("multidata",multiData)
+                            // matchowner = matchowner.concat(multiData)
+                        matchowner.push(multiData)
+                    } else if (data[i]) {
+                        // console.log(i + "", mapdata[i])
+                        var spdata = data[i].split(",")[0].split('=')[1];
+                        // console.log("split array", spdata)
+                        matchowner.push(spdata)
+                    } else {
+                        //   console.log(i + "",mapdata[i])
+                        matchowner.push(data[i])
+                    }
+                }
+                return matchowner
+            }
+            // console.log("matchowner", matchowner)
+
+            for (var i = 0; i < grouproles.length; i++) {
+                grouproles[i].rolename = grouproles[i].cn;
+                grouproles[i].owner = matchowner[i]
+                grouproles[i].owner = matchowner[i]
+                delete grouproles[i].cn;
+                delete grouproles[i].dn;
+                delete grouproles[i].controls;
+            }
+            // console.log(grouproles);
+            send(res, 200, { "status": "1", "code": "200", grouproles })
+        }
     }),
 
     userauth: cors(async(req, res) => {
@@ -710,16 +904,15 @@ var self = {
             var isUserAuth = false;
             const strBind = 'cn='+body.userid+',ou=users,'+ldapDc;
             console.log(strBind);
-
+ 
             return new Promise((resolve, reject) => {
               client.bind(strBind, body.passwd, function(err) {
-                //assert.ifError(err);
-
-                if(!err)
+                //assert.ifError(err):
+                 if(!err)
                   isUserAuth = true;
-
+ 
                 console.log(err);
-
+ 
                 resolve({ "auth": isUserAuth })
               });
             });

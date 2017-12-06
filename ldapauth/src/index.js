@@ -23,12 +23,15 @@ const notfound = (req, res) =>
 module.exports = router(
     get('/userslist', user.userlist),
     get('/getroles', user.getroles),
+    post('/addRoles', user.addRoles),
     post('/userauth', user.userauth),
     post('/useradd', user.useradd),
+    get('/importuser', user.importuser),
     post('/setpermission', user.setPermission),
     get('/getpermission/:app/:taskType/:roleId/:resourceId', user.getPermission),
     get('/getallpermission/:app', user.getAllPermission),
     post('/init', user.init),
+    get('/groupRoles',user.groupRoles),
     //post('/hellopost', hellopost),
     get('/hello/:who', hello),
     get('/*', notfound)

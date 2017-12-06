@@ -1,13 +1,18 @@
+
 module.exports = {
-    ldapUrl: "ldap://127.0.0.1:389",
-    ldapDc: "dc=ldaptest,dc=local",
-    adminDn: "cn=admin,dc=ldaptest,dc=local",
-    adminPass: "123456",
+    ldapUrl: process.env.LDAPURL, 
+    ldapDc: "dc=ldapdocker,dc=doc",
+    adminDn: "cn=admin,dc=ldapdocker,dc=doc",
+    adminPass: process.env.ADMINPASS,
     approot: "apps",
     tasktype: "tasktype",
     resources: "resources",
     userNs: "users",
     groupNs: "groups",
-    groupDn: "ou=groups,dc=ldaptest,dc=local",
-    jwtKey: "abcdefgabcdefg"
+    groupDn: "ou=groups,dc=ldapdocker,dc=doc",
+    groupRoles : "groupRoles",
+    jwtKey: process.env.SECRET,
+    directorypath: "/home/users/",
+    userPass: process.env.USERPASS,
+    importUserUrl: process.env.IMPORTUSERURL + '/api/xero/contacts?name=Krishna&app=Private%20Demo%20Company'
 };

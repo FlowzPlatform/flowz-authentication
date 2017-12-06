@@ -8,7 +8,8 @@ const User = require('../models/user');
 const facebookAuth = microAuthFacebook(index.options);
 
 module.exports.facebook = facebookAuth(async (req, res, auth) => {
-  let id = auth.result.info.id
+   console.log(auth)
+   let id = auth.result.info.id
    let provider = auth.result.provider
    let fullname = auth.result.info.name
    let access_token = auth.result.accessToken
