@@ -1,0 +1,40 @@
+sudo: required
+
+language: node
+
+services:
+  - docker
+
+branches:
+  only:
+  - master
+  
+jobs:
+  include:
+    - stage: Authentication-Auth-Flowz
+      script:
+      - docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD"
+      - docker build -t authentication_auth_flowz:"$DOCKER_IMAGE_TAG" ./auth/
+      - docker images
+      - docker tag authentication_auth_flowz:"$DOCKER_IMAGE_TAG" $DOCKER_USERNAME/authentication_auth_flowz:"$DOCKER_IMAGE_TAG"
+      - docker push $DOCKER_USERNAME/authentication_auth_flowz:"$DOCKER_IMAGE_TAG"
+    - stage: Authentication-Ldap-Flowz
+      script:
+      - docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD"
+      - docker build -t authentication_ldap_flowz:"$DOCKER_IMAGE_TAG" ./ldapauth/
+      - docker images
+      - docker tag authentication_ldap_flowz:"$DOCKER_IMAGE_TAG" $DOCKER_USERNAME/authentication_ldap_flowz:"$DOCKER_IMAGE_TAG"
+      - docker push $DOCKER_USERNAME/authentication_ldap_flowz:"$DOCKER_IMAGE_TAG"
+    - stage: Authentication-User-Flowz
+      script:
+      - docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD"
+      - docker build -t authentication_user_flowz:"$DOCKER_IMAGE_TAG" ./user/
+      - docker images
+      - docker tag authentication_user_flowz:"$DOCKER_IMAGE_TAG" $DOCKER_USERNAME/authentication_user_flowz:"$DOCKER_IMAGE_TAG"
+      - docker push $DOCKER_USERNAME/authentication_user_flowz:"$DOCKER_IMAGE_TAG"
+    - stage: Upgrade Rancher Service 
+      script: 
+      - bash ./upgrade.sh
+    - stage: Finish Rancher Service
+      script:
+      - bash ./finish.sh
