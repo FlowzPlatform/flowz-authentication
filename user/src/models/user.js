@@ -8,6 +8,6 @@ module.exports = mongoose.model(
   new Schema({ aboutme:String,fullname:String,firstname:String,lastname:String,email:String,password:String,dob:Date,role:String,signup_type:String,
     image_name:String,image_url:String,created_at:{type : Date,default : Date.now},updated_at:{type : Date,
    default : Date.now},forget_token:String,forget_token_created_at:{type : Date,
-  default : Date.now}}),
+  default : Date.now}},{strict:false}),
   'User'
 );
