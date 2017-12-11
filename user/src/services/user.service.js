@@ -42,20 +42,24 @@ module.exports.updateuserdetails = async (req, res) => {
   uid = req.params.uid;
   body = req.body;
   let email_found = body['email'];
+  let password = body['password'];
   if (typeof email_found !== "undefined") {
     let rejectReply = sendRejectResponce(0, '406', 'You can not change email');
+    return rejectReply;
+  } else if (typeof password !== "undefined") {
+    let rejectReply = sendRejectResponce(0, '406', 'You can not change password');
     return rejectReply;
   }
   query = { _id: uid };
   try {
     let data = await User.update(query, body, { upsert: true, setDefaultsOnInsert: true })
-   if(data.nModified){
-    let sucessReply = sendSuccessResponce(1,'201','updateuserdetails',data);
-    return sucessReply;
-   }else{
-     let rejectReply = sendRejectResponce(0,'200','no record updated');
+    if (data.nModified) {
+      let sucessReply = sendSuccessResponce(1, '201', 'updateuserdetails', data);
+      return sucessReply;
+    } else {
+      let rejectReply = sendRejectResponce(0, '200', 'no record updated');
       return rejectReply;
-   }
+    }
   } catch (err) {
     throw createError(403, 'error!');
   }
