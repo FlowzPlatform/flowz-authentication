@@ -101,7 +101,7 @@ module.exports.userdetails = async(req, res) => {
     }
 }
 
-module.exports.googleauthprocess = async(req, res) => {
+module.exports.verifyemail = async(req, res) => {
     req = await json(req)
     let aboutme = req.aboutme;
     let email = req.email;
