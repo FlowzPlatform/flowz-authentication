@@ -19,7 +19,63 @@ var client = ldap.createClient({
 });
 
 var self = {
-    userlist: async(req, res) => {
+
+    userlist: cors(async(req, res) => {
+        try {
+            console.log(req.params);
+            //console.log(res);
+
+            var reqRole = _.replace(req.params.role, '%20', ' ')
+
+            console.log(ldapConfig.adminDn);
+
+            var rolesUsers = [];
+            var isAdminAuth = isUserAuth = false;
+            isAdminAuth = await self.ldapbind(ldapConfig.adminDn, ldapConfig.adminPass);
+
+            if (isAdminAuth.auth) {
+
+                var searchOptions = {
+                    filter: '(cn=' + reqRole + ')',
+                    scope: 'sub',
+                    attributes: ['memberUid']
+                };
+
+                var strDn = ldapConfig.groupDn;
+                var result = await self.ldapsearch(strDn, searchOptions);
+
+                console.log("result :::::::::::::::::::::");
+                console.log(result);
+
+                for (var p in result.response) {
+                    if (result.response.hasOwnProperty(p)) {
+                        console.log("=========" + result.response[p].memberUid);
+                        if (!_.isObject(result.response[p].memberUid)) {
+                            rolesUsers = [result.response[p].memberUid];
+                        } else {
+                            rolesUsers = result.response[p].memberUid;
+                        }
+                    }
+                }
+                console.log(rolesUsers);
+            }
+
+            let roleusers = {
+                'status': 1,
+                'data': {
+                    'roles': rolesUsers
+                }
+            }
+
+            //return roleusers;
+            send(res, 200, roleusers);
+
+        } catch (err) {
+            console.log(err);
+        }
+    }),
+
+    userlist1: async(req, res) => {
         try {
             console.log(req);
             console.log(res);
