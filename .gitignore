@@ -2,3 +2,4 @@ node_modules/
 auth/node_modules/
 auth/src/social-config.js
 user/node_modules/
+docker-compose.yml
