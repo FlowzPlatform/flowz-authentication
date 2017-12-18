@@ -400,7 +400,7 @@ An LDAP directory is organized in a simple "tree" hierarchy consisting of the fo
     {
       "cn":"common name",
       "sn": "surname",
-      "gidNumber": "group idNumber,
+      "gidNumber": "group idNumber",
       "givenname": "givenname",
       "mail": "email id",
       "uid": "user id",
