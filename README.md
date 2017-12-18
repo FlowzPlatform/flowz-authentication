@@ -184,7 +184,7 @@ request parameter as success_url.after succesfully authenticated user can verify
     
 *  **post**
      
-       http://auth.flowz.com/api/Gplus
+       http://auth.flowz.com/auth/Gplus
 
 * **pass success_url with request**
      
@@ -202,7 +202,7 @@ request parameter as success_url.after succesfully authenticated user can verify
     
 *  **post**
      
-       http://auth.flowz.com/api/facebook
+       http://auth.flowz.com/auth/facebook
 
 * **pass success_url with request**
      
@@ -220,7 +220,7 @@ request parameter as success_url.after succesfully authenticated user can verify
     
 *  **post**
      
-       http://auth.flowz.com/api/twitter
+       http://auth.flowz.com/auth/twitter
 
 * **pass success_url with request**
      
@@ -238,7 +238,7 @@ request parameter as success_url.after succesfully authenticated user can verify
     
 *  **post**
      
-       http://auth.flowz.com/api/linkedin
+       http://auth.flowz.com/auth/linkedin
 
 * **pass success_url with request**
      
@@ -256,7 +256,7 @@ request parameter as success_url.after succesfully authenticated user can verify
     
 *  **post**
      
-       http://auth.flowz.com/api/github
+       http://auth.flowz.com/auth/github
 
 * **pass success_url with request**
      
