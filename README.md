@@ -158,7 +158,7 @@ request parameter as success_url.after succesfully authenticated user can verify
   
   **step:2** after succesfully authenticated user redirected to succesful_url page and ob_id padded to url. 
 
-  **step:3** after user verify with through email id on success_url page. 
+  **step:3** after user verify through email id on success_url page. 
 
   *  **post**
      
