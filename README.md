@@ -273,7 +273,7 @@ request parameter as success_url.after succesfully authenticated user can verify
 
 * **get**
 
-      http://api.flowz.com/user/api/alluserdetails
+      http://api.flowz.com/user/alluserdetails
 
 * **Headers:**
 
@@ -284,7 +284,7 @@ request parameter as success_url.after succesfully authenticated user can verify
 
 * **get**
 
-       http://api.flowz.com/user/api/getuserdetails/:uid
+       http://api.flowz.com/user/getuserdetails/:uid
 
 * **Headers:**
 
@@ -300,7 +300,7 @@ request parameter as success_url.after succesfully authenticated user can verify
 
 * **put**
 
-       http://api.flowz.com/user/api/updateuserdetails/:uid
+       http://api.flowz.com/user/updateuserdetails/:uid
 
 * **Headers:**
 
@@ -324,7 +324,7 @@ request parameter as success_url.after succesfully authenticated user can verify
 
 * **delete**
 
-       http://api.flowz.com/user/api/deleteuserdetails/:uid
+       http://api.flowz.com/user/deleteuserdetails/:uid
 
 * **Headers:**
 
