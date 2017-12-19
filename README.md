@@ -117,32 +117,7 @@ User Services : http://api.flowz.com/user
 
 * **Headers:**
 
-   ***Authorization:*** "provide logintoken"
-
-
-## sendemail
-
-*  **post**
-     
-       http://auth.flowz.com/api/sendemail
-
-  * **json body:**
-    
-	```json
-	{
-        "host":"provide your email host",
-        "user":"provide your user email",
-        "password":"your host password",
-        "text":"sample text (ex.your company name)",
-        "from":"from",
-        "to":"to",
-        "cc":"cc",
-        "body":"attachment body (ex. hello flowzplatform)",
-        "path":"attachment path",
-        "type":"attachment type (ex.for image type image/jpeg)",
-        "name":"attachment name"
-	}                                                                
-	```
+   ***Authorization:*** provide logintoken
 
 # **social login**
 ---
