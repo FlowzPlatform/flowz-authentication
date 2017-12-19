@@ -26,6 +26,7 @@
     "micro-route": "^2.4.0",
     "microauth-facebook": "0.0.3",
     "microauth-github": "0.0.4",
+    "microauth-linkedin": "0.0.2",
     "microauth-twitter": "^0.1.1",
     "microrouter": "^2.1.0",
     "mongoose": "^4.13.5",

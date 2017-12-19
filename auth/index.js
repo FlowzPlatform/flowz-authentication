@@ -7,6 +7,7 @@ const microAuthGithub = require('microauth-github');
 const parse = require('urlencoded-body-parser');
 const authConfigs = require('./src/models/auth_configs');
 
+
 let twitter;
 let github;
 let fb;
@@ -17,6 +18,7 @@ let gpluscallbackUrl;
 let gitcallbackUrl;
 let fbcallbackUrl;
 let twitcallbackUrl;
+let linkedincallbackUrl;
 
 
 const corsRoute = route('*', 'OPTIONS')
@@ -30,12 +32,14 @@ const callbackFbRoute = route('/auth/facebook/callback')
 const signuptwRoute = route('/auth/twitter')
 const signupGpRoute = route('/auth/Gplus')
 const callbackGpRoute = route('/oauthCallback')
+const signupLinkedinRoute = route('/auth/linkedin')
+const callbackLinkedinRoute = route('/auth-linkedin')
 const userdetailsRoute = route('/api/userdetails')
 const forgetpasswordRoute = route('/api/forgetpassword', 'POST')
 const resetpasswordRoute = route('/api/resetpassword', 'POST')
 const changepasswordRoute = route('/api/changepassword', 'POST')
 const sendemailapiRoute = route('/api/sendemail', 'POST')
-const googleauthprocessapiRoute = route('/api/googleauthprocess', 'POST')
+const verifyemailapiRoute = route('/api/verifyemail', 'POST')
 const ldapauthRoute = route('/api/ldapauth', 'POST')
 // const { twitcallbackUrl,twitpath,gitcallbackUrl,gitpath,gitscope,fbcallbackUrl,fbpath,fbscope,gpluscallbackUrl,gpluspath,gplusscope } = require('./src/social-config');
 
@@ -131,6 +135,26 @@ module.exports = async function (req, res) {
     return Gplus.Gplus(req, res);
   } else if (callbackGpRoute(req)) {
     return Gplus.Gplus(req, res);
+  } else if (signupLinkedinRoute(req)) {
+    const _data = await parse(req);
+    let datasearch = await authConfigs.find({ userid: "100" });
+    let data = datasearch[0];
+    console.log(data)
+    console.log("_data",_data)
+    success_url = _data.success_url;
+    key = data._doc.social_configs.linkedin.key;
+    seceret = data._doc.social_configs.linkedin.seceret;
+    linkedincallbackUrl = data._doc.social_configs.linkedin.callbackUrl;
+    if (success_url) {
+
+      if (typeof success_url !== 'undefined') {
+        module.exports.redirect_app_url = success_url;
+      }
+    }
+    getLinkedin(req);
+    return linkedin.linkedin(req, res);
+  } else if (callbackLinkedinRoute(req)) {
+    return linkedin.linkedin(req, res);
   } else if (userdetailsRoute(req)) {
     return auth.userdetails(req);
   } else if (forgetpasswordRoute(req)) {
@@ -141,8 +165,8 @@ module.exports = async function (req, res) {
     return auth.changepassword(req, res);
   } else if (sendemailapiRoute(req)) {
     return users.sendemailapi(req, res);
-  } else if (googleauthprocessapiRoute(req)) {
-    return auth.googleauthprocess(req, res);
+  } else if (verifyemailapiRoute (req)) {
+    return auth.verifyemail(req, res);
   } else if (ldapauthRoute(req)) {
     return auth.ldapauthprocess(req, res);
   }
@@ -203,4 +227,19 @@ function getGplus(req) {
   console.log("options", options)
   module.exports.options = options;
   Gplus = require('./src/authentication/Gplus');
+}
+
+function getLinkedin(req) {
+
+  const options = {
+    clientId: key,
+    clientSecret: seceret,
+    callbackUrl: linkedincallbackUrl,
+    path: '/auth/linkedin',
+    scope: 'r_basicprofile r_emailaddress'
+  };
+  console.log(options);
+
+  module.exports.options = options;
+  linkedin = require('./src/authentication/linkedin');
 }
