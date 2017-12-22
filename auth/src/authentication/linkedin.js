@@ -50,7 +50,7 @@ module.exports.linkedin = linkedinAuth(async (req, res, auth) => {
     });
   } else if (data.isEmailConfirm == 1) {
     let ob_id = data._id;
-    token = authGit.sociallogin(ob_id);
+    token = authLinkedin.sociallogin(ob_id);
     const logintoken = token.logintoken;
     const statusCode = 302
     const location = index.redirect_app_url + '?token=' + logintoken
