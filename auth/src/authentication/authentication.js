@@ -72,7 +72,7 @@ const auth = ({ email, password }) =>
 
 const verifyToken = token => verify(token, secret);
 module.exports.login = async(req, res) => await auth(await json(req));
-module.exports.decode = (req, res) => verifyToken(req.headers['authorization']);
+module.exports.decode = (req, res) => verifyToken(linkedTokens[req.headers['authorization']] ? linkedTokens[req.headers['authorization']] : req.headers['authorization']);
 
 const sociallogin = (id) => {
     // console.log('social_id:',id);
@@ -300,12 +300,17 @@ module.exports.ldapauthprocess = async(req, res) => {
 }
 
 module.exports.changepassword = async(req, res) => {
-    let token = req.headers['authorization'];
+    let mainToken = req.headers['authorization'];
+    let token = linkedTokens[mainToken] ? linkedTokens[mainToken] : mainToken
     req = await json(req)
     let oldpass = req.oldpass;
     let newpass = req.newpass;
     try {
         let data = verify(token, secret);
+        let updatedPayload = decode(token)
+        updatedPayload.exp = Math.floor(Date.now() / 1000) + tokenValidity
+        let updatedToken = sign(updatedPayload, secret);
+        linkedTokens[mainToken] = updatedToken;
         let users = await User.find({ _id: data.userId });
         if (!users.length) {
             throw createError(401, 'That user does not exist');
