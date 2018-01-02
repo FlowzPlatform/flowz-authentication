@@ -1,6 +1,6 @@
 const { json, send, createError, sendError } = require('micro');
 const { compareSync, hash } = require('bcrypt');
-const { sign, verify } = require('jsonwebtoken');
+const { sign, verify, decode } = require('jsonwebtoken');
 const { hashSync } = require('bcrypt');
 var bcrypt = require('bcrypt');
 const users = require('../services/user.service');
@@ -12,7 +12,7 @@ const { secret } = require('../config');
 const User = require('../models/user');
 const ldapConfig = require('../models/auth_configs');
 var ldap = require('ldapjs');
-
+var linkedTokens = []
 
 /*
 var ldapurl = "ldap://" + "ldapserver"
@@ -70,9 +70,9 @@ const auth = ({ email, password }) =>
         return loginprocess(id);
     });
 
-const decode = token => verify(token, secret);
+const verifyToken = token => verify(token, secret);
 module.exports.login = async(req, res) => await auth(await json(req));
-module.exports.decode = (req, res) => decode(req.headers['authorization']);
+module.exports.decode = (req, res) => verifyToken(req.headers['authorization']);
 
 const sociallogin = (id) => {
     // console.log('social_id:',id);
@@ -82,10 +82,14 @@ const sociallogin = (id) => {
 module.exports.sociallogin = sociallogin
 
 module.exports.userdetails = async(req, res) => {
-    let token = req.headers['authorization'];
+    let mainToken = req.headers['authorization'];
+    let token = linkedTokens[mainToken] ? linkedTokens[mainToken] : mainToken
     try {
-        let data;
-        data = verify(req.headers['authorization'], secret);
+        let data = verify(token, secret);
+        let updatedPayload = decode(token)
+        updatedPayload.exp = Math.floor(Date.now() / 1000) + (60 * 60)
+        let updatedToken = sign(updatedPayload, secret);
+        linkedTokens[mainToken] = updatedToken
         return User.find({ _id: data.userId }).exec().then((users, err) => {
             if (!users.length) {
                 throw createError(401, 'That user does not exist');
