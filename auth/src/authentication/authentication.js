@@ -13,7 +13,7 @@ const User = require('../models/user');
 const ldapConfig = require('../models/auth_configs');
 var ldap = require('ldapjs');
 var linkedTokens = []
-
+const tokenValidity = 60 * 60 //in seconds
 /*
 var ldapurl = "ldap://" + "ldapserver"
 var client = ldap.createClient({
@@ -44,7 +44,7 @@ let loginprocess = function(id) {
         payload = {
             "userId": id,
             "iat": Math.floor(Date.now() / 1000) - 30,
-            "exp": Math.floor(Date.now() / 1000) + (60 * 60),
+            "exp": Math.floor(Date.now() / 1000) + tokenValidity,
             "aud": "https://yourdomain.com",
             "iss": "feathers",
             "sub": "anonymous"
@@ -87,7 +87,7 @@ module.exports.userdetails = async(req, res) => {
     try {
         let data = verify(token, secret);
         let updatedPayload = decode(token)
-        updatedPayload.exp = Math.floor(Date.now() / 1000) + (60 * 60)
+        updatedPayload.exp = Math.floor(Date.now() / 1000) + tokenValidity
         let updatedToken = sign(updatedPayload, secret);
         linkedTokens[mainToken] = updatedToken
         return User.find({ _id: data.userId }).exec().then((users, err) => {
