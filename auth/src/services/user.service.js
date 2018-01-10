@@ -7,10 +7,16 @@ let responce = require('./responce');
 let config = require('yaml-config');
 let settings = config.readConfig('src/services/config.yaml');
 const emailjs = require("emailjs");
+const { sendemailurl, secret } = require('../config');
+const rp = require('request-promise');
 
 module.exports.list = async () => {
   return await User.find();
 };
+
+/**
+ * user signup
+ */
 
 const signup = ({ username, aboutme, fullname, firstname, lastname, middlename, companyname, address1, address2, email, country, state, city, zipcode, phonenumber, fax, password, dob, role, signup_type, image_name, image_url, provider, access_token, picture }) => {
   return getEmail(email).then((res) => {
@@ -28,6 +34,10 @@ const signup = ({ username, aboutme, fullname, firstname, lastname, middlename, 
 
 module.exports.setup = async (req, res) => await signup(await json(req));
 
+/**
+ * username validation
+ */
+
 let getUsername = function (username) {
   promise = new Promise(function (resolve, reject) {
     User.find({ username: username }).exec().then((users, err) => {
@@ -42,6 +52,9 @@ let getUsername = function (username) {
   return promise;
 }
 
+/**
+ * getEmail validation
+ */
 
 let getEmail = function (email) {
   promise = new Promise(function (resolve, reject) {
@@ -57,33 +70,60 @@ let getEmail = function (email) {
   return promise;
 }
 
-let sendemail = function (fullname, to, newToken, url) {
-  let link = url
-  let resetlink = link + "/" + newToken
-  let server = emailjs.server.connect({
-    user: "avasaniobxxx@gmail.com",
-    password: "xxxxxx",
-    host: "smtp.gmail.com",
-    ssl: true
+/**
+ * sendemail for forgetpassword
+ */
 
-  });
+let sendemail = async function (to, newToken, url) {
+  var token = encodeURIComponent(newToken);
+  console.log("token",token)
+  let link = url  
+  let resetlink = link + "?forget_token=" + token
+  console.log("resetlink",resetlink)
+  let body = "<html><body>hello dear, <br><br>You have requested to reset your password. please click below button and set your new password. <br><br>" + 
+  `<table>
+    <tr>
+        <td style="background-color: #0097c3;border-color: #00aac3;border: 1px solid #00aac3;padding: 10px;text-align: center,border-radius:1px;">
+            <a style="display: block;color: #ffffff;font-size: 12px;text-decoration: none;text-transform: uppercase;" href=` + resetlink + `>
+                reset password
+            </a>
+        </td>
+    </tr>
+</table>` + 
+"<br><p>if you did not request a password reset please ignore this email.This password reset is only valid for next 24 hour.</p><br>sincerly yours, <br>FlowzPlatform Team <br><br><body></html>"
+  
+  var data = {
+    "to": to,
+    "from": "noreply@flowz.com",
+    "subject": "reset your password",
+    "body": body
+  }
 
-  server.send({
-    text: "reset your password",
-    from: "acharotariya@officebrain.com",
-    to: to,
-    subject: "reset your password",
-    attachment:
-    [
-      {
-        data:
-        "<html><body>Dear " + fullname + " ,<br>You have requested to reset your password. Go to the following url and set your new password.<br><br>" + resetlink + "<br>Thanks,<br>officebeacon llc <br><body></html>", alternative: true
-      }
-    ]
-  })
 
+  var options = {
+    method: 'POST',
+    url: sendemailurl,
+    headers:
+    {
+      'cache-control': 'no-cache',
+      'content-type': 'application/json'
+    },
+    body: data,
+    json: true
+  };
+  // console.log("options",options)
 
-};
+  const mailres = await rp(options)
+
+  // console.log("mailres",mailres)
+
+  return mailres;
+
+}
+
+/**
+ * sendemail api func.
+ */
 
 module.exports.sendemailapi = async (req, res) => {
   try {
@@ -108,18 +148,20 @@ module.exports.sendemailapi = async (req, res) => {
       ]
     };
     const send = await server2.send(message);
-    let jsonString = { "status": 1, "code": "201", "message": "email succesfully send" }
-    return jsonString
+    let sucessReply = sendSuccessResponce(1, '201', 'email succesfully send');
+    return sucessReply;
   } catch (err) {
-    console.log(err);
     throw createError(500, "email sending error");
   }
 }
 
+/**
+ * forgetpassword 
+ */
 
 module.exports.forgetpassword = async (req, res) => {
+  let logintoken = req.headers['authorization'];
   req = await json(req)
-
   let to = req.email;
   let url = req.url;
   if (to == "" || to == null) {
@@ -128,7 +170,7 @@ module.exports.forgetpassword = async (req, res) => {
     throw createError(401, 'please enter reset url');
   }
   let users = await User.find({ email: to });
-  let fullname = users[0].fullname;
+  // let fullname = users[0].fullname;
   if (users.length === 0) {
     throw createError(401, 'please enter correct email');
   } else {
@@ -142,15 +184,18 @@ module.exports.forgetpassword = async (req, res) => {
     const update = { $set: { "forget_token": newToken, "forget_token_created_at": new Date() } };
     await User.findOneAndUpdate(query, update, { returnNewDocument: true, new: true })
     try {
-      await sendemail(fullname, to, newToken, url)
+      await sendemail(to, newToken, url)
       let sucessReply = sendSuccessResponce(1, '200', 'your request for forgetpassword sent to your email');
       return sucessReply;
     } catch (err) {
-      throw createError(500, 'email sending error');
+      throw createError(401, err)
     }
-    // send(res,200,"your request for forgetpassword sent to your email")
   }
 };
+
+/**
+ * resetpassword 
+ */
 
 module.exports.resetpassword = async (req, res) => {
   req = await json(req)
@@ -182,6 +227,10 @@ module.exports.resetpassword = async (req, res) => {
   }
 };
 
+/**
+ * forgetpassword token generation
+ */
+
 function generateToken(stringBase = 'base64') {
   return new Promise((resolve, reject) => {
     crypto.randomBytes(48, (err, buffer) => {
@@ -194,11 +243,9 @@ function generateToken(stringBase = 'base64') {
   });
 }
 
-
 function sendRejectResponce(status, code, message) {
   return new responce(status, code, message);
 }
 function sendSuccessResponce(status, code, message, logintoken) {
   return new responce(status, code, message, logintoken);
-
 }
