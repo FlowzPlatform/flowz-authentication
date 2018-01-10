@@ -14,17 +14,13 @@ const ldapConfig = require('../models/auth_configs');
 var ldap = require('ldapjs');
 var linkedTokens = []
 const tokenValidity = 60 * 60 //in seconds
-/*
-var ldapurl = "ldap://" + "ldapserver"
-var client = ldap.createClient({
-  url: ldapurl
-}); */
 let logintoken;
 let id;
 
 /**
  * Attempt to authenticate a user.
  */
+
 const attempt = (email, password) => {
     return User.find({ email: email }).exec().then((users, err) => {
         if (!users.length) {
@@ -38,7 +34,11 @@ const attempt = (email, password) => {
     });
 };
 
-let loginprocess = function(id) {
+/**
+ * token generation 
+ */
+
+let loginprocess = function(id) { 
     console.log("id", id)
     try {
         payload = {
@@ -57,11 +57,10 @@ let loginprocess = function(id) {
         throw createError(401, 'wrong credential');
     }
 }
-
-
 /**
  * Authenticate a user and generate a JWT if successful.
  */
+
 const auth = ({ email, password }) =>
     attempt(email, password).then(({ id }) => {
         // console.log('auth_id:', id);
@@ -74,12 +73,20 @@ const verifyToken = token => verify(token, secret);
 module.exports.login = async(req, res) => await auth(await json(req));
 module.exports.decode = (req, res) => verifyToken(linkedTokens[req.headers['authorization']] ? linkedTokens[req.headers['authorization']] : req.headers['authorization']);
 
+/**
+ * sociallogin jwt token genration
+ */
+
 const sociallogin = (id) => {
-    // console.log('social_id:',id);
+// console.log('social_id:',id);
     return loginprocess(id);
 };
 
 module.exports.sociallogin = sociallogin
+
+/**
+ * get userdetails
+ */
 
 module.exports.userdetails = async(req, res) => {
     let mainToken = req.headers['authorization'];
@@ -100,16 +107,19 @@ module.exports.userdetails = async(req, res) => {
 
         });
     } catch (err) {
-        // err
         throw createError(401, 'invalid token');
     }
 }
+
+/**
+ * verifyemail for social login
+ */
 
 module.exports.verifyemail = async(req, res) => {
     req = await json(req)
     let aboutme = req.aboutme;
     let email = req.email;
-    let ob_id = req.id;
+    let ob_id = req.id;   
     // console.log(ob_id);
     let users = await User.find({ _id: ob_id });
     // console.log(users);
@@ -134,6 +144,10 @@ module.exports.verifyemail = async(req, res) => {
         return loginprocess(id);
     }
 }
+
+/**
+ * ldap functions 
+ */
 
 var self = {
 
@@ -185,6 +199,9 @@ var self = {
     }
 }
 
+/**
+ * ldap user authentication
+ */
 
 module.exports.ldapauthprocess = async(req, res) => {
     try {
@@ -298,6 +315,10 @@ module.exports.ldapauthprocess = async(req, res) => {
 
     return;
 }
+
+/**
+ * changepassword
+ */
 
 module.exports.changepassword = async(req, res) => {
     let mainToken = req.headers['authorization'];
