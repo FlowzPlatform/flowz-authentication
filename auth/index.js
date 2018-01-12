@@ -41,6 +41,7 @@ const changepasswordRoute = route('/api/changepassword', 'POST')
 const sendemailapiRoute = route('/api/sendemail', 'POST')
 const verifyemailapiRoute = route('/api/verifyemail', 'POST')
 const ldapauthRoute = route('/api/ldapauth', 'POST')
+const dashboardpassRoute = route('/api/dashboardpass', 'POST')
 // const { twitcallbackUrl,twitpath,gitcallbackUrl,gitpath,gitscope,fbcallbackUrl,fbpath,fbscope,gpluscallbackUrl,gpluspath,gplusscope } = require('./src/social-config');
 
 module.exports = async function (req, res) {
@@ -169,6 +170,8 @@ module.exports = async function (req, res) {
     return auth.verifyemail(req, res);
   } else if (ldapauthRoute(req)) {
     return auth.ldapauthprocess(req, res);
+  }else if (dashboardpassRoute(req)) {
+    return users.dashboardpass(req, res);
   }
 
 }

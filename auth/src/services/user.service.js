@@ -9,14 +9,19 @@ let settings = config.readConfig('src/services/config.yaml');
 const emailjs = require("emailjs");
 const { sendemailurl, secret } = require('../config');
 const rp = require('request-promise');
+var randomstring = require("randomstring");
 
 module.exports.list = async () => {
   return await User.find();
 };
 
-/**
- * user signup
- */
+///////////////////////////////
+// 
+// signup function
+// input-type: Object
+// required fields: [email, password]
+//
+///////////////////////////////
 
 const signup = ({ username, aboutme, fullname, firstname, lastname, middlename, companyname, address1, address2, email, country, state, city, zipcode, phonenumber, fax, password, dob, role, signup_type, image_name, image_url, provider, access_token, picture }) => {
   return getEmail(email).then((res) => {
@@ -26,7 +31,6 @@ const signup = ({ username, aboutme, fullname, firstname, lastname, middlename, 
     let sucessReply = sendSuccessResponce(1, '200', 'you are successfully register...');
     return sucessReply;
   }).catch((err) => {
-    console.log('err', err);
     throw createError(409, 'email already exists');
   })
 
@@ -76,11 +80,9 @@ let getEmail = function (email) {
 
 let sendemail = async function (to, newToken, url) {
   var token = encodeURIComponent(newToken);
-  console.log("token",token)
-  let link = url  
+  let link = url
   let resetlink = link + "?forget_token=" + token
-  console.log("resetlink",resetlink)
-  let body = "<html><body>hello dear, <br><br>You have requested to reset your password. please click below button and set your new password. <br><br>" + 
+  let body = "<html><body>hello dear, <br><br>You have requested to reset your password. please click below button and set your new password. <br><br>" +
   `<table>
     <tr>
         <td style="background-color: #0097c3;border-color: #00aac3;border: 1px solid #00aac3;padding: 10px;text-align: center,border-radius:1px;">
@@ -89,9 +91,9 @@ let sendemail = async function (to, newToken, url) {
             </a>
         </td>
     </tr>
-</table>` + 
-"<br><p>if you did not request a password reset please ignore this email.This password reset is only valid for next 24 hour.</p><br>sincerly yours, <br>FlowzPlatform Team <br><br><body></html>"
-  
+  </table>` +
+  "<br><p>if you did not request a password reset please ignore this email.This password reset is only valid for next 24 hour.</p><br>sincerly yours, <br>FlowzPlatform Team <br><br><body></html>"
+
   var data = {
     "to": to,
     "from": "noreply@flowz.com",
@@ -111,14 +113,50 @@ let sendemail = async function (to, newToken, url) {
     body: data,
     json: true
   };
-  // console.log("options",options)
 
   const mailres = await rp(options)
 
-  // console.log("mailres",mailres)
+}
 
-  return mailres;
+/**
+ * sendemail for dashboardpassword
+ */
 
+let senddashboardpass = async function (email, password) {
+
+  let body = '<html><body>hello,<br><br>Thanks for register with flowz service.your password for flowzdashboard is given below.' +
+    '<br><br>' +
+    '<table>' +
+    '<tr>' +
+    '<td style="color: white !important;background-color: #0097c3 !important;border-color: #00aac3 !important;border: 1px solid #00aac3 !important;padding: 10px !important;text-align: center !important;border-radius:1px !important;">' +
+    password +
+    '</td>' +
+    '</tr>' +
+    '</table>' +
+    '</p><br>sincerly yours, <br>FlowzPlatform Team <br><br><body></html>'
+
+
+  var data = {
+    "to": email,
+    "from": "noreply@flowz.com",
+    "subject": "flowzdashboard password",
+    "body": body
+  }
+
+
+  var options = {
+    method: 'POST',
+    url: sendemailurl,
+    headers:
+    {
+      'cache-control': 'no-cache',
+      'content-type': 'application/json'
+    },
+    body: data,
+    json: true
+  };
+
+  const mailres = await rp(options)
 }
 
 /**
@@ -170,7 +208,6 @@ module.exports.forgetpassword = async (req, res) => {
     throw createError(401, 'please enter reset url');
   }
   let users = await User.find({ email: to });
-  // let fullname = users[0].fullname;
   if (users.length === 0) {
     throw createError(401, 'please enter correct email');
   } else {
@@ -179,7 +216,6 @@ module.exports.forgetpassword = async (req, res) => {
     let o = {};
     o.token = newToken;
     arr.push(o);
-    // console.log(arr);
     query = { email: to };
     const update = { $set: { "forget_token": newToken, "forget_token_created_at": new Date() } };
     await User.findOneAndUpdate(query, update, { returnNewDocument: true, new: true })
@@ -241,6 +277,33 @@ function generateToken(stringBase = 'base64') {
       }
     });
   });
+}
+
+/**
+ * send dashboardpassword
+ */
+
+
+module.exports.dashboardpass = async (req, res) => {
+  req = await json(req)
+  let firstname = req.firstname;
+  let lastname = req.lastname;
+  let email = req.email;
+  let password = randomstring.generate(12);
+  let signData = {
+    firstname: firstname,
+    lastname: lastname,
+    email: email,
+    password: password
+  }
+  await signup(signData)
+  try {
+    await senddashboardpass(email, password)
+    let sucessReply = sendSuccessResponce(1, '200', 'password succesfully sent to your email');
+    return sucessReply;
+  } catch (err) {
+    throw createError(401, err)
+  }
 }
 
 function sendRejectResponce(status, code, message) {

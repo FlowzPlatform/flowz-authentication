@@ -13,7 +13,7 @@ const User = require('../models/user');
 const ldapConfig = require('../models/auth_configs');
 var ldap = require('ldapjs');
 var linkedTokens = []
-const tokenValidity = 60 * 60 //in seconds
+const tokenValidity = 60 * 60 * 24 //in seconds
 let logintoken;
 let id;
 
@@ -63,9 +63,6 @@ let loginprocess = function(id) {
 
 const auth = ({ email, password }) =>
     attempt(email, password).then(({ id }) => {
-        // console.log('auth_id:', id);
-        // console.log('email:',email);
-        // console.log('password:',password);
         return loginprocess(id);
     });
 
