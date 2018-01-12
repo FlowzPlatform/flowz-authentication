@@ -1,5 +1,6 @@
 # **FlowzAuthentication**
 ---
+[![Build Status](https://travis-ci.org/FlowzPlatform/flowz-authentication.svg?branch=master)](https://travis-ci.org/FlowzPlatform/flowz-authentication)
 #### Authentication, Ldap and User Services
 
 ## Getting started
@@ -57,13 +58,30 @@ User Services : http://api.flowz.com/user
     
 	```json
 	{
-        "email":"provide email id",
-        "password":"provide password"
+        "email":"email id",
+        "password":"password",
+        "username":"username",
+        "aboutme":"aboutme",
+        "fullname":"fullname",
+        "firstname":"firstname",
+        "middlename":"middlename",
+        "lastname":"lastname",
+        "address1":"address1",
+        "address2":"address2",
+        "dob":"birthdate",
+        "country":"country",
+        "state":"state",
+        "city":"city",
+        "zipcode":"zipcode",
+        "phonenumber":"phonenumber",
+        "fax":"fax",
+        "role":"role",
+        "signup_type":"signup_type",
+        "image_name":"image_name",
+        "image_url":"image_url"
 	}                                                                
 	```
-
-   * **note:** you can provide your own field for signup 
-
+*  **note:** use above field as per your convenient.
 ## change password
  
 *  **post**
@@ -105,10 +123,10 @@ User Services : http://api.flowz.com/user
 	```json
 	{
       "new_password":"provide your new password",
-      "token":"provide your logintoken"
+      "token":"provide your forget token"
     }                                                              
 	``` 
-
+   
 ## userdetails
 
 *  **post**
@@ -127,7 +145,7 @@ User Services : http://api.flowz.com/user
 we are providing social login services like **(google,facebook,twitter,github,linkedin)** . users can use this services by request paticular login service url with
 request parameter as success_url.after succesfully authenticated user can verify through email id when user first time redirect to success_url page and after succesfully verfied user logged in for particular project.  
 
-* ***social login flow*** ![flow diagram](https://raw.githubusercontent.com/username/projectname/branch/path/to/img.png)
+* ***social login flow*** 
 
   **step:1** user can select social media platform to login with.
   
@@ -149,7 +167,7 @@ request parameter as success_url.after succesfully authenticated user can verify
 	  ```
       **note:** ob_id is your registerd object_id and padded to success_url.
       
-  **step:4** verified user succesfully logged in with particular your project and get logintoken.   
+  **step:4** verified user succesfully logged in with your particular project and get logintoken.   
 
 ## google
 
