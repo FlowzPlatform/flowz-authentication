@@ -38,7 +38,7 @@ const attempt = (email, password) => {
  * token generation 
  */
 
-let loginprocess = function(id) { 
+let loginprocess = function(id) {
     console.log("id", id)
     try {
         payload = {
@@ -75,7 +75,7 @@ module.exports.decode = (req, res) => verifyToken(linkedTokens[req.headers['auth
  */
 
 const sociallogin = (id) => {
-// console.log('social_id:',id);
+    // console.log('social_id:',id);
     return loginprocess(id);
 };
 
@@ -108,6 +108,23 @@ module.exports.userdetails = async(req, res) => {
     }
 }
 
+module.exports.userdetailsbyemail = async (req, res) => {
+    req = await json(req)
+    let email = req.email;
+    try {
+        let data = await User.find({ email: email })
+        if (data != null) {
+            let jsonString = { "status": 1, "code": "200", "message": "userdetails", "data": data }
+            return jsonString
+        } else {
+            let rejectReply = sendRejectResponce(0, '404', 'data not found');
+            return rejectReply;
+        }
+    } catch (err) {
+        throw createError(403, 'error!');
+    }
+};
+
 /**
  * verifyemail for social login
  */
@@ -116,7 +133,7 @@ module.exports.verifyemail = async(req, res) => {
     req = await json(req)
     let aboutme = req.aboutme;
     let email = req.email;
-    let ob_id = req.id;   
+    let ob_id = req.id;
     // console.log(ob_id);
     let users = await User.find({ _id: ob_id });
     // console.log(users);
@@ -175,7 +192,7 @@ var self = {
                 res.on('searchEntry', function(entry) {
                     console.log('entry: ' + JSON.stringify(entry.object));
                     searchData.push(entry.object)
-                        // resolve({ 'event': 'searchEntry', 'response': entry.object });
+                    // resolve({ 'event': 'searchEntry', 'response': entry.object });
                 });
                 res.on('searchReference', function(referral) {
                     console.log('referral: ' + referral.uris.join());
@@ -211,7 +228,7 @@ module.exports.ldapauthprocess = async(req, res) => {
         var adminDn = data._doc.social_configs.ldap.adminDn;
         var adminPass = data._doc.social_configs.ldap.adminPass;
         var ldapDc = data._doc.social_configs.ldap.ldapDc
-            // console.log("data",Object.keys(data))
+        // console.log("data",Object.keys(data))
 
         var client = ldap.createClient({
             url: ldapUrl
@@ -230,7 +247,7 @@ module.exports.ldapauthprocess = async(req, res) => {
                 filter: '(mail=' + body.email + ')',
                 //filter: '(cn=*)',
                 scope: 'sub'
-                    //attributes: ['dn', 'sn', 'cn']
+                //attributes: ['dn', 'sn', 'cn']
             };
             var strDn = 'ou=users,' + ldapDc;
             var result = await self.ldapsearch(client, strDn, searchOptions);

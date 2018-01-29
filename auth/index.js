@@ -42,6 +42,7 @@ const sendemailapiRoute = route('/api/sendemail', 'POST')
 const verifyemailapiRoute = route('/api/verifyemail', 'POST')
 const ldapauthRoute = route('/api/ldapauth', 'POST')
 const dashboardpassRoute = route('/api/dashboardpass', 'POST')
+const userdetailsbyemailRoute = route('/api/userdetailsbyemail', 'POST')
 // const { twitcallbackUrl,twitpath,gitcallbackUrl,gitpath,gitscope,fbcallbackUrl,fbpath,fbscope,gpluscallbackUrl,gpluspath,gplusscope } = require('./src/social-config');
 
 module.exports = async function (req, res) {
@@ -172,6 +173,8 @@ module.exports = async function (req, res) {
     return auth.ldapauthprocess(req, res);
   }else if (dashboardpassRoute(req)) {
     return users.dashboardpass(req, res);
+  }else if (getuserdetailsbyemailRoute(req)) {
+    return auth.userdetailsbyemail(req, res);
   }
 
 }
