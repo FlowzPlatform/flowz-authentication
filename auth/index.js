@@ -173,7 +173,7 @@ module.exports = async function (req, res) {
     return auth.ldapauthprocess(req, res);
   }else if (dashboardpassRoute(req)) {
     return users.dashboardpass(req, res);
-  }else if (getuserdetailsbyemailRoute(req)) {
+  }else if (userdetailsbyemailRoute(req)) {
     return auth.userdetailsbyemail(req, res);
   }
 
