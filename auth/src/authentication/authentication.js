@@ -38,8 +38,12 @@ const attempt = (email, password) => {
  * token generation 
  */
 
-let loginprocess = function(id) {
+let loginprocess = function(id, isActive) {
     console.log("id", id)
+    console.log("isActive", isActive)
+    if(isActive == 0){
+       throw createError(401, 'your account is deactivated');  
+    }else{
     try {
         payload = {
             "userId": id,
@@ -56,14 +60,16 @@ let loginprocess = function(id) {
     } catch (err) {
         throw createError(401, 'wrong credential');
     }
+  }
 }
+
 /**
  * Authenticate a user and generate a JWT if successful.
  */
 
 const auth = ({ email, password }) =>
-    attempt(email, password).then(({ id }) => {
-        return loginprocess(id);
+    attempt(email, password).then(({ id , isActive }) => {
+        return loginprocess(id , isActive);
     });
 
 const verifyToken = token => verify(token, secret);
@@ -74,9 +80,9 @@ module.exports.decode = (req, res) => verifyToken(linkedTokens[req.headers['auth
  * sociallogin jwt token genration
  */
 
-const sociallogin = (id) => {
+const sociallogin = (id , isActive ) => {
     // console.log('social_id:',id);
-    return loginprocess(id);
+    return loginprocess(id , isActive);
 };
 
 module.exports.sociallogin = sociallogin
@@ -155,7 +161,7 @@ module.exports.verifyemail = async(req, res) => {
 
         let up = await User.findOneAndUpdate(query, update, { returnNewDocument: true, new: true })
         const id = up._id;
-        return loginprocess(id);
+        return loginprocess(id,isActive);
     }
 }
 
