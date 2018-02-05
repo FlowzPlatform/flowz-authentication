@@ -12,7 +12,6 @@ const { secret } = require('../config');
 const User = require('../models/user');
 const ldapConfig = require('../models/auth_configs');
 var ldap = require('ldapjs');
-var cors = require('cors')
 var linkedTokens = []
 const tokenValidity = 60 * 60 * 24 //in seconds
 let logintoken;
@@ -118,7 +117,6 @@ module.exports.userdetailsbyemail = async (req, res) => {
   req = await json(req)
   let email = req.email;
   let emailcheck = /\S+@\S+\.\S+/.test(email)
-  console.log("emailcheck",emailcheck);
   if(emailcheck == false){
     throw createError(401, 'enter valid email!');
   }else{
@@ -168,6 +166,7 @@ module.exports.verifyemail = async(req, res) => {
 
         let up = await User.findOneAndUpdate(query, update, { returnNewDocument: true, new: true })
         const id = up._id;
+        const isActive = up.isActive;
         return loginprocess(id,isActive);
     }
 }
