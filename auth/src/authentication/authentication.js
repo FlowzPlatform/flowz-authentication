@@ -12,6 +12,7 @@ const { secret } = require('../config');
 const User = require('../models/user');
 const ldapConfig = require('../models/auth_configs');
 var ldap = require('ldapjs');
+var cors = require('cors')
 var linkedTokens = []
 const tokenValidity = 60 * 60 * 24 //in seconds
 let logintoken;
@@ -35,14 +36,14 @@ const attempt = (email, password) => {
 };
 
 /**
- * token generation 
+ * token generation
  */
 
 let loginprocess = function(id, isActive) {
     console.log("id", id)
     console.log("isActive", isActive)
     if(isActive == 0){
-       throw createError(401, 'your account is deactivated');  
+       throw createError(401, 'your account is deactivated');
     }else{
     try {
         payload = {
@@ -107,7 +108,6 @@ module.exports.userdetails = async(req, res) => {
             const data = users[0];
             let jsonString = { "status": 1, "code": "201", "message": "userdetails", "data": data }
             return jsonString
-
         });
     } catch (err) {
         throw createError(401, 'invalid token');
@@ -115,20 +115,27 @@ module.exports.userdetails = async(req, res) => {
 }
 
 module.exports.userdetailsbyemail = async (req, res) => {
-    req = await json(req)
-    let email = req.email;
-    try {
-        let data = await User.find({ email: email })
-        if (data != null) {
-            let jsonString = { "status": 1, "code": "200", "message": "userdetails", "data": data }
-            return jsonString
-        } else {
-            let rejectReply = sendRejectResponce(0, '404', 'data not found');
-            return rejectReply;
-        }
-    } catch (err) {
-        throw createError(403, 'error!');
+  req = await json(req)
+  let email = req.email;
+  let emailcheck = /\S+@\S+\.\S+/.test(email)
+  console.log("emailcheck",emailcheck);
+  if(emailcheck == false){
+    throw createError(401, 'enter valid email!');
+  }else{
+    try{
+      let data = await User.find({ email: email })
+      console.log("data length",data.length)
+      console.log("data",data)
+      if(!data.length){
+        throw createError(404, 'data not found!');
+      }else{
+        let jsonString = { "status": 1, "code": "200", "message": "userdetails", "data": data }
+        return jsonString
+      }
+    }catch(error){
+      throw createError(404, 'data not found!');
     }
+  }
 };
 
 /**
@@ -166,7 +173,7 @@ module.exports.verifyemail = async(req, res) => {
 }
 
 /**
- * ldap functions 
+ * ldap functions
  */
 
 var self = {
