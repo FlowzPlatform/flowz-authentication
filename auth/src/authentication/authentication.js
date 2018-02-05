@@ -12,7 +12,6 @@ const { secret } = require('../config');
 const User = require('../models/user');
 const ldapConfig = require('../models/auth_configs');
 var ldap = require('ldapjs');
-var cors = require('cors')
 var linkedTokens = []
 const tokenValidity = 60 * 60 * 24 //in seconds
 let logintoken;
