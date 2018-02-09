@@ -686,18 +686,7 @@ var self = {
                 }
                 console.log(allPerm);
 
-                //return { 'status': 1, 'data': allPerm };
-                 console.log(allPerm);
-
-                //return { 'status': 1, 'data': allPerm };
-               res.setHeader('Content-Type', 'application/json');
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Credentials', 'true');
-  res.setHeader('Access-Control-Allow-Methods', 'GET,HEAD,OPTIONS,POST,PUT,DELETE');
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With");
-
-                //return { 'status': 1, 'data': allPerm };
-                send(res, 200, { 'status': 1, 'data': allPerm })
+                return { 'status': 1, 'data': allPerm };
             }
         } catch (err) {
             console.log(err)
