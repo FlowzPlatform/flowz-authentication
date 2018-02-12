@@ -1,5 +1,5 @@
 const { send } = require('micro')
-const { router, get, post } = require('microrouter')
+const { router, get, post, options } = require('microrouter')
 const user = require('./services/user.service');
 
 const hello = async(req, res) => {
@@ -34,7 +34,8 @@ module.exports = router(
     get('/groupRoles', user.groupRoles),
     //post('/hellopost', hellopost),
     get('/hello/:who', hello),
-    get('/*', notfound)
+    get('/*', notfound),
+    options('/*', user.corsoption)
 )
 
 //const Router = require('micro-http-router');
