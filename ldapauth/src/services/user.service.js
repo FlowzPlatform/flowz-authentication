@@ -619,6 +619,10 @@ var self = {
         }
     }),
 
+    corsoption: cors(async(req, res) => {
+        return '';
+    }),
+
     getAllPermission: cors(async(req, res) => {
         try {
             //const body = await json(req)

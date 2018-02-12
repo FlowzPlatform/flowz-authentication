@@ -129,7 +129,7 @@ User Services : http://api.flowz.com/user
    
 ## userdetails
 
-*  **post**
+*  **get**
    
        http://auth.flowz.com/api/userdetails
 

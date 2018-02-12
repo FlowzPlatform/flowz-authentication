@@ -29,7 +29,7 @@ module.exports.twitter = twitterAuth( async (req, res, auth) => {
 
  // console.log("googletoken",token);
    if( data_length.length == 0){
-     let user = new User({ aboutme:null, fullname:fullname, firstname:null, lastname:null, email:null, password:null, dob:null, role:null,signup_type:null,image_name:null,image_url:picture,forget_token_created_at:null,provider:provider,access_token:access_token,isEmailConfirm:0,social_uid:id});
+     let user = new User({ aboutme:null, fullname:fullname, firstname:null, lastname:null, email:null, password:null, dob:null, role:null,signup_type:null,image_name:null,image_url:picture,forget_token_created_at:null,provider:provider,access_token:access_token,isEmailConfirm:0,social_uid:id,isActive:1});
        user.save(function(err){
          if(err)
          {

@@ -35,11 +35,15 @@ const attempt = (email, password) => {
 };
 
 /**
- * token generation 
+ * token generation
  */
 
-let loginprocess = function(id) { 
+let loginprocess = function(id, isActive) {
     console.log("id", id)
+    console.log("isActive", isActive)
+    if(isActive == 0){
+       throw createError(401, 'your account is deactivated');
+    }else{
     try {
         payload = {
             "userId": id,
@@ -56,14 +60,16 @@ let loginprocess = function(id) {
     } catch (err) {
         throw createError(401, 'wrong credential');
     }
+  }
 }
+
 /**
  * Authenticate a user and generate a JWT if successful.
  */
 
 const auth = ({ email, password }) =>
-    attempt(email, password).then(({ id }) => {
-        return loginprocess(id);
+    attempt(email, password).then(({ id , isActive }) => {
+        return loginprocess(id , isActive);
     });
 
 const verifyToken = token => verify(token, secret);
@@ -74,9 +80,9 @@ module.exports.decode = (req, res) => verifyToken(linkedTokens[req.headers['auth
  * sociallogin jwt token genration
  */
 
-const sociallogin = (id) => {
-// console.log('social_id:',id);
-    return loginprocess(id);
+const sociallogin = (id , isActive ) => {
+    // console.log('social_id:',id);
+    return loginprocess(id , isActive);
 };
 
 module.exports.sociallogin = sociallogin
@@ -101,12 +107,34 @@ module.exports.userdetails = async(req, res) => {
             const data = users[0];
             let jsonString = { "status": 1, "code": "201", "message": "userdetails", "data": data }
             return jsonString
-
         });
     } catch (err) {
         throw createError(401, 'invalid token');
     }
 }
+
+module.exports.userdetailsbyemail = async (req, res) => {
+  req = await json(req)
+  let email = req.email;
+  let emailcheck = /\S+@\S+\.\S+/.test(email)
+  if(emailcheck == false){
+    throw createError(401, 'enter valid email!');
+  }else{
+    try{
+      let data = await User.find({ email: email })
+      console.log("data length",data.length)
+      console.log("data",data)
+      if(!data.length){
+        throw createError(404, 'data not found!');
+      }else{
+        let jsonString = { "status": 1, "code": "200", "message": "userdetails", "data": data }
+        return jsonString
+      }
+    }catch(error){
+      throw createError(404, 'data not found!');
+    }
+  }
+};
 
 /**
  * verifyemail for social login
@@ -116,7 +144,7 @@ module.exports.verifyemail = async(req, res) => {
     req = await json(req)
     let aboutme = req.aboutme;
     let email = req.email;
-    let ob_id = req.id;   
+    let ob_id = req.id;
     // console.log(ob_id);
     let users = await User.find({ _id: ob_id });
     // console.log(users);
@@ -138,12 +166,13 @@ module.exports.verifyemail = async(req, res) => {
 
         let up = await User.findOneAndUpdate(query, update, { returnNewDocument: true, new: true })
         const id = up._id;
-        return loginprocess(id);
+        const isActive = up.isActive;
+        return loginprocess(id,isActive);
     }
 }
 
 /**
- * ldap functions 
+ * ldap functions
  */
 
 var self = {
@@ -175,7 +204,7 @@ var self = {
                 res.on('searchEntry', function(entry) {
                     console.log('entry: ' + JSON.stringify(entry.object));
                     searchData.push(entry.object)
-                        // resolve({ 'event': 'searchEntry', 'response': entry.object });
+                    // resolve({ 'event': 'searchEntry', 'response': entry.object });
                 });
                 res.on('searchReference', function(referral) {
                     console.log('referral: ' + referral.uris.join());
@@ -211,7 +240,7 @@ module.exports.ldapauthprocess = async(req, res) => {
         var adminDn = data._doc.social_configs.ldap.adminDn;
         var adminPass = data._doc.social_configs.ldap.adminPass;
         var ldapDc = data._doc.social_configs.ldap.ldapDc
-            // console.log("data",Object.keys(data))
+        // console.log("data",Object.keys(data))
 
         var client = ldap.createClient({
             url: ldapUrl
@@ -230,7 +259,7 @@ module.exports.ldapauthprocess = async(req, res) => {
                 filter: '(mail=' + body.email + ')',
                 //filter: '(cn=*)',
                 scope: 'sub'
-                    //attributes: ['dn', 'sn', 'cn']
+                //attributes: ['dn', 'sn', 'cn']
             };
             var strDn = 'ou=users,' + ldapDc;
             var result = await self.ldapsearch(client, strDn, searchOptions);
