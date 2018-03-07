@@ -88,7 +88,7 @@ jobs:
             docker push $DOCKER_USERNAME/authentication_user_flowz:dev;
         elif [ ${TRAVIS_BRANCH} = "staging" ]; then
             docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD";
-            docker build -t authentication_user_flowz:dev ./user/;
+            docker build -t authentication_user_flowz:$TRAVIS_BRANCH-$TRAVIS_BUILD_NUMBER ./user/;
             docker tag authentication_user_flowz:$TRAVIS_BRANCH-$TRAVIS_BUILD_NUMBER $DOCKER_USERNAME/authentication_user_flowz:$TRAVIS_BRANCH-$TRAVIS_BUILD_NUMBER;
             docker tag authentication_user_flowz:$TRAVIS_BRANCH-$TRAVIS_BUILD_NUMBER $DOCKER_USERNAME/authentication_user_flowz:staging;
             docker images;
