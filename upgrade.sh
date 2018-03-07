@@ -49,6 +49,18 @@ then
       SECRET="$SECRET_DEVELOP";
       DOMAINKEY="$DOMAINKEY_DEVELOP";
     }
+elif [ "$TRAVIS_BRANCH" = "staging" ]
+then
+    {
+      echo "call $TRAVIS_BRANCH branch"
+      ENV_ID=`curl -u ""$RANCHER_USER":"$RANCHER_PASS"" -X GET -H 'Accept: application/json' -H 'Content-Type: application/json' "http://rancher.flowz.com:8080/v2-beta/projects?name=Staging" | jq '.data[].id' | tr -d '"'`
+      echo $ENV_ID
+      USERNAME="$DOCKER_USERNAME";
+      TAG="staging";
+      MONGODB="$MONGODB_STAGING";
+      SECRET="$SECRET_STAGING";
+      DOMAINKEY="$DOMAINKEY_STAGING";
+    }    
 else
   {
       echo "call $TRAVIS_BRANCH branch"
