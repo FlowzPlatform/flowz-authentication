@@ -119,4 +119,4 @@ notifications:
       - mshah@officebrain.com
       - avasani@officebrain.com
     on_success: always
-on_failure: always
+    on_failure: always
