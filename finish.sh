@@ -147,4 +147,4 @@ echo "waiting for service to upgrade "
                   *)
                       die "unexpected upgrade state" ;;
               esac
-done
+            done
