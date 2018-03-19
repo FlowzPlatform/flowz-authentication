@@ -348,6 +348,9 @@ module.exports.ldapauthprocess = async(req, res) => {
 
 module.exports.changepassword = async(req, res) => {
     let mainToken = req.headers['authorization'];
+    if (mainToken == "" || mainToken == null) {
+        throw createError(401, 'missing token in authorization header');
+    }
     let token = linkedTokens[mainToken] ? linkedTokens[mainToken] : mainToken
     req = await json(req)
     let oldpass = req.oldpass;
@@ -373,7 +376,7 @@ module.exports.changepassword = async(req, res) => {
             return jsonString
         }
     } catch (err) {
-        throw createError(401, 'invalid token');
+        throw createError(401, err);
     }
 };
 
