@@ -367,7 +367,7 @@ module.exports.changepassword = async(req, res) => {
         }
         let comparepass = await bcrypt.compare(oldpass, users[0].password);
         if (comparepass == false) {
-            throw createError(401, 'password does not match');
+            throw createError(401, 'old password does not match');
         } else {
             query = { _id: data.userId };
             const update = { $set: { "password": hashSync(newpass, 2), "updated_at": new Date() } };
