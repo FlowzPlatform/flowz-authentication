@@ -81,7 +81,7 @@ let sendemail = async function (to, newToken, url) {
   var token = encodeURIComponent(newToken);
   let link = url
   let resetlink = link + "?forget_token=" + token
-  let body = "<html><body>hello dear, <br><br>You have requested to reset your password. please click below button and set your new password. <br><br>" +
+  let body = "<html><body>Hello Dear, <br><br>You have requested to reset your password.Please click below button and set your new password. <br><br>" +
   `<table>
     <tr>
         <td style="background-color: #0097c3;border-color: #00aac3;border: 1px solid #00aac3;padding: 10px;text-align: center,border-radius:1px;">
@@ -91,7 +91,7 @@ let sendemail = async function (to, newToken, url) {
         </td>
     </tr>
   </table>` +
-  "<br><p>if you did not request a password reset please ignore this email.This password reset is only valid for next 24 hour.</p><br>sincerly yours, <br>FlowzPlatform Team <br><br><body></html>"
+  "<br><p>If you did not request a password reset please ignore this email.This password reset is only valid for next 24 hour.</p><br>Sincerly Yours, <br>FlowzPlatform Team <br><br><body></html>"
 
   var data = {
     "to": to,
