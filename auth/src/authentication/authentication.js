@@ -140,36 +140,36 @@ module.exports.userdetailsbyemail = async (req, res) => {
  * verifyemail for social login
  */
 
-module.exports.verifyemail = async(req, res) => {
-    req = await json(req)
-    let aboutme = req.aboutme;
-    let email = req.email;
-    let ob_id = req.id;
-    // console.log(ob_id);
-    let users = await User.find({ _id: ob_id });
-    // console.log(users);
-    let data = users[0];
-    // console.log("data:",data);
+// module.exports.verifyemail = async(req, res) => {
+//     req = await json(req)
+//     let aboutme = req.aboutme;
+//     let email = req.email;
+//     let ob_id = req.id;
+//     // console.log(ob_id);
+//     let users = await User.find({ _id: ob_id });
+//     // console.log(users);
+//     let data = users[0];
+//     // console.log("data:",data);
 
-    if (users.length == 0) {
-        throw createError(401, 'user not exist');
-    } else {
-        // console.log("data:",data);
-        let emailCheck = await User.find({ email: email });
-        if (emailCheck.length != 0) {
-            throw createError(409, 'Email already exist');
-        }
-        query = { _id: ob_id }
-        const update = {
-            $set: { "aboutme": aboutme, "email": email, "isEmailConfirm": 1, "updated_at": new Date() }
-        };
+//     if (users.length == 0) {
+//         throw createError(401, 'user not exist');
+//     } else {
+//         // console.log("data:",data);
+//         let emailCheck = await User.find({ email: email });
+//         if (emailCheck.length != 0) {
+//             throw createError(409, 'Email already exist');
+//         }
+//         query = { _id: ob_id }
+//         const update = {
+//             $set: { "aboutme": aboutme, "email": email, "isEmailConfirm": 1, "updated_at": new Date() }
+//         };
 
-        let up = await User.findOneAndUpdate(query, update, { returnNewDocument: true, new: true })
-        const id = up._id;
-        const isActive = up.isActive;
-        return loginprocess(id,isActive);
-    }
-}
+//         let up = await User.findOneAndUpdate(query, update, { returnNewDocument: true, new: true })
+//         const id = up._id;
+//         const isActive = up.isActive;
+//         return loginprocess(id,isActive);
+//     }
+// }
 
 /**
  * ldap functions

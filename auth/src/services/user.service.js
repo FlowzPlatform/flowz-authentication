@@ -10,6 +10,7 @@ const emailjs = require("emailjs");
 const { sendemailurl, secret } = require('../config');
 const rp = require('request-promise');
 var randomstring = require("randomstring");
+var url = require('url');
 
 module.exports.list = async () => {
   return await User.find();
@@ -23,19 +24,34 @@ module.exports.list = async () => {
 //
 ///////////////////////////////
 
-const signup = ({ username, aboutme, fullname, firstname, lastname, middlename, companyname, address1, address2, email, country, state, city, zipcode, phonenumber, fax, password, dob, role, signup_type, image_name, image_url, provider, access_token, picture, isActive }) => {
+const signup = (req, { username, aboutme, fullname, firstname, lastname, middlename, companyname, address1, address2, email, country, state, city, zipcode, phonenumber, fax, password, dob, role, signup_type, image_name, image_url, provider, access_token, picture, isActive, isEmailVerified, url }) => {
   return getEmail(email).then((res) => {
-
-    let user = new User({ username: username, aboutme: aboutme, fullname: fullname, firstname: firstname, lastname: lastname, middlename: middlename, companyname: companyname, address1: address1, address2: address2, country: country, state: state, city: city, zipcode: zipcode, phonenumber: phonenumber, fax: fax, email: email, password: hashSync(password, 2), dob: dob, role: role, signup_type: signup_type, image_name: image_name, image_url: image_url, forget_token_created_at: null, provider: null, access_token: null, picture: null, isActive: 1 });
-    user = user.save();
-    let sucessReply = sendSuccessResponce(1, '200', 'you are successfully register...');
-    return sucessReply;
+    console.log("email res...", res)
+    var uniqueHash = generateToken();
+    return uniqueHash.then((uniqueHash) => {
+      let user = new User({ username: username, aboutme: aboutme, fullname: fullname, firstname: firstname, lastname: lastname, middlename: middlename, companyname: companyname, address1: address1, address2: address2, country: country, state: state, city: city, zipcode: zipcode, phonenumber: phonenumber, fax: fax, email: email, password: hashSync(password, 2), dob: dob, role: role, signup_type: signup_type, image_name: image_name, image_url: image_url, forget_token_created_at: null, provider: null, access_token: null, picture: null, isActive: 0, veri_token: uniqueHash, isEmailVerified: 0 });
+      user = user.save();
+      return user.then((userdata) => {
+        let url = 'https://' + req.headers.host;
+        let to = userdata.email;
+        let newToken = userdata.veri_token;
+        let sendemail = verifyUserEmail(to, newToken, url)
+        return sendemail.then((res) => {
+          if(res.success === undefined){
+             throw createError(500, "email sending error");
+          }else{
+            let sucessReply = sendSuccessResponce(1, '200', 'you are successfully register.Please verify your email');
+            return sucessReply;
+          }
+        })
+      })
+    })
   }).catch((err) => {
     throw createError(409, 'email already exists');
   })
 }
 
-module.exports.setup = async (req, res) => await signup(await json(req));
+module.exports.setup = async (req, res) => await signup(req, await json(req));
 
 /**
  * username validation
@@ -73,6 +89,75 @@ let getEmail = function (email) {
   return promise;
 }
 
+
+/**
+ *  verification of user email route
+ */
+
+module.exports.verifyemail = async (req, res) => {
+  try {
+    var url_parts = url.parse(req.url, true);
+    var query = url_parts.query;
+    let queryToken = query.token;
+    let users = await User.find({ veri_token: queryToken });
+    let data = users[0];
+
+    if (users.length == 0) {
+      throw createError(401, 'user not exist');
+    } else {
+      query = { email: data.email }
+      const update = {
+        $set: { "veri_token": null, "isActive": 1, "isEmailVerified": 1, "updated_at": new Date() }
+      };
+
+      let up = await User.findOneAndUpdate(query, update, { returnNewDocument: true, new: true })
+      let sucessReply = sendSuccessResponce(1, '200', 'email verified succesfully');
+      return sucessReply;
+    }
+  } catch (err) {
+    let jsonString = { "status": 1, "code": "401", "message": "email verification failed" }
+    return jsonString
+  }
+}
+
+/**
+ * sendemail for verification of user email
+ */
+
+let verifyUserEmail = async function (to, newToken, url) {
+  var token = encodeURIComponent(newToken);
+  let verifiedurl = url + "/api/verifyemail?token=" + token
+  let body = "<html><body>Hello Dear, <br><br>Welcome to FlowzDigital.Please verify your email by click below url.<br><br>" +
+    verifiedurl +
+    "<br>" +
+    "<br>Sincerly Yours, <br>FlowzDigital Team <br><body></html>"
+
+  var data = {
+    "to": to,
+    "from": "noreply@flowz.com",
+    "subject": "verify your email",
+    "body": body
+  }
+
+
+  var options = {
+    method: 'POST',
+    url: sendemailurl,
+    headers:
+    {
+      'cache-control': 'no-cache',
+      'content-type': 'application/json'
+    },
+    body: data,
+    json: true
+  };
+
+  const mailres = await rp(options)
+
+  return mailres
+
+}
+
 /**
  * sendemail for forgetpassword
  */
@@ -82,7 +167,7 @@ let sendemail = async function (to, newToken, url) {
   let link = url
   let resetlink = link + "?forget_token=" + token
   let body = "<html><body>Hello Dear, <br><br>You have requested to reset your password.Please click below button and set your new password. <br><br>" +
-  `<table>
+    `<table>
     <tr>
         <td style="background-color: #0097c3;border-color: #00aac3;border: 1px solid #00aac3;padding: 10px;text-align: center,border-radius:1px;">
             <a style="display: block;color: #ffffff;font-size: 12px;text-decoration: none;text-transform: uppercase;" href=` + resetlink + `>
@@ -91,7 +176,7 @@ let sendemail = async function (to, newToken, url) {
         </td>
     </tr>
   </table>` +
-  "<br><p>If you did not request a password reset please ignore this email.This password reset is only valid for next 24 hour.</p><br>Sincerly Yours, <br>FlowzPlatform Team <br><br><body></html>"
+    "<br><p>If you did not request a password reset please ignore this email.This password reset is only valid for next 24 hour.</p><br>Sincerly Yours, <br>FlowzPlatform Team <br><br><body></html>"
 
   var data = {
     "to": to,

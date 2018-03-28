@@ -36,6 +36,7 @@
     "request": "^2.83.0",
     "request-promise": "^4.2.2",
     "then-sleep": "^1.0.1",
+    "url": "^0.11.0",
     "urlencoded-body-parser": "^2.0.1",
     "yaml-config": "^0.3.0"
   },
