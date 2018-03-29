@@ -11,6 +11,7 @@ const { sendemailurl, secret } = require('../config');
 const rp = require('request-promise');
 var randomstring = require("randomstring");
 var url = require('url');
+const redirect = require('micro-redirect')
 
 module.exports.list = async () => {
   return await User.find();
@@ -140,7 +141,7 @@ let verifyUserEmail = async function (to, newToken, url, referer) {
   var token = encodeURIComponent(newToken);
   let verifiedurl = url + "/auth/api/verifyemail?token=" + token + "&redirect=" +  referer
   console.log("verifiedurl",verifiedurl)
-  let body = "<html><body>Hello Dear, <br><br>Welcome to FlowzDigital.Please verify your email by click below url.<br><br>" +
+  let body = "<html><body>Hello Dear, <br><br>Welcome to FlowzDigital.Please verify your email by click below button.<br><br>" +
     `<table>
     <tr>
         <td style="background-color: #0097c3;border-color: #00aac3;border: 1px solid #00aac3;padding: 10px;text-align: center,border-radius:1px;">
@@ -149,7 +150,8 @@ let verifyUserEmail = async function (to, newToken, url, referer) {
             </a>
         </td>
     </tr>
-  </table>`
+  </table>`+
+    "<br><br>Sincerly Yours, <br>FlowzDigital Team <br><br><body></html>"
 
   var data = {
     "to": to,
@@ -195,7 +197,7 @@ let sendemail = async function (to, newToken, url) {
         </td>
     </tr>
   </table>` +
-    "<br><p>If you did not request a password reset please ignore this email.This password reset is only valid for next 24 hour.</p><br>Sincerly Yours, <br>FlowzPlatform Team <br><br><body></html>"
+    "<br><p>If you did not request a password reset please ignore this email.This password reset is only valid for next 24 hour.</p><br>Sincerly Yours, <br>FlowzDigital Team <br><br><body></html>"
 
   var data = {
     "to": to,
@@ -227,7 +229,7 @@ let sendemail = async function (to, newToken, url) {
 
 let senddashboardpass = async function (email, password) {
 
-  let body = '<html><body>hello,<br><br>Thanks for register with flowz service.your password for flowzdashboard is given below.' +
+  let body = '<html><body>hello,<br><br>Thanks for register with flowzdigital service.your password for flowzdashboard is given below.' +
     '<br><br>' +
     '<table>' +
     '<tr>' +
@@ -236,7 +238,7 @@ let senddashboardpass = async function (email, password) {
     '</td>' +
     '</tr>' +
     '</table>' +
-    '</p><br>sincerly yours, <br>FlowzPlatform Team <br><br><body></html>'
+    '</p><br>Sincerly Yours, <br>FlowzDigital Team <br><br><body></html>'
 
 
   var data = {
