@@ -34,7 +34,7 @@ const signup = (req, { username, aboutme, fullname, firstname, lastname, middlen
       user = user.save();
       return user.then((userdata) => {
         console.log("req.headers.referer",req.headers.referer)
-        let url = req.headers.x-forwarded-proto + "://" + req.headers.x-forwarded-host
+        let url = req.headers['x-forwarded-proto'] + "://" + req.headers['x-forwarded-host']
         let referer = req.headers.referer;
         console.log("url",url);
         console.log("referer",referer);

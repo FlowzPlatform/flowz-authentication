@@ -92,6 +92,7 @@ module.exports.sociallogin = sociallogin
  */
 
 module.exports.userdetails = async(req, res) => {
+    console.log("---- userdetails called ----")
     let mainToken = req.headers['authorization'];
     let token = linkedTokens[mainToken] ? linkedTokens[mainToken] : mainToken
     try {
