@@ -119,7 +119,7 @@ module.exports.verifyemail = async (req, res) => {
 
       let up = await User.findOneAndUpdate(query, update, { returnNewDocument: true, new: true })
       let location = referer
-      redirect(res, 200, location)
+      redirect(res, 302, location)
       let sucessReply = sendSuccessResponce(1, '200', 'email verified succesfully');
       return sucessReply;
     }
