@@ -38,11 +38,11 @@ const attempt = (email, password) => {
  * token generation
  */
 
-let loginprocess = function(id, isActive) {
+let loginprocess = function(id, isEmailVerified) {
     console.log("id", id)
-    console.log("isActive", isActive)
-    if(isActive == 0){
-       throw createError(401, 'your account is deactivated');
+    console.log("isEmailVerified", isEmailVerified)
+    if(isEmailVerified == 0){
+       throw createError(401, 'Your account is inactive.Please verify your email.');
     }else{
     try {
         payload = {
@@ -68,8 +68,8 @@ let loginprocess = function(id, isActive) {
  */
 
 const auth = ({ email, password }) =>
-    attempt(email, password).then(({ id , isActive }) => {
-        return loginprocess(id , isActive);
+    attempt(email, password).then(({ id , isEmailVerified }) => {
+        return loginprocess(id , isEmailVerified);
     });
 
 const verifyToken = token => verify(token, secret);
@@ -80,9 +80,9 @@ module.exports.decode = (req, res) => verifyToken(linkedTokens[req.headers['auth
  * sociallogin jwt token genration
  */
 
-const sociallogin = (id , isActive ) => {
+const sociallogin = (id , isEmailVerified ) => {
     // console.log('social_id:',id);
-    return loginprocess(id , isActive);
+    return loginprocess(id , isEmailVerified);
 };
 
 module.exports.sociallogin = sociallogin
@@ -167,8 +167,8 @@ module.exports.userdetailsbyemail = async (req, res) => {
 
 //         let up = await User.findOneAndUpdate(query, update, { returnNewDocument: true, new: true })
 //         const id = up._id;
-//         const isActive = up.isActive;
-//         return loginprocess(id,isActive);
+//         const isEmailVerified = up.isEmailVerified;
+//         return loginprocess(id,isEmailVerified);
 //     }
 // }
 

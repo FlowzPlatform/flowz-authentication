@@ -31,7 +31,7 @@ const signup = (req, { username, aboutme, fullname, firstname, lastname, middlen
     console.log("email res...", res)
     var uniqueHash = generateToken();
     return uniqueHash.then((uniqueHash) => {
-      let user = new User({ username: username, aboutme: aboutme, fullname: fullname, firstname: firstname, lastname: lastname, middlename: middlename, companyname: companyname, address1: address1, address2: address2, country: country, state: state, city: city, zipcode: zipcode, phonenumber: phonenumber, fax: fax, email: email, password: hashSync(password, 2), dob: dob, role: role, signup_type: signup_type, image_name: image_name, image_url: image_url, forget_token_created_at: null, provider: null, access_token: null, picture: null, isActive: 0, veri_token: uniqueHash, isEmailVerified: 0 });
+      let user = new User({ username: username, aboutme: aboutme, fullname: fullname, firstname: firstname, lastname: lastname, middlename: middlename, companyname: companyname, address1: address1, address2: address2, country: country, state: state, city: city, zipcode: zipcode, phonenumber: phonenumber, fax: fax, email: email, password: hashSync(password, 2), dob: dob, role: role, signup_type: signup_type, image_name: image_name, image_url: image_url, forget_token_created_at: null, provider: null, access_token: null, picture: null, isActive: 1, veri_token: uniqueHash, isEmailVerified: 0 });
       user = user.save();
       return user.then((userdata) => {
         console.log("req.headers.referer",req.headers.referer)
@@ -46,7 +46,7 @@ const signup = (req, { username, aboutme, fullname, firstname, lastname, middlen
           if(res.success === undefined){
              throw createError(500, "email sending error");
           }else{
-            let sucessReply = sendSuccessResponce(1, '200', 'you are successfully register.Please verify your email');
+            let sucessReply = sendSuccessResponce(1, '200', 'You are successfully register.Please verify your email');
             return sucessReply;
           }
         })
@@ -124,8 +124,8 @@ module.exports.verifyemail = async (req, res) => {
       return sucessReply;
     }
   } catch (err) {
-    let location = referer
-    let jsonString = "<html><body><center>Your email is already verified.<br><br><a href=" + location + ">Login Here..</a></center></body></html>"
+    let loginurl = referer;
+    let jsonString = "<html><body><center>Your email is already verified.<br><br><a href=" + loginurl + ">Login Here..</a></center></body></html>"
     return jsonstring
 }
 }
@@ -145,8 +145,8 @@ let verifyUserEmail = async function (to, newToken, url, referer) {
   let body = "<html><body>Hello Dear, <br><br>Welcome to FlowzDigital.Please verify your email by click below button.<br><br>" +
     `<table>
     <tr>
-        <td style="background-color: #0097c3;border-color: #00aac3;border: 1px solid #00aac3;padding: 10px;text-align: center,border-radius:1px;">
-            <a style="display: block;color: #ffffff;font-size: 12px;text-decoration: none;text-transform: uppercase;" href=` + verifiedurl + `>
+        <td style="background-color: #0097c3 !important;border-color: #00aac3 !important;border: 1px solid #00aac3 !important;padding: 10px;text-align: center,border-radius:1px;">
+            <a style="display: block;color: #ffffff !important;font-size: 12px;text-decoration: none;text-transform: uppercase;" href=` + verifiedurl + `>
                 Verify Email
             </a>
         </td>
