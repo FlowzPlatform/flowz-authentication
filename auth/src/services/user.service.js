@@ -120,13 +120,11 @@ module.exports.verifyemail = async (req, res) => {
       let up = await User.findOneAndUpdate(query, update, { returnNewDocument: true, new: true })
       let location = referer
       redirect(res, 302, location)
-      let sucessReply = sendSuccessResponce(1, '200', 'email verified succesfully');
-      return sucessReply;
+      // let sucessReply = sendSuccessResponce(1, '200', 'email verified succesfully');
+      // return sucessReply;
     }
   } catch (err) {
-    let loginurl = referer;
-    let jsonString = "<html><body><center>Your email is already verified.<br><br><a href=" + loginurl + ">Login Here..</a></center></body></html>"
-    return jsonstring
+    redirect(res, 302, referer)
 }
 }
 
@@ -145,8 +143,8 @@ let verifyUserEmail = async function (to, newToken, url, referer) {
   let body = "<html><body>Hello Dear, <br><br>Welcome to FlowzDigital.Please verify your email by click below button.<br><br>" +
     `<table>
     <tr>
-        <td style="background-color: #0097c3 !important;border-color: #00aac3 !important;border: 1px solid #00aac3 !important;padding: 10px;text-align: center,border-radius:1px;">
-            <a style="display: block;color: #ffffff !important;font-size: 12px;text-decoration: none;text-transform: uppercase;" href=` + verifiedurl + `>
+        <td style="background-color: #0097c3;border-color: #00aac3 ;border: 1px solid #00aac3 !important;padding: 10px;text-align: center,border-radius:1px;">
+            <a style="display: block;color: #ffffff !important;padding: 10px;background-color: #0097c3;font-size: 12px;text-decoration: none;text-transform: uppercase;" href=` + verifiedurl + `>
                 Verify Email
             </a>
         </td>
