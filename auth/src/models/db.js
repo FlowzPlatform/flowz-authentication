@@ -1,5 +1,5 @@
 let mongoose = require('mongoose');
-mongoose.set('debug', true);
+// mongoose.set('debug', true);
 
 const { database, secret } = require('../config');
 mongoose.Promise = global.Promise;
