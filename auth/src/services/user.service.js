@@ -25,6 +25,7 @@ module.exports.list = async () => {
 ///////////////////////////////
 
 const signup = (req, { username, aboutme, fullname, firstname, lastname, middlename, companyname, address1, address2, email, country, state, city, zipcode, phonenumber, fax, password, dob, role, signup_type, image_name, image_url, provider, access_token, picture, isActive, isEmailVerified, url }) => {
+  console.log("req....",req)
   return getEmail(email).then((res) => {
     console.log("email res...", res)
     var uniqueHash = generateToken();
@@ -32,10 +33,14 @@ const signup = (req, { username, aboutme, fullname, firstname, lastname, middlen
       let user = new User({ username: username, aboutme: aboutme, fullname: fullname, firstname: firstname, lastname: lastname, middlename: middlename, companyname: companyname, address1: address1, address2: address2, country: country, state: state, city: city, zipcode: zipcode, phonenumber: phonenumber, fax: fax, email: email, password: hashSync(password, 2), dob: dob, role: role, signup_type: signup_type, image_name: image_name, image_url: image_url, forget_token_created_at: null, provider: null, access_token: null, picture: null, isActive: 0, veri_token: uniqueHash, isEmailVerified: 0 });
       user = user.save();
       return user.then((userdata) => {
-        let url = 'https://' + req.headers.host;
+        console.log("req.headers.host",req.headers.referer)
+        let url = req.headers.x-forwarded-proto + "://" + req.headers.x-forwarded-host
+        let referer = req.headers.referer;
+        console.log("url",url)
+        console.log("referer",referer)
         let to = userdata.email;
         let newToken = userdata.veri_token;
-        let sendemail = verifyUserEmail(to, newToken, url)
+        let sendemail = verifyUserEmail(to, newToken, url, referer)
         return sendemail.then((res) => {
           if(res.success === undefined){
              throw createError(500, "email sending error");
@@ -124,9 +129,14 @@ module.exports.verifyemail = async (req, res) => {
  * sendemail for verification of user email
  */
 
-let verifyUserEmail = async function (to, newToken, url) {
+let verifyUserEmail = async function (to, newToken, url, referer) {
+  console.log("to",to);
+   console.log("newToken",newToken);
+    console.log("url",url);
+     console.log("referer",referer);
   var token = encodeURIComponent(newToken);
-  let verifiedurl = url + "/api/verifyemail?token=" + token
+  let verifiedurl = url + "/auth/api/verifyemail?token=" + token + "&redirect=" +  referer
+  console.log("verifiedurl",verifiedurl)
   let body = "<html><body>Hello Dear, <br><br>Welcome to FlowzDigital.Please verify your email by click below url.<br><br>" +
     verifiedurl +
     "<br>" +
