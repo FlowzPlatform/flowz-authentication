@@ -124,9 +124,10 @@ module.exports.verifyemail = async (req, res) => {
       return sucessReply;
     }
   } catch (err) {
-    let jsonString = { "status": 1, "code": "401", "message": "email verification failed" }
-    return jsonString
-  }
+    let location = referer
+    let jsonString = "<html><body><center>Your email is already verified.<br><br><a href=" + location + ">Login Here..</a></center></body></html>"
+    return jsonstring
+}
 }
 
 /**
