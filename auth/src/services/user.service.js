@@ -104,6 +104,7 @@ module.exports.verifyemail = async (req, res) => {
     var url_parts = url.parse(req.url, true);
     var query = url_parts.query;
     let queryToken = query.token;
+    let referer = query.redirect;
     let users = await User.find({ veri_token: queryToken });
     let data = users[0];
 
@@ -116,6 +117,8 @@ module.exports.verifyemail = async (req, res) => {
       };
 
       let up = await User.findOneAndUpdate(query, update, { returnNewDocument: true, new: true })
+      let location = referer
+      redirect(res, 200, location)
       let sucessReply = sendSuccessResponce(1, '200', 'email verified succesfully');
       return sucessReply;
     }
@@ -138,9 +141,15 @@ let verifyUserEmail = async function (to, newToken, url, referer) {
   let verifiedurl = url + "/auth/api/verifyemail?token=" + token + "&redirect=" +  referer
   console.log("verifiedurl",verifiedurl)
   let body = "<html><body>Hello Dear, <br><br>Welcome to FlowzDigital.Please verify your email by click below url.<br><br>" +
-    verifiedurl +
-    "<br>" +
-    "<br>Sincerly Yours, <br>FlowzDigital Team <br><body></html>"
+    `<table>
+    <tr>
+        <td style="background-color: #0097c3;border-color: #00aac3;border: 1px solid #00aac3;padding: 10px;text-align: center,border-radius:1px;">
+            <a style="display: block;color: #ffffff;font-size: 12px;text-decoration: none;text-transform: uppercase;" href=` + verifiedurl + `>
+                Verify Email
+            </a>
+        </td>
+    </tr>
+  </table>`
 
   var data = {
     "to": to,
