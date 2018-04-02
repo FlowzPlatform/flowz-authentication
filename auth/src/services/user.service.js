@@ -124,6 +124,7 @@ module.exports.verifyemail = async (req, res) => {
       // return sucessReply;
     }
   } catch (err) {
+    let referer = query.redirect;
     redirect(res, 302, referer)
 }
 }
