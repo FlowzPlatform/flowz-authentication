@@ -38,11 +38,13 @@ const attempt = (email, password) => {
  * token generation
  */
 
-let loginprocess = function(id, isEmailVerified) {
+let loginprocess = function(id,isActive,isEmailVerified) {
     console.log("id", id)
     console.log("isEmailVerified", isEmailVerified)
     if(isEmailVerified == 0){
        throw createError(401, 'Your account is inactive.Please verify your email.');
+    }else if(isActive == 0){
+       throw createError(401, 'Your account is blocked.');
     }else{
     try {
         payload = {
@@ -68,8 +70,8 @@ let loginprocess = function(id, isEmailVerified) {
  */
 
 const auth = ({ email, password }) =>
-    attempt(email, password).then(({ id , isEmailVerified }) => {
-        return loginprocess(id , isEmailVerified);
+    attempt(email, password).then(({ id ,isActive, isEmailVerified }) => {
+        return loginprocess(id ,isActive, isEmailVerified);
     });
 
 const verifyToken = token => verify(token, secret);
@@ -368,7 +370,7 @@ module.exports.changepassword = async(req, res) => {
         }
         let comparepass = await bcrypt.compare(oldpass, users[0].password);
         if (comparepass == false) {
-            throw createError(401, 'old password does not match');
+            throw createError(401, 'Current password does not match.');
         } else {
             query = { _id: data.userId };
             const update = { $set: { "password": hashSync(newpass, 2), "updated_at": new Date() } };
