@@ -126,7 +126,7 @@ module.exports.verifyemail = async (req, res) => {
   } catch (err) {
     let referer = query.redirect;
     redirect(res, 302, referer)
-}
+  }
 }
 
 /**
@@ -135,9 +135,9 @@ module.exports.verifyemail = async (req, res) => {
 
 let verifyUserEmail = async function (to, newToken, url, referer) {
   console.log("to",to);
-   console.log("newToken",newToken);
-    console.log("url",url);
-     console.log("referer",referer);
+  console.log("newToken",newToken);
+  console.log("url",url);
+  console.log("referer",referer);
   var token = encodeURIComponent(newToken);
   let verifiedurl = url + "/auth/api/verifyemail?token=" + token + "&redirect=" +  referer
   console.log("verifiedurl",verifiedurl)
@@ -151,7 +151,7 @@ let verifyUserEmail = async function (to, newToken, url, referer) {
         </td>
     </tr>
   </table>`+
-  "<br><br>Sincerly Yours, <br>FlowzDigital Team <br><br><body></html>"
+    "<br><br>Sincerly Yours, <br>FlowzDigital Team <br><br><body></html>"
 
   var data = {
     "to": to,
@@ -314,7 +314,7 @@ module.exports.forgetpassword = async (req, res) => {
   }
   let users = await User.find({ email: to });
   if (users.length === 0) {
-    throw createError(401, 'please enter correct email');
+    throw createError(401, 'You are not registered with us. Please signup.' );
   } else {
     const newToken = await generateToken();
     let arr = [];
