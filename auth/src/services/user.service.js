@@ -151,7 +151,7 @@ let verifyUserEmail = async function (to, newToken, url, referer) {
         </td>
     </tr>
   </table>`+
-    "<br><br>Sincerly Yours, <br>FlowzDigital Team <br><br><body></html>"
+  "<br><br>Sincerly Yours, <br>FlowzDigital Team <br><br><body></html>"
 
   var data = {
     "to": to,
@@ -190,13 +190,13 @@ let sendemail = async function (to, newToken, url) {
   let body = "<html><body>Hello Dear, <br><br>You have requested to reset your password.Please click below button and set your new password. <br><br>" +
     `<table>
     <tr>
-        <td style="background-color: #0097c3;border-color: #00aac3;border: 1px solid #00aac3;padding: 10px;text-align: center,border-radius:1px;">
-            <a style="display: block;color: #ffffff;font-size: 12px;text-decoration: none;text-transform: uppercase;" href=` + resetlink + `>
+        <td style="background-color: #0097c3;border-color: #00aac3 ;border: 1px solid #00aac3 !important;padding: 10px;text-align: center,border-radius:1px;">
+            <a style="display: block;color: #ffffff !important;padding: 10px;background-color: #0097c3;font-size: 12px;text-decoration: none;text-transform: uppercase;" href=` + resetlink + `>
                 reset password
             </a>
         </td>
     </tr>
-  </table>` +
+    </table>` +
     "<br><p>If you did not request a password reset please ignore this email.This password reset is only valid for next 24 hour.</p><br>Sincerly Yours, <br>FlowzDigital Team <br><br><body></html>"
 
   var data = {
