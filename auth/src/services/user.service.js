@@ -60,6 +60,7 @@ const signup = (req, { username, aboutme, fullname, firstname, lastname, middlen
               }).catch((err) => {
                 console.log("error..",err)
                 throw createError(401,'Registration failed.Found error while sending verification email.');
+                return false;
               })
             })
           })
