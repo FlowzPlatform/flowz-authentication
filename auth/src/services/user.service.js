@@ -18,7 +18,7 @@ module.exports.list = async () => {
 };
 
 ///////////////////////////////
-// 
+//
 // signup function
 // input-type: Object
 // required fields: [email, password]
@@ -26,41 +26,39 @@ module.exports.list = async () => {
 ///////////////////////////////
 
 const signup = (req, { username, aboutme, fullname, firstname, lastname, middlename, companyname, address1, address2, email, country, state, city, zipcode, phonenumber, fax, password, dob, role, signup_type, image_name, image_url, provider, access_token, picture, isActive, isEmailVerified, url }) => {
-  console.log("req....",req);
+  // console.log("req....", req);
   return getEmail(email).then((res) => {
     console.log("email res...", res)
     if (res == 1) {
       throw createError(409, 'email already exists');
     } else {
-      try {
         var uniqueHash = generateToken();
         return uniqueHash.then((uniqueHash) => {
           let user = new User({ username: username, aboutme: aboutme, fullname: fullname, firstname: firstname, lastname: lastname, middlename: middlename, companyname: companyname, address1: address1, address2: address2, country: country, state: state, city: city, zipcode: zipcode, phonenumber: phonenumber, fax: fax, email: email, password: hashSync(password, 2), dob: dob, role: role, signup_type: signup_type, image_name: image_name, image_url: image_url, forget_token_created_at: null, provider: null, access_token: null, picture: null, isActive: 1, veri_token: uniqueHash, isEmailVerified: 0 });
           user = user.save();
           return user.then((userdata) => {
-            console.log("req.headers.referer",req.headers.referer)
+            console.log("req.headers.referer", req.headers.referer)
             let url = req.headers['x-forwarded-proto'] + "://" + req.headers['x-forwarded-host']
             let referer = req.headers.referer;
-            console.log("url",url);
-            console.log("referer",referer);
+            console.log("url", url);
+            console.log("referer", referer);
             let to = userdata.email;
             let newToken = userdata.veri_token;
             let sendemail = verifyUserEmail(to, newToken, url, referer)
             return sendemail.then((res) => {
-              console.log("res-----",res)
-              if(res != undefined){
+              // console.log("res-----", res)
                 let sucessReply = sendSuccessResponce(1, '200', 'You are successfully register.Please verify your email');
                 return sucessReply;
-              } else {
-                throw createError(500, "email sending error");
-              }
+            }).catch((err) => {
+              console.log("user_data",userdata)
+              let removeuser = User.findOneAndRemove({"_id": userdata._id})
+              return removeuser.then((res) => {
+              throw createError(401,"Registration failed.Found error while sending verification email.");
+              })
             })
           })
         })
-      }catch(err) {
-        throw createError(504, 'err');
       }
-    }
   })
 }
 
@@ -141,13 +139,13 @@ module.exports.verifyemail = async (req, res) => {
  */
 
 let verifyUserEmail = async function (to, newToken, url, referer) {
-  console.log("to",to);
-  console.log("newToken",newToken);
-  console.log("url",url);
-  console.log("referer",referer);
+  console.log("to", to);
+  console.log("newToken", newToken);
+  console.log("url", url);
+  console.log("referer", referer);
   var token = encodeURIComponent(newToken);
-  let verifiedurl = url + "/auth/api/verifyemail?token=" + token + "&redirect=" +  referer
-  console.log("verifiedurl",verifiedurl)
+  let verifiedurl = url + "/auth/api/verifyemail?token=" + token + "&redirect=" + referer
+  console.log("verifiedurl", verifiedurl)
   let body = "<html><body>Hello Dear, <br><br>Welcome to FlowzDigital.Please verify your email by click below button.<br><br>" +
     `<table>
     <tr>
@@ -306,7 +304,7 @@ module.exports.sendemailapi = async (req, res) => {
 }
 
 /**
- * forgetpassword 
+ * forgetpassword
  */
 
 module.exports.forgetpassword = async (req, res) => {
@@ -321,7 +319,7 @@ module.exports.forgetpassword = async (req, res) => {
   }
   let users = await User.find({ email: to });
   if (users.length === 0) {
-    throw createError(401, 'You are not registered with us. Please signup.' );
+    throw createError(401, 'You are not registered with us. Please signup.');
   } else {
     const newToken = await generateToken();
     let arr = [];
@@ -342,7 +340,7 @@ module.exports.forgetpassword = async (req, res) => {
 };
 
 /**
- * resetpassword 
+ * resetpassword
  */
 
 module.exports.resetpassword = async (req, res) => {
