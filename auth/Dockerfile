@@ -1,4 +1,4 @@
-FROM bitnami/node:latest
+FROM mhart/alpine-node:8
 
 RUN mkdir -p /usr/src/app
 
