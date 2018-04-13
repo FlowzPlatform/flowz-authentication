@@ -25,8 +25,7 @@ module.exports.list = async () => {
 //
 ///////////////////////////////
 
-const signup = (req, { username, aboutme, fullname, firstname, lastname, middlename, companyname, address1, address2, email, country, state, city, zipcode, phonenumber, fax, password, dob, role, signup_type, image_name, image_url, provider, access_token, picture, isActive, isEmailVerified, url }) => {
-  // console.log("req....", req);
+const signup = (req,res1, { username, aboutme, fullname, firstname, lastname, middlename, companyname, address1, address2, email, country, state, city, zipcode, phonenumber, fax, password, dob, role, signup_type, image_name, image_url, provider, access_token, picture, isActive, isEmailVerified, url }) => {
   return getEmail(email).then((res) => {
     console.log("email res...", res)
     if (res == 1) {
@@ -36,7 +35,7 @@ const signup = (req, { username, aboutme, fullname, firstname, lastname, middlen
         return uniqueHash.then((uniqueHash) => {
           let user = new User({ username: username, aboutme: aboutme, fullname: fullname, firstname: firstname, lastname: lastname, middlename: middlename, companyname: companyname, address1: address1, address2: address2, country: country, state: state, city: city, zipcode: zipcode, phonenumber: phonenumber, fax: fax, email: email, password: hashSync(password, 2), dob: dob, role: role, signup_type: signup_type, image_name: image_name, image_url: image_url, forget_token_created_at: null, provider: null, access_token: null, picture: null, isActive: 1, veri_token: uniqueHash, isEmailVerified: 0 });
           user = user.save();
-          return user.then((userdata) => {
+          user.then(async (userdata) => {
             console.log("req.headers.referer", req.headers.referer)
             let url = req.headers['x-forwarded-proto'] + "://" + req.headers['x-forwarded-host']
             let referer = req.headers.referer;
@@ -44,37 +43,30 @@ const signup = (req, { username, aboutme, fullname, firstname, lastname, middlen
             console.log("referer", referer);
             let to = userdata.email;
             let newToken = userdata.veri_token;
-            let sendemail = verifyUserEmail(to, newToken, url, referer)
-            // console.log(">>>>>>>>>>>>>>>" , sendemail)
-            let checkedcatch = false;
-            sendemail.then((res) => {
-               console.log("res-----", res)
-                let sucessReply = sendSuccessResponce(1, '200', 'You are successfully register.Please verify your email');
-                return sucessReply;
-            }).catch((err) => {
-              // console.log(err,"<><<<<<<<<<<<<<<<<<<<<<<<<")
-              console.log("user_data",userdata)
-              let removeuser = User.findOneAndRemove({"_id": userdata._id})
-              checkedcatch=true;
-              
-              // return removeuser.then((res) => {
-              //   console.log("res *******",res)
-              //   throw createError(401,'Registration failed.Found error while sending verification email.');
-              // }).catch((err) => {
-              //   console.log("error..",err)
-              //   throw createError(401,'Registration failed.Found error while sending verification email.');
-              // })
+          
+            let emailResponse = await verifyUserEmail(to, newToken, url, referer).catch((err)=>{
+              console.log("err",err)
+             console.log("user_data",userdata)
+              User.findOneAndRemove({"_id": userdata._id}).then((res)=>{
+                console.log("removeuser",res)
+                send(res1,401,{error:"Registration failed.Found error while sending verification email."})
+             }).catch((err)=>{
+               console.log("err",err)
+             })
             })
-            if(checkedcatch==true){
-                 throw createError(401,'Registration failed.Found error while sending verification email.');
-            }
+            console.log("emailResponse",emailResponse)
+            send(res1,200,{status:1,code:200,message:"You are successfully register.Please verify your email"})
+          }).catch((err)=>{
+            console.log("=======user err======",err)
+                  throw err;
           })
         })
       }
   })
 }
 
-module.exports.setup = async (req, res) => await signup(req, await json(req));
+
+module.exports.setup = async (req, res) => await signup(req,res, await json(req));
 
 /**
  * username validation
@@ -151,48 +143,55 @@ module.exports.verifyemail = async (req, res) => {
  */
 
 let verifyUserEmail = async function (to, newToken, url, referer) {
-  console.log("to", to);
-  console.log("newToken", newToken);
-  console.log("url", url);
-  console.log("referer", referer);
-  var token = encodeURIComponent(newToken);
-  let verifiedurl = url + "/auth/api/verifyemail?token=" + token + "&redirect=" + referer
-  console.log("verifiedurl", verifiedurl)
-  let body = "<html><body>Hello Dear, <br><br>Welcome to FlowzDigital.Please verify your email by click below button.<br><br>" +
-    `<table>
-    <tr>
-        <td style="background-color: #0097c3;border-color: #00aac3 ;border: 1px solid #00aac3 !important;padding: 10px;text-align: center,border-radius:1px;">
-            <a style="display: block;color: #ffffff !important;padding: 10px;background-color: #0097c3;font-size: 12px;text-decoration: none;text-transform: uppercase;" href=` + verifiedurl + `>
-                Verify Email
-            </a>
-        </td>
-    </tr>
-  </table>`+
-    "<br><br>Sincerly Yours, <br>FlowzDigital Team <br><br><body></html>"
+  return new Promise(async(resolve,reject)=>{
+    console.log("to", to);
+      console.log("newToken", newToken);
+      console.log("url", url);
+      console.log("referer", referer);
+      var token = encodeURIComponent(newToken);
+      let verifiedurl = url + "/auth/api/verifyemail?token=" + token + "&redirect=" + referer
+      console.log("verifiedurl", verifiedurl)
+      let body = "<html><body>Hello Dear, <br><br>Welcome to FlowzDigital.Please verify your email by click below button.<br><br>" +
+        `<table>
+        <tr>
+            <td style="background-color: #0097c3;border-color: #00aac3 ;border: 1px solid #00aac3 !important;padding: 10px;text-align: center,border-radius:1px;">
+                <a style="display: block;color: #ffffff !important;padding: 10px;background-color: #0097c3;font-size: 12px;text-decoration: none;text-transform: uppercase;" href=` + verifiedurl + `>
+                    Verify Email
+                </a>
+            </td>
+        </tr>
+      </table>`+
+        "<br><br>Sincerly Yours, <br>FlowzDigital Team <br><br><body></html>"
 
-  var data = {
-    "to": to,
-    "from": "noreply@flowz.com",
-    "subject": "verify your email",
-    "body": body
-  }
+      var data = {
+        "to": to,
+        "from": "noreply@flowz.com",
+        "subject": "verify your email",
+        "body": body
+      }
 
 
-  var options = {
-    method: 'POST',
-    url: sendemailurl,
-    headers:
-    {
-      'cache-control': 'no-cache',
-      'content-type': 'application/json'
-    },
-    body: data,
-    json: true
-  };
+      var options = {
+        method: 'POST',
+        url: sendemailurl,
+        headers:
+        {
+          'cache-control': 'no-cache',
+          'content-type': 'application/json'
+        },
+        body: data,
+        json: true
+      };
 
-  const mailres = await rp(options)
+      // const mailres = 
 
-  return mailres
+      //return rp(options)
+      rp(options).then((result)=>{
+        resolve("done")
+      }).catch((err)=>{reject(err)})
+
+  });
+  
 
 }
 
