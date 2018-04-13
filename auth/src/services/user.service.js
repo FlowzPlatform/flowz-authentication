@@ -46,7 +46,8 @@ const signup = (req, { username, aboutme, fullname, firstname, lastname, middlen
             let newToken = userdata.veri_token;
             let sendemail = verifyUserEmail(to, newToken, url, referer)
             // console.log(">>>>>>>>>>>>>>>" , sendemail)
-            return sendemail.then((res) => {
+            let checkedcatch = false;
+            sendemail.then((res) => {
                console.log("res-----", res)
                 let sucessReply = sendSuccessResponce(1, '200', 'You are successfully register.Please verify your email');
                 return sucessReply;
@@ -54,15 +55,19 @@ const signup = (req, { username, aboutme, fullname, firstname, lastname, middlen
               // console.log(err,"<><<<<<<<<<<<<<<<<<<<<<<<<")
               console.log("user_data",userdata)
               let removeuser = User.findOneAndRemove({"_id": userdata._id})
-              return removeuser.then((res) => {
-                console.log("res *******",res)
-                throw createError(401,'Registration failed.Found error while sending verification email.');
-              }).catch((err) => {
-                console.log("error..",err)
-                throw createError(401,'Registration failed.Found error while sending verification email.');
-                return false;
-              })
+              checkedcatch=true;
+              
+              // return removeuser.then((res) => {
+              //   console.log("res *******",res)
+              //   throw createError(401,'Registration failed.Found error while sending verification email.');
+              // }).catch((err) => {
+              //   console.log("error..",err)
+              //   throw createError(401,'Registration failed.Found error while sending verification email.');
+              // })
             })
+            if(checkedcatch==true){
+                 throw createError(401,'Registration failed.Found error while sending verification email.');
+            }
           })
         })
       }
