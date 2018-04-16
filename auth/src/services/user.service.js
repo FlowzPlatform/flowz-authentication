@@ -44,13 +44,16 @@ const signup = (req,res1, { username, aboutme, fullname, firstname, lastname, mi
             let to = userdata.email;
             let newToken = userdata.veri_token;
           
-            let emailResponse = await verifyUserEmail(to, newToken, url, referer).catch((err)=>{
-              console.log("err------",err)
-             console.log("user_data",userdata)    
-              User.findOneAndRemove({"_id": userdata._id}).then(async (removeuser)=>{
-               console.log("removeuser",removeuser) 
-               await send(res1,401,{error:"Registration failed.Found error while sending verification email."})
-              })       
+            let emailResponse = await verifyUserEmail(to, newToken, url, referer).catch(async (err)=>{
+             console.log("err------",err)
+             console.log("user_data",userdata)  
+              let removeuser = await User.findOneAndRemove({"_id": userdata._id})
+              console.log("removeuser",removeuser)
+              if(removeuser){
+                send(res1,401,{error:"Registration failed.Found error while sending verification email."}) 
+              }else{
+                send(res1,401,{error:"User remove failed."})
+              }
             })
             console.log("emailResponse",emailResponse)
             if(emailResponse == 1){
@@ -68,10 +71,7 @@ const signup = (req,res1, { username, aboutme, fullname, firstname, lastname, mi
             // send(res1,200,{status:1,code:200,message:"You are successfully register.Please verify your email"})
           }).catch((err)=>{
             console.log("=======user err======",err)
-            // console.log("user_data",userdata) 
-            // // let data = await User.findOneAndRemove({"_id": userdata._id})
-            // console.log("data",data)
-                
+            
           })
         })
       }
