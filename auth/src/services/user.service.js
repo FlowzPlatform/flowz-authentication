@@ -32,10 +32,12 @@ const signup = (req,res1, { username, aboutme, fullname, firstname, lastname, mi
       throw createError(409, 'email already exists');
     } else {
         var uniqueHash = generateToken();
-        return uniqueHash.then((uniqueHash) => {
+        uniqueHash.then((uniqueHash) => {
+          console.log("uniqueHash >>>",uniqueHash)
           let user = new User({ username: username, aboutme: aboutme, fullname: fullname, firstname: firstname, lastname: lastname, middlename: middlename, companyname: companyname, address1: address1, address2: address2, country: country, state: state, city: city, zipcode: zipcode, phonenumber: phonenumber, fax: fax, email: email, password: hashSync(password, 2), dob: dob, role: role, signup_type: signup_type, image_name: image_name, image_url: image_url, forget_token_created_at: null, provider: null, access_token: null, picture: null, isActive: 1, veri_token: uniqueHash, isEmailVerified: 0 });
           user = user.save();
-          return user.then(async (userdata) => {
+          user.then(async (userdata) => {
+            console.log("userdata >>>",userdata)
             console.log("req.headers.referer", req.headers.referer)
             let url = req.headers['x-forwarded-proto'] + "://" + req.headers['x-forwarded-host']
             let referer = req.headers.referer;
@@ -43,35 +45,24 @@ const signup = (req,res1, { username, aboutme, fullname, firstname, lastname, mi
             console.log("referer", referer);
             let to = userdata.email;
             let newToken = userdata.veri_token;
-          
-            let emailResponse = await verifyUserEmail(to, newToken, url, referer).catch(async (err)=>{
-             console.log("err------",err)
-             console.log("user_data",userdata)  
-              let removeuser = await User.findOneAndRemove({"_id": userdata._id})
-              console.log("removeuser",removeuser)
-              if(removeuser){
-                send(res1,401,{error:"Registration failed.Found error while sending verification email."}) 
-              }else{
-                send(res1,401,{error:"User remove failed."})
-              }
-            })
+            console.log("--------------------emailresponse fun start ----------------------")
+            let emailResponse = await verifyUserEmail(to, newToken, url, referer)
             console.log("emailResponse",emailResponse)
             if(emailResponse == 1){
               send(res1,200,{status:"1",code:"200",message:"You are successfully register.Please verify your email"})
+            }else{
+              console.log("emailResponse in else >>>",emailResponse)
+              let removeuser = await User.findOneAndRemove({"_id": userdata._id})
+              console.log("removeuser",removeuser)
+              if(removeuser){
+              send(res1,401,{error:"Registration failed.Found error while sending verification email."})
+              }else{
+              send(res1,401,{error:"Found error while user remove."})
+              }
             }
-            // let data = await User.findOneAndRemove({"_id": userdata._id})
-
-            // await User.findOneAndRemove({"_id": userdata._id}).then(async (res2)=>{
-            //     console.log("removeuser",res2)
-            //     let data = await emailResponse;
-            //     console.log("data",data)
-            //     send(res1,401,{error:"Registration failed.Found error while sending verification email."})
-            //  })
-           
-            // send(res1,200,{status:1,code:200,message:"You are successfully register.Please verify your email"})
-          }).catch((err)=>{
-            console.log("=======user err======",err)
-            
+          }).catch(async (err)=>{
+            // throw err;
+            console.log("=======user err======",err)    
           })
         })
       }
@@ -201,7 +192,7 @@ let verifyUserEmail = async function (to, newToken, url, referer) {
       //return rp(options)
       rp(options).then((result)=>{
         resolve("1")
-      }).catch((err)=>{reject(err)})
+      }).catch((err)=>{console.log("err..........",err),resolve("0")})
 
   });
   
