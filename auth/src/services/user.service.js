@@ -126,7 +126,7 @@ module.exports.verifyemail = async (req, res) => {
     let queryToken = query.token;
     let referer = query.redirect;
     let users = await User.find({ veri_token: queryToken });
-    let data = users[0];console.log("err >>>>>",err)
+    let data = users[0];
 
     if (users.length == 0) {
       throw createError(401, 'user not exist');
@@ -369,7 +369,7 @@ module.exports.resetpassword = async (req, res) => {
   let password = req.new_password;
   let token = req.token;
   if (token == "" || token == null) {
-    throw createError(401, 'invalid token...');
+    throw createError(401, 'invalid token...'console.log("err >>>>>",e);
   }
   let users = await User.find({ forget_token: token });
 
