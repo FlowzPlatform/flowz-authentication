@@ -47,17 +47,17 @@ const signup = (req,res1, { username, aboutme, fullname, firstname, lastname, mi
       let emailResponse = await verifyUserEmail(to, newToken, url, referer)
       console.log("emailResponse",emailResponse)
       if(emailResponse == 1){
-       send(res1,200,{status:"1",code:"200",message:"You are successfully registered. Please verify your email."})
+       send(res1,200,{status:"1",code:"200",message:"You are successfully register. Please verify your email."})
       }else{
-      let removeuser = await removeUser(User , userdata._id);
       
-      console.log("removeuser",removeuser)
-      send(res1,401,{error:"Registration failed.Found error while sending verification email."})
       }
     }catch(err){
       console.log("err >>>>>",err)
-      console.log("err ---------",err.res)
-      send(res1,401,{status:"1",code:"401",message:err})
+      console.log("err --------->>>>>>>>>>>>>>>>>>>",err.res)
+      let removeuser = await removeUser(User , userdata._id);
+      console.log("removeuser",removeuser)
+      
+      send(res1,401,{status:"1",code:"401",message:"Registration failed.Found error while sending verification email."})
     }
     }
   })
@@ -198,7 +198,7 @@ let verifyUserEmail = async function (to, newToken, url, referer) {
       //return rp(options)
       rp(options).then((result)=>{
         resolve("1")
-      }).catch((err)=>{console.log("err..........",err),resolve("0")})
+      }).catch((err)=>{console.log("err..........",err),reject(err)})
 
   });
   
