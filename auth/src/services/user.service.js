@@ -49,7 +49,8 @@ const signup = (req,res1, { username, aboutme, fullname, firstname, lastname, mi
       if(emailResponse == 1){
        send(res1,200,{status:"1",code:"200",message:"You are successfully registered. Please verify your email."})
       }else{
-      let removeuser = await User.findOneAndRemove({"_id": userdata._id})
+      let removeuser = await removeUser(User , userdata._id);
+      
       console.log("removeuser",removeuser)
       send(res1,401,{error:"Registration failed.Found error while sending verification email."})
       }
@@ -59,6 +60,18 @@ const signup = (req,res1, { username, aboutme, fullname, firstname, lastname, mi
       send(res1,401,{status:"1",code:"401",message:err})
     }
     }
+  })
+}
+
+async function removeUser(User , id){
+  console.log(">>>>>>>>>>>><<<<<<<<<<<<<<>LJFSDJFSDIJFDSIFJSDFJSD" , id)
+  return new Promise((resolve , reject)=>{
+    User.findOneAndRemove({"_id": id}).then(function(response , error){
+      console.log(">>>>>>>>>>>>resp>>>>>>>> " , response)
+      console.log(">>>>>>>>>>>>>>error>>>>>> " , error)
+      resolve (response)
+      
+    })
   })
 }
 
@@ -113,7 +126,7 @@ module.exports.verifyemail = async (req, res) => {
     let queryToken = query.token;
     let referer = query.redirect;
     let users = await User.find({ veri_token: queryToken });
-    let data = users[0];
+    let data = users[0];console.log("err >>>>>",err)
 
     if (users.length == 0) {
       throw createError(401, 'user not exist');

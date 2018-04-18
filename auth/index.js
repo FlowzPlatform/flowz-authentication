@@ -40,6 +40,7 @@ const resetpasswordRoute = route('/api/resetpassword', 'POST')
 const changepasswordRoute = route('/api/changepassword', 'POST')
 const sendemailapiRoute = route('/api/sendemail', 'POST')
 const verifyemailapiRoute = route('/api/verifyemail', 'GET')
+const verifyaccountRoute = route('/api/verifyaccount', 'POST')
 const ldapauthRoute = route('/api/ldapauth', 'POST')
 const dashboardpassRoute = route('/api/dashboardpass', 'POST')
 const userdetailsbyemailRoute = route('/api/userdetailsbyemail', 'POST')
@@ -169,6 +170,8 @@ module.exports = async function (req, res) {
     return users.sendemailapi(req, res);
   } else if (verifyemailapiRoute (req)) {
     return users.verifyemail(req, res);
+  } else if (verifyaccountRoute (req)) {
+    return users.verifyaccount(req, res);
   } else if (ldapauthRoute(req)) {
     return auth.ldapauthprocess(req, res);
   }else if (dashboardpassRoute(req)) {
