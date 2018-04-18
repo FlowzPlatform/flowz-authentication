@@ -27,7 +27,9 @@ const attempt = (email, password) => {
             throw createError(401, 'That user does not exist');
         }
         const user = users[0];
-        if (!compareSync(password, user.password)) {
+        if(user.password == null){
+            throw createError(401, "Oops! It looks as if you may have forgotten your password.");
+        }else if (!compareSync(password, user.password)) {
             throw createError(401, "password doesn't match");
         }
         return user;
