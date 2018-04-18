@@ -54,7 +54,7 @@ const signup = (req,res1, { username, aboutme, fullname, firstname, lastname, mi
     }catch(err){
       console.log("err >>>>>",err)
       console.log("err --------->>>>>>>>>>>>>>>>>>>",err.res)
-      let removeuser = await removeUser(User , userdata._id);
+      let removeuser =  removeUser(User , userdata._id);
       console.log("removeuser",removeuser)
       
       send(res1,401,{status:"1",code:"401",message:"Registration failed.Found error while sending verification email."})
