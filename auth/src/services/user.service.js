@@ -26,46 +26,39 @@ module.exports.list = async () => {
 ///////////////////////////////
 
 const signup = (req,res1, { username, aboutme, fullname, firstname, lastname, middlename, companyname, address1, address2, email, country, state, city, zipcode, phonenumber, fax, password, dob, role, signup_type, image_name, image_url, provider, access_token, picture, isActive, isEmailVerified, url }) => {
-  return getEmail(email).then((res) => {
+  return getEmail(email).then(async (res) => {
     console.log("email res...", res)
     if (res == 1) {
       throw createError(409, 'email already exists');
     } else {
-        var uniqueHash = generateToken();
-        uniqueHash.then((uniqueHash) => {
-          console.log("uniqueHash >>>",uniqueHash)
-          let user = new User({ username: username, aboutme: aboutme, fullname: fullname, firstname: firstname, lastname: lastname, middlename: middlename, companyname: companyname, address1: address1, address2: address2, country: country, state: state, city: city, zipcode: zipcode, phonenumber: phonenumber, fax: fax, email: email, password: hashSync(password, 2), dob: dob, role: role, signup_type: signup_type, image_name: image_name, image_url: image_url, forget_token_created_at: null, provider: null, access_token: null, picture: null, isActive: 1, veri_token: uniqueHash, isEmailVerified: 0 });
-          user = user.save();
-          user.then(async (userdata) => {
-            console.log("userdata >>>",userdata)
-            console.log("req.headers.referer", req.headers.referer)
-            let url = req.headers['x-forwarded-proto'] + "://" + req.headers['x-forwarded-host']
-            let referer = req.headers.referer;
-            console.log("url", url);
-            console.log("referer", referer);
-            let to = userdata.email;
-            let newToken = userdata.veri_token;
-            console.log("--------------------emailresponse fun start ----------------------")
-            let emailResponse = await verifyUserEmail(to, newToken, url, referer)
-            console.log("emailResponse",emailResponse)
-            if(emailResponse == 1){
-              send(res1,200,{status:"1",code:"200",message:"You are successfully register.Please verify your email"})
-            }else{
-              console.log("emailResponse in else >>>",emailResponse)
-              let removeuser = await User.findOneAndRemove({"_id": userdata._id})
-              console.log("removeuser",removeuser)
-              if(removeuser){
-              send(res1,401,{error:"Registration failed.Found error while sending verification email."})
-              }else{
-              send(res1,401,{error:"Found error while user remove."})
-              }
-            }
-          }).catch(async (err)=>{
-            // throw err;
-            console.log("=======user err======",err)    
-          })
-        })
+      try{
+      var uniqueHash = await generateToken();
+      console.log("uniqueHash",uniqueHash)
+      let user = new User({ username: username, aboutme: aboutme, fullname: fullname, firstname: firstname, lastname: lastname, middlename: middlename, companyname: companyname, address1: address1, address2: address2, country: country, state: state, city: city, zipcode: zipcode, phonenumber: phonenumber, fax: fax, email: email, password: hashSync(password, 2), dob: dob, role: role, signup_type: signup_type, image_name: image_name, image_url: image_url, forget_token_created_at: null, provider: null, access_token: null, picture: null, isActive: 1, veri_token: uniqueHash, isEmailVerified: 0 });
+      userdata = await user.save();
+      console.log("userdata",userdata)
+      let url = req.headers['x-forwarded-proto'] + "://" + req.headers['x-forwarded-host']
+      let referer = req.headers.referer;
+      console.log("url", url);
+      console.log("referer", referer);
+      let to = userdata.email;
+      let newToken = userdata.veri_token;
+      console.log("--------------------emailresponse fun start ----------------------")
+      let emailResponse = await verifyUserEmail(to, newToken, url, referer)
+      console.log("emailResponse",emailResponse)
+      if(emailResponse == 1){
+       send(res1,200,{status:"1",code:"200",message:"You are successfully registered. Please verify your email."})
+      }else{
+      let removeuser = await User.findOneAndRemove({"_id": userdata._id})
+      console.log("removeuser",removeuser)
+      send(res1,401,{error:"Registration failed.Found error while sending verification email."})
       }
+    }catch(err){
+      console.log("err >>>>>",err)
+      console.log("err ---------",err.res)
+      send(res1,401,{status:"1",code:"401",message:err})
+    }
+    }
   })
 }
 
