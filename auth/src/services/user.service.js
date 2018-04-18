@@ -369,7 +369,7 @@ module.exports.resetpassword = async (req, res) => {
   let password = req.new_password;
   let token = req.token;
   if (token == "" || token == null) {
-    throw createError(401, 'invalid token...'console.log("err >>>>>",e);
+    throw createError(401, 'invalid token...');
   }
   let users = await User.find({ forget_token: token });
 
