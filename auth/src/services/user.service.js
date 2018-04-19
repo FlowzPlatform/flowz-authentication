@@ -43,11 +43,11 @@ const signup = (req, res1, { username, aboutme, fullname, firstname, lastname, m
     await verifyUserEmail(to, newToken, url, referer).then(async (emailResponse) => {
       console.log("emailResponse", emailResponse)
       await send(res1, 200, { status: "1", code: "200", message: "You are successfully register. Please verify your email." })
-    }).catch(async (err) => {
+    }).catch((err) => {
       console.log("-- emailResponse err --", err)
-      await removeUser(User, userdata._id).then(async(removeUser) => {
+      removeUser(User, userdata._id).then((removeUser) => {
         console.log("-- removeUser --", removeUser)
-        await send(res1, 401, { status: "1", code: "401", message: "Registration failed.Found error while sending verification email." })
+        send(res1, 401, { status: "1", code: "401", message: "Registration failed.Found error while sending verification email." })
       }).catch((err) => {
         send(res1, 401, { status: "1", code: "401", message: "removeUser failed." })
       })
@@ -144,6 +144,37 @@ module.exports.verifyemail = async (req, res) => {
     redirect(res, 302, referer)
   }
 }
+
+
+module.exports.verifyaccount = async (req, res) => {
+  // console.log("req ----------",req)
+    req2 = await json(req)
+    let to = req2.email;
+    console.log("req2.email", to)
+    let users = await User.find({ email: to });
+    console.log("users", users)
+    let userdata = users[0];
+    if (users.length == 0) {
+      throw createError(401, 'You are not registered with us.');
+    } else {
+      console.log("req.headers.referer", req.headers.referer)
+      let url = req.headers['x-forwarded-proto'] + "://" + req.headers['x-forwarded-host']
+      let referer = req.headers.referer;
+      console.log("url", url);
+      console.log("referer", referer);
+      let to = userdata.email;
+      let newToken = userdata.veri_token;
+      console.log("--------------------emailresponse fun start ----------------------")
+      await verifyUserEmail(to, newToken, url, referer).then((emailResponse)=>{
+        console.log("emailResponse",emailResponse)
+        send(res, 200, { status: "1", code: "200", message: "Email sent succesfully. Please verify your email" })
+      }).catch((err)=>{
+        console.log("err >>",err)
+        send(res, 500, { status: "1", code: "500", message: "Email sending failed." })
+      })
+    }
+}
+
 
 /**
  * sendemail for verification of user email
