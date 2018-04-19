@@ -25,52 +25,49 @@ module.exports.list = async () => {
 //
 ///////////////////////////////
 
-const signup = (req,res1, { username, aboutme, fullname, firstname, lastname, middlename, companyname, address1, address2, email, country, state, city, zipcode, phonenumber, fax, password, dob, role, signup_type, image_name, image_url, provider, access_token, picture, isActive, isEmailVerified, url }) => {
+const signup = (req, res1, { username, aboutme, fullname, firstname, lastname, middlename, companyname, address1, address2, email, country, state, city, zipcode, phonenumber, fax, password, dob, role, signup_type, image_name, image_url, provider, access_token, picture, isActive, isEmailVerified, url }) => {
   return getEmail(email).then(async (res) => {
     console.log("email res...", res)
-    if (res == 1) {
-      throw createError(409, 'email already exists');
-    } else {
-      try{
-      var uniqueHash = await generateToken();
-      console.log("uniqueHash",uniqueHash)
-      let user = new User({ username: username, aboutme: aboutme, fullname: fullname, firstname: firstname, lastname: lastname, middlename: middlename, companyname: companyname, address1: address1, address2: address2, country: country, state: state, city: city, zipcode: zipcode, phonenumber: phonenumber, fax: fax, email: email, password: hashSync(password, 2), dob: dob, role: role, signup_type: signup_type, image_name: image_name, image_url: image_url, forget_token_created_at: null, provider: null, access_token: null, picture: null, isActive: 1, veri_token: uniqueHash, isEmailVerified: 0 });
-      userdata = await user.save();
-      console.log("userdata",userdata)
-      let url = req.headers['x-forwarded-proto'] + "://" + req.headers['x-forwarded-host']
-      let referer = req.headers.referer;
-      console.log("url", url);
-      console.log("referer", referer);
-      let to = userdata.email;
-      let newToken = userdata.veri_token;
-      console.log("--------------------emailresponse fun start ----------------------")
-      let emailResponse = await verifyUserEmail(to, newToken, url, referer)
-      console.log("emailResponse",emailResponse)
-      if(emailResponse == 1){
-       send(res1,200,{status:"1",code:"200",message:"You are successfully register. Please verify your email."})
-      }else{
-      
-      }
-    }catch(err){
-      console.log("err >>>>>",err)
-      console.log("err --------->>>>>>>>>>>>>>>>>>>",err.res)
-      let removeuser =  removeUser(User , userdata._id);
-      console.log("removeuser",removeuser)
-      
-      send(res1,401,{status:"1",code:"401",message:"Registration failed.Found error while sending verification email."})
-    }
-    }
+    var uniqueHash = await generateToken().catch((err) => { console.log("-- uniqueHash err --", err) })
+    console.log("uniqueHash", uniqueHash)
+    let user = new User({ username: username, aboutme: aboutme, fullname: fullname, firstname: firstname, lastname: lastname, middlename: middlename, companyname: companyname, address1: address1, address2: address2, country: country, state: state, city: city, zipcode: zipcode, phonenumber: phonenumber, fax: fax, email: email, password: hashSync(password, 2), dob: dob, role: role, signup_type: signup_type, image_name: image_name, image_url: image_url, forget_token_created_at: null, provider: null, access_token: null, picture: null, isActive: 1, veri_token: uniqueHash, isEmailVerified: 0 });
+    userdata = await user.save().catch((err) => { console.log("-- userdata err --", err) });
+    console.log("userdata", userdata)
+    let url = req.headers['x-forwarded-proto'] + "://" + req.headers['x-forwarded-host']
+    let referer = req.headers.referer;
+    console.log("url", url);
+    console.log("referer", referer);
+    let to = userdata.email;
+    let newToken = userdata.veri_token;
+    console.log("--------------------emailresponse fun start ----------------------")
+    await verifyUserEmail(to, newToken, url, referer).then(async (emailResponse) => {
+      console.log("emailResponse", emailResponse)
+      await send(res1, 200, { status: "1", code: "200", message: "You are successfully register. Please verify your email." })
+    }).catch(async (err) => {
+      console.log("-- emailResponse err --", err)
+      await removeUser(User, userdata._id).then(async(removeUser) => {
+        console.log("-- removeUser --", removeUser)
+        await send(res1, 401, { status: "1", code: "401", message: "Registration failed.Found error while sending verification email." })
+      }).catch((err) => {
+        send(res1, 401, { status: "1", code: "401", message: "removeUser failed." })
+      })
+    })
+    return;
+    console.log("*************************************************")
+  }).catch((err) => {
+    console.log("err >>>>>>>", err)
+    throw createError(409, 'email already exists');
   })
 }
 
-async function removeUser(User , id){
-  console.log(">>>>>>>>>>>><<<<<<<<<<<<<<>LJFSDJFSDIJFDSIFJSDFJSD" , id)
-  return new Promise((resolve , reject)=>{
-    User.findOneAndRemove({"_id": id}).then(function(response , error){
-      console.log(">>>>>>>>>>>>resp>>>>>>>> " , response)
-      console.log(">>>>>>>>>>>>>>error>>>>>> " , error)
-      resolve (response)
-      
+async function removeUser(User, id) {
+  return new Promise((resolve, reject) => {
+    User.findOneAndRemove({ "_id": id }).then(function (response, error) {
+      if (response) {
+        resolve(response)
+      } else {
+        reject(error)
+      }
     })
   })
 }
@@ -104,9 +101,9 @@ let getEmail = function (email) {
   promise = new Promise(function (resolve, reject) {
     User.find({ email: email }).exec().then((users, err) => {
       if (users.length) {
-        resolve('1'); // That email already exist
+        reject('That email already exist'); // That email already exist
       } else {
-        resolve('0'); // not exist
+        resolve('not exist'); // not exist
       }
     })
   })
@@ -155,14 +152,14 @@ module.exports.verifyemail = async (req, res) => {
 let verifyUserEmail = async function (to, newToken, url, referer) {
   return new Promise(async(resolve,reject)=>{
     console.log("to", to);
-      console.log("newToken", newToken);
-      console.log("url", url);
-      console.log("referer", referer);
-      var token = encodeURIComponent(newToken);
-      let verifiedurl = url + "/auth/api/verifyemail?token=" + token + "&redirect=" + referer
-      console.log("verifiedurl", verifiedurl)
-      let body = "<html><body>Hello Dear, <br><br>Welcome to FlowzDigital.Please verify your email by click below button.<br><br>" +
-        `<table>
+    console.log("newToken", newToken);
+    console.log("url", url);
+    console.log("referer", referer);
+    var token = encodeURIComponent(newToken);
+    let verifiedurl = url + "/auth/api/verifyemail?token=" + token + "&redirect=" + referer
+    console.log("verifiedurl", verifiedurl)
+    let body = "<html><body>Hello Dear, <br><br>Welcome to FlowzDigital.Please verify your email by click below button.<br><br>" +
+      `<table>
         <tr>
             <td style="background-color: #0097c3;border-color: #00aac3 ;border: 1px solid #00aac3 !important;padding: 10px;text-align: center,border-radius:1px;">
                 <a style="display: block;color: #ffffff !important;padding: 10px;background-color: #0097c3;font-size: 12px;text-decoration: none;text-transform: uppercase;" href=` + verifiedurl + `>
@@ -171,37 +168,37 @@ let verifyUserEmail = async function (to, newToken, url, referer) {
             </td>
         </tr>
       </table>`+
-        "<br><br>Sincerly Yours, <br>FlowzDigital Team <br><br><body></html>"
+      "<br><br>Sincerly Yours, <br>FlowzDigital Team <br><br><body></html>"
 
-      var data = {
-        "to": to,
-        "from": "noreply@flowz.com",
-        "subject": "verify your email",
-        "body": body
-      }
+    var data = {
+      "to": to,
+      "from": "noreply@flowz.com",
+      "subject": "verify your email",
+      "body": body
+    }
 
 
-      var options = {
-        method: 'POST',
-        url: sendemailurl,
-        headers:
-        {
-          'cache-control': 'no-cache',
-          'content-type': 'application/json'
-        },
-        body: data,
-        json: true
-      };
+    var options = {
+      method: 'POST',
+      url: sendemailurl,
+      headers:
+      {
+        'cache-control': 'no-cache',
+        'content-type': 'application/json'
+      },
+      body: data,
+      json: true
+    };
 
-      // const mailres = 
+    // const mailres = 
 
-      //return rp(options)
-      rp(options).then((result)=>{
-        resolve("1")
-      }).catch((err)=>{console.log("err..........",err),reject(err)})
+    //return rp(options)
+    rp(options).then((result)=>{
+      resolve("1")
+    }).catch((err)=>{console.log("err..........",err),reject(err)})
 
   });
-  
+
 
 }
 
