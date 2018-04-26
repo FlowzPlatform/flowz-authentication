@@ -497,7 +497,7 @@ module.exports.sendsms = async (req, res) => {
     let q_to = TO;
     let q_from = FROM;
 
-    let body = query.body;
+    let body = "cpu alert..!";
     let from = q_from;
     let array = Array.isArray(numbers);
     if (array == true) {
