@@ -39,6 +39,11 @@ then
     RANCHER_ACCESSKEY="$RANCHER_ACCESSKEY_MASTER";
     RANCHER_SECRETKEY="$RANCHER_SECRETKEY_MASTER";
     RANCHER_URL="$RANCHER_URL_MASTER";
+    accountSid="$accountSid_master";
+    authToken="$authToken_master";
+    no1="$no1_master";
+    FROM="$FROM_master";
+    no2="$no2_master";
   }
 elif [ "$TRAVIS_BRANCH" = "develop" ]
 then
@@ -54,6 +59,11 @@ then
       RANCHER_ACCESSKEY="$RANCHER_ACCESSKEY_DEVELOP";
       RANCHER_SECRETKEY="$RANCHER_SECRETKEY_DEVELOP";
       RANCHER_URL="$RANCHER_URL_DEVELOP";
+      accountSid="$accountSid_develop";
+      authToken="$authToken_develop";
+      no1="$no1_develop";
+      FROM="$FROM_develop";
+      no2="$no2_develop";
     }
 elif [ "$TRAVIS_BRANCH" = "staging" ]
 then
@@ -69,6 +79,11 @@ then
       RANCHER_ACCESSKEY="$RANCHER_ACCESSKEY_STAGING";
       RANCHER_SECRETKEY="$RANCHER_SECRETKEY_STAGING";
       RANCHER_URL="$RANCHER_URL_STAGING";
+      accountSid="$accountSid_staging";
+      authToken="$authToken_staging";
+      no1="$no1_staging";
+      FROM="$FROM_staging";
+      no2="$no2_staging";
     }    
 else
   {
@@ -83,6 +98,11 @@ else
       RANCHER_ACCESSKEY="$RANCHER_ACCESSKEY_QA";
       RANCHER_SECRETKEY="$RANCHER_SECRETKEY_QA";
       RANCHER_URL="$RANCHER_URL_QA";
+      accountSid="$accountSid_qa";
+      authToken="$authToken_qa";
+      no1="$no1_qa";
+      FROM="$FROM_qa";
+      no2="$no2_qa";
   }
 fi
 
@@ -100,7 +120,7 @@ curl -u ""$RANCHER_ACCESSKEY":"$RANCHER_SECRETKEY"" \
 -H 'Accept: application/json' \
 -H 'Content-Type: application/json' \
 -d '{
-  "inServiceStrategy":{"launchConfig": {"imageUuid":"docker:'$USERNAME'/authentication_auth_flowz:'$TAG'","kind": "container","labels":{"io.rancher.container.pull_image": "always","io.rancher.scheduler.affinity:host_label": "machine=cluster-flowz"},"ports": ["3001:3001/tcp"],"environment": {"MONGODB": "'"$MONGODB"'","SECRET": "'"$SECRET"'","DOMAINKEY":"'"$DOMAINKEY"'"},"healthCheck": {"type": "instanceHealthCheck","healthyThreshold": 2,"initializingTimeout": 60000,"interval": 2000,"name": null,"port": 3001,"recreateOnQuorumStrategyConfig": {"type": "recreateOnQuorumStrategyConfig","quorum": 1},"reinitializingTimeout": 60000,"responseTimeout": 60000,"strategy": "recreateOnQuorum","unhealthyThreshold": 3},"networkMode": "managed"}},"toServiceStrategy":null}' \
+  "inServiceStrategy":{"launchConfig": {"imageUuid":"docker:'$USERNAME'/authentication_auth_flowz:'$TAG'","kind": "container","labels":{"io.rancher.container.pull_image": "always","io.rancher.scheduler.affinity:host_label": "machine=cluster-flowz"},"ports": ["3001:3001/tcp"],"environment": {"MONGODB": "'"$MONGODB"'","SECRET": "'"$SECRET"'","DOMAINKEY":"'"$DOMAINKEY"'","accountSid":"'"$accountSid"'","authToken":"'"$authToken"'","no1":"'"$no1"'","FROM":"'"$FROM"'","no2":"'"$no2"'"},"healthCheck": {"type": "instanceHealthCheck","healthyThreshold": 2,"initializingTimeout": 60000,"interval": 2000,"name": null,"port": 3001,"recreateOnQuorumStrategyConfig": {"type": "recreateOnQuorumStrategyConfig","quorum": 1},"reinitializingTimeout": 60000,"responseTimeout": 60000,"strategy": "recreateOnQuorum","unhealthyThreshold": 3},"networkMode": "managed"}},"toServiceStrategy":null}' \
 $RANCHER_URL/v2-beta/projects/$ENV_ID/services/$SERVICE_ID_AUTH?action=upgrade
 
 curl -u ""$RANCHER_ACCESSKEY":"$RANCHER_SECRETKEY"" \
