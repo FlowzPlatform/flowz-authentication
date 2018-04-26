@@ -180,7 +180,7 @@ module.exports = async function (req, res) {
   } else if (userdetailsbyemailRoute(req)) {
     return auth.userdetailsbyemail(req, res);
   } else if (sendsmsRoute(req)) {
-    return auth.sendsms(req, res);
+    return users.sendsms(req, res);
   }
 
 }

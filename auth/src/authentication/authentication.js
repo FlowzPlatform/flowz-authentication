@@ -8,12 +8,10 @@ let mongoose = require('mongoose');
 const assert = require('assert');
 let responce = require('../services/responce.js');
 let config = require('../services/config.yaml');
-const { secret, accountSid, authToken ,no1,no2,FROM } = require('../config');
+const { secret } = require('../config');
 const User = require('../models/user');
 const ldapConfig = require('../models/auth_configs');
 var ldap = require('ldapjs');
-var twilio = require('twilio');
-var url = require('url');
 var linkedTokens = []
 const tokenValidity = 60 * 60 * 24 //in seconds
 let logintoken;
@@ -387,44 +385,7 @@ module.exports.changepassword = async(req, res) => {
     }
 };
 
-async function sendsms(accountSid, authToken, body, to, from) {
-    console.log("------- sendsms called----------")
-    return new Promise((resolve, reject) => {
-        console.log("accountSid", accountSid)
-        console.log("authToken", authToken)
-        var client = new twilio(accountSid, authToken);
-        let options = {
-            body: body,  //'Hello from Node',
-            to: to,  // Text this number
-            from: from //'+1 424-352-7241' // From a valid Twilio number   
-        }
-        client.messages.create(options).then((message) => { resolve(message) }).catch((err) => {
-            reject(err)
-        })
-    })
-}
 
-module.exports.sendsms = async (req, res) => {
-    console.log("req >>>>>>>>>>>>", req.url)
-    let urlstring = decodeURI(req.url)
-    console.log("urlstring", urlstring)
-    var url_parts = url.parse(decodeURI(urlstring), true);
-    console.log("url_parts", url_parts)
-    var query = url_parts.query;
-    let q_to = no1;
-    let q_from = FROM;
-
-    let body = query.body;
-    let to = q_to;
-    let from = q_from;
-    try {
-        await sendsms(accountSid, authToken, body, to, from)
-        send(res, 200, { status: "1", code: "200", message: "Sms sent successfully." })
-    } catch (err) {
-        console.log("err", err)
-        send(res, 401, { status: "1", code: "401", message: "Sms sending failed." })
-    }
-}
 
 function sendRejectResponce(status, code, message) {
     return new responce(status, code, message);

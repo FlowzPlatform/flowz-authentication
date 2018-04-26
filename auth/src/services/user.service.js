@@ -7,11 +7,12 @@ let responce = require('./responce');
 let config = require('yaml-config');
 let settings = config.readConfig('src/services/config.yaml');
 const emailjs = require("emailjs");
-const { sendemailurl, secret } = require('../config');
+const {sendemailurl, secret, accountSid, authToken, no1, no2, no3, no4, TO, FROM } = require('../config');
 const rp = require('request-promise');
 var randomstring = require("randomstring");
 var url = require('url');
 const redirect = require('micro-redirect')
+var twilio = require('twilio');
 
 module.exports.list = async () => {
   return await User.find();
@@ -463,6 +464,54 @@ module.exports.dashboardpass = async (req, res) => {
   } catch (err) {
     throw createError(401, err)
   }
+}
+
+
+async function sendsms(accountSid, authToken, body, to, from) {
+    console.log("------- sendsms called----------")
+    return new Promise((resolve, reject) => {
+        console.log("accountSid", accountSid)
+        console.log("authToken", authToken)
+        var client = new twilio(accountSid, authToken);
+        let options = {
+            body: body,  //'Hello from Node',
+            to: to,  // Text this number
+            from: from //'+1 424-352-7241' // From a valid Twilio number   
+        }
+        client.messages.create(options).then((message) => { resolve(message) }).catch((err) => {
+            reject(err)
+        })
+    })
+}
+
+module.exports.sendsms = async (req, res) => {
+    console.log("req >>>>>>>>>>>>", req.url)
+    var numbers = [];
+    numbers.push(no1, no2);
+    console.log("numbers", numbers)
+    let urlstring = decodeURI(req.url)
+    console.log("urlstring", urlstring)
+    var url_parts = url.parse(decodeURI(urlstring), true);
+    console.log("url_parts", url_parts)
+    var query = url_parts.query;
+    let q_to = TO;
+    let q_from = FROM;
+
+    let body = query.body;
+    let from = q_from;
+    let array = Array.isArray(numbers);
+    if (array == true) {
+        try{
+        for (let num of numbers) {
+               console.log("num",num)
+               let to = num;
+               await sendsms(accountSid, authToken, body, to, from)
+        }
+             send(res, 200, { status: "1", code: "200", message: "Sms sent successfully." })
+        }catch(err){
+            send(res, 401, { status: "1", code: "401", message: "Sms sending failed." })
+        }
+    }
 }
 
 function sendRejectResponce(status, code, message) {
