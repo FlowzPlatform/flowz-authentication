@@ -21,7 +21,7 @@
     "jsonwebtoken": "^7.4.1",
     "jsonwebtoken-refresh": "^5.7.0",
     "ldapjs": "^1.0.1",
-    "lodash": "^4.17.4",
+    "lodash": "^4.17.10",
     "micro": "^7.3.2",
     "micro-redirect": "^1.0.0",
     "micro-route": "^2.4.0",

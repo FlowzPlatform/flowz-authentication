@@ -13,6 +13,7 @@ var randomstring = require("randomstring");
 var url = require('url');
 const redirect = require('micro-redirect')
 var twilio = require('twilio');
+var _ = require('lodash');
 
 module.exports.list = async () => {
   return await User.find();
@@ -489,12 +490,14 @@ module.exports.sendsms = async (req, res) => {
     var numbers = [];
     numbers.push(no1, no2);
     console.log("numbers", numbers)
+    let data = _.compact(numbers);
+    console.log("data",data)
     let urlstring = decodeURI(req.url)
     console.log("urlstring", urlstring)
     var url_parts = url.parse(decodeURI(urlstring), true);
     console.log("url_parts", url_parts)
     var query = url_parts.query;
-    let q_to = TO;
+    // let q_to = TO;
     let q_from = FROM;
 
     let body = "cpu alert..!";
@@ -502,7 +505,7 @@ module.exports.sendsms = async (req, res) => {
     let array = Array.isArray(numbers);
     if (array == true) {
         try{
-        for (let num of numbers) {
+        for (let num of data) {
                console.log("num",num)
                let to = num;
                await sendsms(accountSid, authToken, body, to, from)
