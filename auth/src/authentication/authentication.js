@@ -8,10 +8,12 @@ let mongoose = require('mongoose');
 const assert = require('assert');
 let responce = require('../services/responce.js');
 let config = require('../services/config.yaml');
-const { secret } = require('../config');
+const { secret, accountSid, authToken ,no1,no2,FROM } = require('../config');
 const User = require('../models/user');
 const ldapConfig = require('../models/auth_configs');
 var ldap = require('ldapjs');
+var twilio = require('twilio');
+var url = require('url');
 var linkedTokens = []
 const tokenValidity = 60 * 60 * 24 //in seconds
 let logintoken;
@@ -27,9 +29,9 @@ const attempt = (email, password) => {
             throw createError(401, 'That user does not exist');
         }
         const user = users[0];
-        if(user.password == null){
+        if (user.password == null) {
             throw createError(401, "Oops! It looks as if you may have forgotten your password.");
-        }else if (!compareSync(password, user.password)) {
+        } else if (!compareSync(password, user.password)) {
             throw createError(401, "password doesn't match");
         }
         return user;
@@ -44,27 +46,27 @@ let loginprocess = function(id,isActive,isEmailVerified) {
     console.log("id", id)
     console.log("isEmailVerified", isEmailVerified)
     if(isEmailVerified == 0){
-       throw createError(401, 'Your account is inactive.Please verify your email.');
+        throw createError(401, 'Your account is inactive.Please verify your email.');
     }else if(isActive == 0){
-       throw createError(401, 'Your account is blocked.');
+        throw createError(401, 'Your account is blocked.');
     }else{
-    try {
-        payload = {
-            "userId": id,
-            "iat": Math.floor(Date.now() / 1000) - 30,
-            "exp": Math.floor(Date.now() / 1000) + tokenValidity,
-            "aud": "https://yourdomain.com",
-            "iss": "feathers",
-            "sub": "anonymous"
+        try {
+            payload = {
+                "userId": id,
+                "iat": Math.floor(Date.now() / 1000) - 30,
+                "exp": Math.floor(Date.now() / 1000) + tokenValidity,
+                "aud": "https://yourdomain.com",
+                "iss": "feathers",
+                "sub": "anonymous"
+            }
+            console.log("payload", payload)
+            let token = sign(payload, secret);
+            console.log("token", token)
+            return { "status": 1, "code": "201", "message": "login succesfully", logintoken: token };
+        } catch (err) {
+            throw createError(401, 'wrong credential');
         }
-        console.log("payload", payload)
-        let token = sign(payload, secret);
-        console.log("token", token)
-        return { "status": 1, "code": "201", "message": "login succesfully", logintoken: token };
-    } catch (err) {
-        throw createError(401, 'wrong credential');
     }
-  }
 }
 
 /**
@@ -119,26 +121,26 @@ module.exports.userdetails = async(req, res) => {
 }
 
 module.exports.userdetailsbyemail = async (req, res) => {
-  req = await json(req)
-  let email = req.email;
-  let emailcheck = /\S+@\S+\.\S+/.test(email)
-  if(emailcheck == false){
-    throw createError(401, 'enter valid email!');
-  }else{
-    try{
-      let data = await User.find({ email: email })
-      console.log("data length",data.length)
-      console.log("data",data)
-      if(!data.length){
-        throw createError(404, 'data not found!');
-      }else{
-        let jsonString = { "status": 1, "code": "200", "message": "userdetails", "data": data }
-        return jsonString
-      }
-    }catch(error){
-      throw createError(404, 'data not found!');
+    req = await json(req)
+    let email = req.email;
+    let emailcheck = /\S+@\S+\.\S+/.test(email)
+    if(emailcheck == false){
+        throw createError(401, 'enter valid email!');
+    }else{
+        try{
+            let data = await User.find({ email: email })
+            console.log("data length",data.length)
+            console.log("data",data)
+            if(!data.length){
+                throw createError(404, 'data not found!');
+            }else{
+                let jsonString = { "status": 1, "code": "200", "message": "userdetails", "data": data }
+                return jsonString
+            }
+        }catch(error){
+            throw createError(404, 'data not found!');
+        }
     }
-  }
 };
 
 /**
@@ -384,6 +386,45 @@ module.exports.changepassword = async(req, res) => {
         throw createError(401, err);
     }
 };
+
+async function sendsms(accountSid, authToken, body, to, from) {
+    console.log("------- sendsms called----------")
+    return new Promise((resolve, reject) => {
+        console.log("accountSid", accountSid)
+        console.log("authToken", authToken)
+        var client = new twilio(accountSid, authToken);
+        let options = {
+            body: body,  //'Hello from Node',
+            to: to,  // Text this number
+            from: from //'+1 424-352-7241' // From a valid Twilio number   
+        }
+        client.messages.create(options).then((message) => { resolve(message) }).catch((err) => {
+            reject(err)
+        })
+    })
+}
+
+module.exports.sendsms = async (req, res) => {
+    console.log("req >>>>>>>>>>>>", req.url)
+    let urlstring = decodeURI(req.url)
+    console.log("urlstring", urlstring)
+    var url_parts = url.parse(decodeURI(urlstring), true);
+    console.log("url_parts", url_parts)
+    var query = url_parts.query;
+    let q_to = no1;
+    let q_from = FROM;
+
+    let body = query.body;
+    let to = q_to;
+    let from = q_from;
+    try {
+        await sendsms(accountSid, authToken, body, to, from)
+        send(res, 200, { status: "1", code: "200", message: "Sms sent successfully." })
+    } catch (err) {
+        console.log("err", err)
+        send(res, 401, { status: "1", code: "401", message: "Sms sending failed." })
+    }
+}
 
 function sendRejectResponce(status, code, message) {
     return new responce(status, code, message);
