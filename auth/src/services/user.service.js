@@ -497,10 +497,13 @@ module.exports.sendsms = async (req, res) => {
     var url_parts = url.parse(decodeURI(urlstring), true);
     console.log("url_parts", url_parts)
     var query = url_parts.query;
+    console.log("query",query.body)
+    var q_body = query.body.replace(/"/g,"");
+    console.log(q_body)
     // let q_to = TO;
     let q_from = FROM;
 
-    let body = "cpu alert..!";
+    let body = q_body;
     let from = q_from;
     let array = Array.isArray(numbers);
     if (array == true) {
