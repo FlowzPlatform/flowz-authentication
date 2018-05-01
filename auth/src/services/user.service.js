@@ -14,6 +14,7 @@ var url = require('url');
 const redirect = require('micro-redirect')
 var twilio = require('twilio');
 var _ = require('lodash');
+const axios = require('axios');
 
 module.exports.list = async () => {
   return await User.find();
@@ -134,7 +135,6 @@ module.exports.verifyemail = async (req, res) => {
       const update = {
         $set: { "veri_token": null, "isActive": 1, "isEmailVerified": 1, "updated_at": new Date() }
       };
-
       let up = await User.findOneAndUpdate(query, update, { returnNewDocument: true, new: true })
       let location = referer
       redirect(res, 302, location)
@@ -150,31 +150,31 @@ module.exports.verifyemail = async (req, res) => {
 
 module.exports.verifyaccount = async (req, res) => {
   // console.log("req ----------",req)
-    req2 = await json(req)
-    let to = req2.email;
-    console.log("req2.email", to)
-    let users = await User.find({ email: to });
-    console.log("users", users)
-    let userdata = users[0];
-    if (users.length == 0) {
-      throw createError(401, 'You are not registered with us.');
-    } else {
-      console.log("req.headers.referer", req.headers.referer)
-      let url = req.headers['x-forwarded-proto'] + "://" + req.headers['x-forwarded-host']
-      let referer = req.headers.referer;
-      console.log("url", url);
-      console.log("referer", referer);
-      let to = userdata.email;
-      let newToken = userdata.veri_token;
-      console.log("--------------------emailresponse fun start ----------------------")
-      await verifyUserEmail(to, newToken, url, referer).then((emailResponse)=>{
-        console.log("emailResponse",emailResponse)
-        send(res, 200, { status: "1", code: "200", message: "Email sent succesfully. Please verify your email" })
-      }).catch((err)=>{
-        console.log("err >>",err)
-        send(res, 500, { status: "1", code: "500", message: "Email sending failed." })
-      })
-    }
+  req2 = await json(req)
+  let to = req2.email;
+  console.log("req2.email", to)
+  let users = await User.find({ email: to });
+  console.log("users", users)
+  let userdata = users[0];
+  if (users.length == 0) {
+    throw createError(401, 'You are not registered with us.');
+  } else {
+    console.log("req.headers.referer", req.headers.referer)
+    let url = req.headers['x-forwarded-proto'] + "://" + req.headers['x-forwarded-host']
+    let referer = req.headers.referer;
+    console.log("url", url);
+    console.log("referer", referer);
+    let to = userdata.email;
+    let newToken = userdata.veri_token;
+    console.log("--------------------emailresponse fun start ----------------------")
+    await verifyUserEmail(to, newToken, url, referer).then((emailResponse)=>{
+      console.log("emailResponse",emailResponse)
+      send(res, 200, { status: "1", code: "200", message: "Email sent succesfully. Please verify your email" })
+    }).catch((err)=>{
+      console.log("err >>",err)
+      send(res, 500, { status: "1", code: "500", message: "Email sending failed." })
+    })
+  }
 }
 
 
@@ -469,24 +469,24 @@ module.exports.dashboardpass = async (req, res) => {
 
 
 async function sendsms(accountSid, authToken, body, to, from) {
-    console.log("------- sendsms called----------")
-    return new Promise((resolve, reject) => {
-        console.log("accountSid", accountSid)
-        console.log("authToken", authToken)
-        var client = new twilio(accountSid, authToken);
-        let options = {
-            body: body,  //'Hello from Node',
-            to: to,  // Text this number
-            from: from //'+1 424-352-7241' // From a valid Twilio number   
-        }
-        client.messages.create(options).then((message) => { resolve(message) }).catch((err) => {
-            reject(err)
-        })
+  console.log("------- sendsms called----------")
+  return new Promise((resolve, reject) => {
+    console.log("accountSid", accountSid)
+    console.log("authToken", authToken)
+    var client = new twilio(accountSid, authToken);
+    let options = {
+      body: body,  //'Hello from Node',
+      to: to,  // Text this number
+      from: from //'+1 424-352-7241' // From a valid Twilio number   
+    }
+    client.messages.create(options).then((message) => { resolve(message) }).catch((err) => {
+      reject(err)
     })
+  })
 }
 
 module.exports.sendsms = async (req, res) => {
-    console.log("req >>>>>>>>>>>>", req.url)
+    console.log("req >>>>>>>>>>>>", req)
     var numbers = [];
     numbers.push(no1, no2);
     console.log("numbers", numbers)
