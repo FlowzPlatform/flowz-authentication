@@ -488,6 +488,8 @@ async function sendsms(accountSid, authToken, body, to, from) {
 module.exports.sendsms = async (req, res) => {
     console.log("req >>>>>>>>>>>>", req)
     console.log(">>>>>>>> RESPONSE <<<<<<<",res)
+    const bodyparse = await json(req)
+    console.log("--- body ---",bodyparse)
     var numbers = [];
     numbers.push(no1, no2);
     console.log("numbers", numbers)
