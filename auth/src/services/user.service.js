@@ -486,41 +486,47 @@ async function sendsms(accountSid, authToken, body, to, from) {
 }
 
 module.exports.sendsms = async (req, res) => {
-    console.log("req >>>>>>>>>>>>", req)
-    console.log(">>>>>>>> RESPONSE <<<<<<<",res)
-    const bodyparse = await json(req)
-    console.log("--- body ---",bodyparse)
-    var numbers = [];
-    numbers.push(no1, no2);
-    console.log("numbers", numbers)
-    let data = _.compact(numbers);
-    console.log("data",data)
-    let urlstring = decodeURI(req.url)
-    console.log("urlstring", urlstring)
-    var url_parts = url.parse(decodeURI(urlstring), true);
-    console.log("url_parts", url_parts)
-    var query = url_parts.query;
-    console.log("query",query.body)
-    var q_body = query.body.replace(/"/g,"");
-    console.log(q_body)
-    // let q_to = TO;
-    let q_from = FROM;
+  console.log("req >>>>>>>>>>>>", req)
+  const bodyparse = await json(req)
+  console.log("--- body ---", bodyparse)
+  // var numbers = [];
+  // numbers.push(no1, no2);
+  // console.log("numbers", numbers)
+  // let data = _.compact(numbers);
+  // console.log("data", data)
+  let urlstring = decodeURI(req.url)
+  console.log("urlstring", urlstring)
+  var url_parts = url.parse(encodeURI(urlstring), true);
+  console.log("url_parts", url_parts)
+  var query = url_parts.query;
+  console.log("query", query)
+  var numbers = query.to.split(","); // split string value with (,)
+  let q_to = numbers.map(i => '+' + i); // map array & append with + chracter
+  console.log("q_to", q_to)
+  let data = _.compact(q_to); // remove any undefined values
 
-    let body = q_body;
-    let from = q_from;
-    let array = Array.isArray(numbers);
-    if (array == true) {
-        try{
-        for (let num of data) {
-               console.log("num",num)
-               let to = num;
-               await sendsms(accountSid, authToken, body, to, from)
-        }
-             send(res, 200, { status: "1", code: "200", message: "Sms sent successfully." })
-        }catch(err){
-            send(res, 401, { status: "1", code: "401", message: "Sms sending failed." })
-        }
+  // console.log(q_body)
+
+  var q_body = bodyparse.message 
+
+  // let q_to = TO;
+  let q_from = FROM;
+  let body = q_body;
+  let from = q_from;
+  let array = Array.isArray(numbers);
+  if (array == true) {
+    try {
+      for (let num of data) {
+        console.log("num", num)
+        let to = num;
+        await sendsms(accountSid, authToken, body, to, from)
+      }
+      send(res, 200, { status: "1", code: "200", message: "Sms sent successfully." })
+    } catch (err) {
+      console.log("err >>>>>>>>>", err)
+      send(res, 401, { status: "1", code: "401", message: "Sms sending failed." })
     }
+  }
 }
 
 function sendRejectResponce(status, code, message) {
