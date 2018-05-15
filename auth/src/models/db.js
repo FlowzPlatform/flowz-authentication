@@ -7,8 +7,6 @@ mongoose.Promise = global.Promise;
 // Logger = require('mongodb').Logger;
 // Logger.setLevel('debug');
 
-mongoose.connect(database,{ useMongoClient: true, /* other options */ });
-
 var options = {
     useMongoClient: true,
     db: {
@@ -25,7 +23,7 @@ var options = {
       sslValidate: false
     },
     replset: {
-        auto_reconnect: false ,
+        auto_reconnect: true ,
         connectWithNoPrimary: true,
         socketOptions: {
             keepAlive: 1,

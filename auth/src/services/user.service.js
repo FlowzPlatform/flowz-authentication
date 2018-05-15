@@ -30,40 +30,34 @@ module.exports.list = async () => {
 
 const signup = (req, res1, { username, aboutme, fullname, firstname, lastname, middlename, companyname, address1, address2, email, country, state, city, zipcode, phonenumber, fax, password, dob, role, signup_type, image_name, image_url, provider, access_token, picture, isActive, isEmailVerified, url }) => {
   return getEmail(email).then(async (res) => {
-    console.log("email res...", res)
-    var uniqueHash = await generateToken().catch((err) => { console.log("-- uniqueHash err --", err) })
-    console.log("uniqueHash", uniqueHash)
+    var uniqueHash = await generateToken().catch((err) => { send(res1, 401, { status: "0", code: "401", message: "UniqueHash error." }) })
     let user = new User({ username: username, aboutme: aboutme, fullname: fullname, firstname: firstname, lastname: lastname, middlename: middlename, companyname: companyname, address1: address1, address2: address2, country: country, state: state, city: city, zipcode: zipcode, phonenumber: phonenumber, fax: fax, email: email, password: hashSync(password, 2), dob: dob, role: role, signup_type: signup_type, image_name: image_name, image_url: image_url, forget_token_created_at: null, provider: null, access_token: null, picture: null, isActive: 1, veri_token: uniqueHash, isEmailVerified: 0 });
-    userdata = await user.save().catch((err) => { console.log("-- userdata err --", err) });
+    userdata = await user.save().catch((err) => { send(res1, 401, { status: "0", code: "401", message: "User registration error." })});
     console.log("userdata", userdata)
     let url = req.headers['x-forwarded-proto'] + "://" + req.headers['x-forwarded-host']
     let referer = req.headers.referer;
-    console.log("url", url);
-    console.log("referer", referer);
     let to = userdata.email;
     let newToken = userdata.veri_token;
-    console.log("--------------------emailresponse fun start ----------------------")
     await verifyUserEmail(to, newToken, url, referer).then(async (emailResponse) => {
-      console.log("emailResponse", emailResponse)
+      console.log("-- emailResponse -- ",emailResponse)
       await send(res1, 200, { status: "1", code: "200", message: "You are successfully register. Please verify your email." })
     }).catch((err) => {
       console.log("-- emailResponse err --", err)
       removeUser(User, userdata._id).then((removeUser) => {
         console.log("-- removeUser --", removeUser)
-        send(res1, 401, { status: "1", code: "401", message: "Registration failed.Found error while sending verification email." })
+        send(res1, 401, { status: "0", code: "401", message: "Registration failed.Found error while sending verification email." })
       }).catch((err) => {
-        send(res1, 401, { status: "1", code: "401", message: "removeUser failed." })
+        send(res1, 401, { status: "0", code: "401", message: "removeUser failed." })
       })
     })
     return;
-    console.log("*************************************************")
   }).catch((err) => {
     console.log("err >>>>>>>", err)
     throw createError(409, 'email already exists');
   })
 }
 
-async function removeUser(User, id) {
+function removeUser(User, id) {
   return new Promise((resolve, reject) => {
     User.findOneAndRemove({ "_id": id }).then(function (response, error) {
       if (response) {
@@ -154,7 +148,7 @@ module.exports.verifyaccount = async (req, res) => {
   let to = req2.email;
   console.log("req2.email", to)
   let users = await User.find({ email: to });
-  console.log("users", users)
+   console.log("users", users)
   let userdata = users[0];
   if (users.length == 0) {
     throw createError(401, 'You are not registered with us.');
@@ -184,13 +178,8 @@ module.exports.verifyaccount = async (req, res) => {
 
 let verifyUserEmail = async function (to, newToken, url, referer) {
   return new Promise(async(resolve,reject)=>{
-    console.log("to", to);
-    console.log("newToken", newToken);
-    console.log("url", url);
-    console.log("referer", referer);
     var token = encodeURIComponent(newToken);
     let verifiedurl = url + "/auth/api/verifyemail?token=" + token + "&redirect=" + referer
-    console.log("verifiedurl", verifiedurl)
     let body = "<html><body>Hello Dear, <br><br>Welcome to FlowzDigital.Please verify your email by click below button.<br><br>" +
       `<table>
         <tr>
@@ -469,7 +458,6 @@ module.exports.dashboardpass = async (req, res) => {
 
 
 async function sendsms(accountSid, authToken, body, to, from) {
-  console.log("------- sendsms called----------")
   return new Promise((resolve, reject) => {
     console.log("accountSid", accountSid)
     console.log("authToken", authToken)
@@ -484,6 +472,8 @@ async function sendsms(accountSid, authToken, body, to, from) {
     })
   })
 }
+
+/* sendsms  */
 
 module.exports.sendsms = async (req, res) => {
   console.log("req >>>>>>>>>>>>", req)
@@ -504,11 +494,7 @@ module.exports.sendsms = async (req, res) => {
   let q_to = numbers.map(i => '+' + i); // map array & append with + chracter
   console.log("q_to", q_to)
   let data = _.compact(q_to); // remove any undefined values
-
-  // console.log(q_body)
-
   var q_body =  bodyparse.title + "\n"  + "message:" +  bodyparse.message 
-
   // let q_to = TO;
   let q_from = FROM;
   let body = q_body;
