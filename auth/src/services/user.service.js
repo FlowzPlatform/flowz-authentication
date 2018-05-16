@@ -10,32 +10,73 @@ const emailjs = require("emailjs");
 const { sendemailurl, secret } = require('../config');
 const rp = require('request-promise');
 var randomstring = require("randomstring");
+var url = require('url');
+const redirect = require('micro-redirect')
 
 module.exports.list = async () => {
   return await User.find();
 };
 
 ///////////////////////////////
-// 
+//
 // signup function
 // input-type: Object
 // required fields: [email, password]
 //
 ///////////////////////////////
 
-const signup = ({ username, aboutme, fullname, firstname, lastname, middlename, companyname, address1, address2, email, country, state, city, zipcode, phonenumber, fax, password, dob, role, signup_type, image_name, image_url, provider, access_token, picture, isActive }) => {
-  return getEmail(email).then((res) => {
-
-    let user = new User({ username: username, aboutme: aboutme, fullname: fullname, firstname: firstname, lastname: lastname, middlename: middlename, companyname: companyname, address1: address1, address2: address2, country: country, state: state, city: city, zipcode: zipcode, phonenumber: phonenumber, fax: fax, email: email, password: hashSync(password, 2), dob: dob, role: role, signup_type: signup_type, image_name: image_name, image_url: image_url, forget_token_created_at: null, provider: null, access_token: null, picture: null, isActive: 1 });
-    user = user.save();
-    let sucessReply = sendSuccessResponce(1, '200', 'you are successfully register...');
-    return sucessReply;
-  }).catch((err) => {
-    throw createError(409, 'email already exists');
+const signup = (req,res1, { username, aboutme, fullname, firstname, lastname, middlename, companyname, address1, address2, email, country, state, city, zipcode, phonenumber, fax, password, dob, role, signup_type, image_name, image_url, provider, access_token, picture, isActive, isEmailVerified, url }) => {
+  return getEmail(email).then(async (res) => {
+    console.log("email res...", res)
+    if (res == 1) {
+      throw createError(409, 'email already exists');
+    } else {
+      try{
+      var uniqueHash = await generateToken();
+      console.log("uniqueHash",uniqueHash)
+      let user = new User({ username: username, aboutme: aboutme, fullname: fullname, firstname: firstname, lastname: lastname, middlename: middlename, companyname: companyname, address1: address1, address2: address2, country: country, state: state, city: city, zipcode: zipcode, phonenumber: phonenumber, fax: fax, email: email, password: hashSync(password, 2), dob: dob, role: role, signup_type: signup_type, image_name: image_name, image_url: image_url, forget_token_created_at: null, provider: null, access_token: null, picture: null, isActive: 1, veri_token: uniqueHash, isEmailVerified: 0 });
+      userdata = await user.save();
+      console.log("userdata",userdata)
+      let url = req.headers['x-forwarded-proto'] + "://" + req.headers['x-forwarded-host']
+      let referer = req.headers.referer;
+      console.log("url", url);
+      console.log("referer", referer);
+      let to = userdata.email;
+      let newToken = userdata.veri_token;
+      console.log("--------------------emailresponse fun start ----------------------")
+      let emailResponse = await verifyUserEmail(to, newToken, url, referer)
+      console.log("emailResponse",emailResponse)
+      if(emailResponse == 1){
+       send(res1,200,{status:"1",code:"200",message:"You are successfully register. Please verify your email."})
+      }else{
+      
+      }
+    }catch(err){
+      console.log("err >>>>>",err)
+      console.log("err --------->>>>>>>>>>>>>>>>>>>",err.res)
+      let removeuser =  removeUser(User , userdata._id);
+      console.log("removeuser",removeuser)
+      
+      send(res1,401,{status:"1",code:"401",message:"Registration failed.Found error while sending verification email."})
+    }
+    }
   })
 }
 
-module.exports.setup = async (req, res) => await signup(await json(req));
+async function removeUser(User , id){
+  console.log(">>>>>>>>>>>><<<<<<<<<<<<<<>LJFSDJFSDIJFDSIFJSDFJSD" , id)
+  return new Promise((resolve , reject)=>{
+    User.findOneAndRemove({"_id": id}).then(function(response , error){
+      console.log(">>>>>>>>>>>>resp>>>>>>>> " , response)
+      console.log(">>>>>>>>>>>>>>error>>>>>> " , error)
+      resolve (response)
+      
+    })
+  })
+}
+
+
+module.exports.setup = async (req, res) => await signup(req,res, await json(req));
 
 /**
  * username validation
@@ -63,14 +104,105 @@ let getEmail = function (email) {
   promise = new Promise(function (resolve, reject) {
     User.find({ email: email }).exec().then((users, err) => {
       if (users.length) {
-        reject('That email already exist');
+        resolve('1'); // That email already exist
       } else {
-        resolve('not exist')
+        resolve('0'); // not exist
       }
     })
   })
 
   return promise;
+}
+
+
+/**
+ *  verification of user email route
+ */
+
+module.exports.verifyemail = async (req, res) => {
+  try {
+    var url_parts = url.parse(req.url, true);
+    var query = url_parts.query;
+    let queryToken = query.token;
+    let referer = query.redirect;
+    let users = await User.find({ veri_token: queryToken });
+    let data = users[0];
+
+    if (users.length == 0) {
+      throw createError(401, 'user not exist');
+    } else {
+      query = { email: data.email }
+      const update = {
+        $set: { "veri_token": null, "isActive": 1, "isEmailVerified": 1, "updated_at": new Date() }
+      };
+
+      let up = await User.findOneAndUpdate(query, update, { returnNewDocument: true, new: true })
+      let location = referer
+      redirect(res, 302, location)
+      // let sucessReply = sendSuccessResponce(1, '200', 'email verified succesfully');
+      // return sucessReply;
+    }
+  } catch (err) {
+    let referer = query.redirect;
+    redirect(res, 302, referer)
+  }
+}
+
+/**
+ * sendemail for verification of user email
+ */
+
+let verifyUserEmail = async function (to, newToken, url, referer) {
+  return new Promise(async(resolve,reject)=>{
+    console.log("to", to);
+      console.log("newToken", newToken);
+      console.log("url", url);
+      console.log("referer", referer);
+      var token = encodeURIComponent(newToken);
+      let verifiedurl = url + "/auth/api/verifyemail?token=" + token + "&redirect=" + referer
+      console.log("verifiedurl", verifiedurl)
+      let body = "<html><body>Hello Dear, <br><br>Welcome to FlowzDigital.Please verify your email by click below button.<br><br>" +
+        `<table>
+        <tr>
+            <td style="background-color: #0097c3;border-color: #00aac3 ;border: 1px solid #00aac3 !important;padding: 10px;text-align: center,border-radius:1px;">
+                <a style="display: block;color: #ffffff !important;padding: 10px;background-color: #0097c3;font-size: 12px;text-decoration: none;text-transform: uppercase;" href=` + verifiedurl + `>
+                    Verify Email
+                </a>
+            </td>
+        </tr>
+      </table>`+
+        "<br><br>Sincerly Yours, <br>FlowzDigital Team <br><br><body></html>"
+
+      var data = {
+        "to": to,
+        "from": "noreply@flowz.com",
+        "subject": "verify your email",
+        "body": body
+      }
+
+
+      var options = {
+        method: 'POST',
+        url: sendemailurl,
+        headers:
+        {
+          'cache-control': 'no-cache',
+          'content-type': 'application/json'
+        },
+        body: data,
+        json: true
+      };
+
+      // const mailres = 
+
+      //return rp(options)
+      rp(options).then((result)=>{
+        resolve("1")
+      }).catch((err)=>{console.log("err..........",err),reject(err)})
+
+  });
+  
+
 }
 
 /**
@@ -81,17 +213,17 @@ let sendemail = async function (to, newToken, url) {
   var token = encodeURIComponent(newToken);
   let link = url
   let resetlink = link + "?forget_token=" + token
-  let body = "<html><body>hello dear, <br><br>You have requested to reset your password. please click below button and set your new password. <br><br>" +
-  `<table>
+  let body = "<html><body>Hello Dear, <br><br>You have requested to reset your password.Please click below button and set your new password. <br><br>" +
+    `<table>
     <tr>
-        <td style="background-color: #0097c3;border-color: #00aac3;border: 1px solid #00aac3;padding: 10px;text-align: center,border-radius:1px;">
-            <a style="display: block;color: #ffffff;font-size: 12px;text-decoration: none;text-transform: uppercase;" href=` + resetlink + `>
+        <td style="background-color: #0097c3;border-color: #00aac3 ;border: 1px solid #00aac3 !important;padding: 10px;text-align: center,border-radius:1px;">
+            <a style="display: block;color: #ffffff !important;padding: 10px;background-color: #0097c3;font-size: 12px;text-decoration: none;text-transform: uppercase;" href=` + resetlink + `>
                 reset password
             </a>
         </td>
     </tr>
-  </table>` +
-  "<br><p>if you did not request a password reset please ignore this email.This password reset is only valid for next 24 hour.</p><br>sincerly yours, <br>FlowzPlatform Team <br><br><body></html>"
+    </table>` +
+    "<br><p>If you did not request a password reset please ignore this email.This password reset is only valid for next 24 hour.</p><br>Sincerly Yours, <br>FlowzDigital Team <br><br><body></html>"
 
   var data = {
     "to": to,
@@ -123,7 +255,7 @@ let sendemail = async function (to, newToken, url) {
 
 let senddashboardpass = async function (email, password) {
 
-  let body = '<html><body>hello,<br><br>Thanks for register with flowz service.your password for flowzdashboard is given below.' +
+  let body = '<html><body>hello,<br><br>Thanks for register with flowzdigital service.your password for flowzdashboard is given below.' +
     '<br><br>' +
     '<table>' +
     '<tr>' +
@@ -132,7 +264,7 @@ let senddashboardpass = async function (email, password) {
     '</td>' +
     '</tr>' +
     '</table>' +
-    '</p><br>sincerly yours, <br>FlowzPlatform Team <br><br><body></html>'
+    '</p><br>Sincerly Yours, <br>FlowzDigital Team <br><br><body></html>'
 
 
   var data = {
@@ -193,7 +325,7 @@ module.exports.sendemailapi = async (req, res) => {
 }
 
 /**
- * forgetpassword 
+ * forgetpassword
  */
 
 module.exports.forgetpassword = async (req, res) => {
@@ -208,7 +340,7 @@ module.exports.forgetpassword = async (req, res) => {
   }
   let users = await User.find({ email: to });
   if (users.length === 0) {
-    throw createError(401, 'please enter correct email');
+    throw createError(401, 'You are not registered with us. Please signup.');
   } else {
     const newToken = await generateToken();
     let arr = [];
@@ -229,7 +361,7 @@ module.exports.forgetpassword = async (req, res) => {
 };
 
 /**
- * resetpassword 
+ * resetpassword
  */
 
 module.exports.resetpassword = async (req, res) => {

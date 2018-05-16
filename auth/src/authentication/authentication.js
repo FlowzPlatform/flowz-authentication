@@ -27,7 +27,9 @@ const attempt = (email, password) => {
             throw createError(401, 'That user does not exist');
         }
         const user = users[0];
-        if (!compareSync(password, user.password)) {
+        if(user.password == null){
+            throw createError(401, "Oops! It looks as if you may have forgotten your password.");
+        }else if (!compareSync(password, user.password)) {
             throw createError(401, "password doesn't match");
         }
         return user;
@@ -38,11 +40,13 @@ const attempt = (email, password) => {
  * token generation
  */
 
-let loginprocess = function(id, isActive) {
+let loginprocess = function(id,isActive,isEmailVerified) {
     console.log("id", id)
-    console.log("isActive", isActive)
-    if(isActive == 0){
-       throw createError(401, 'your account is deactivated');
+    console.log("isEmailVerified", isEmailVerified)
+    if(isEmailVerified == 0){
+       throw createError(401, 'Your account is inactive.Please verify your email.');
+    }else if(isActive == 0){
+       throw createError(401, 'Your account is blocked.');
     }else{
     try {
         payload = {
@@ -68,8 +72,8 @@ let loginprocess = function(id, isActive) {
  */
 
 const auth = ({ email, password }) =>
-    attempt(email, password).then(({ id , isActive }) => {
-        return loginprocess(id , isActive);
+    attempt(email, password).then(({ id ,isActive, isEmailVerified }) => {
+        return loginprocess(id ,isActive, isEmailVerified);
     });
 
 const verifyToken = token => verify(token, secret);
@@ -80,9 +84,9 @@ module.exports.decode = (req, res) => verifyToken(linkedTokens[req.headers['auth
  * sociallogin jwt token genration
  */
 
-const sociallogin = (id , isActive ) => {
+const sociallogin = (id , isEmailVerified ) => {
     // console.log('social_id:',id);
-    return loginprocess(id , isActive);
+    return loginprocess(id , isEmailVerified);
 };
 
 module.exports.sociallogin = sociallogin
@@ -92,6 +96,7 @@ module.exports.sociallogin = sociallogin
  */
 
 module.exports.userdetails = async(req, res) => {
+    console.log("---- userdetails called ----")
     let mainToken = req.headers['authorization'];
     let token = linkedTokens[mainToken] ? linkedTokens[mainToken] : mainToken
     try {
@@ -140,36 +145,36 @@ module.exports.userdetailsbyemail = async (req, res) => {
  * verifyemail for social login
  */
 
-module.exports.verifyemail = async(req, res) => {
-    req = await json(req)
-    let aboutme = req.aboutme;
-    let email = req.email;
-    let ob_id = req.id;
-    // console.log(ob_id);
-    let users = await User.find({ _id: ob_id });
-    // console.log(users);
-    let data = users[0];
-    // console.log("data:",data);
+// module.exports.verifyemail = async(req, res) => {
+//     req = await json(req)
+//     let aboutme = req.aboutme;
+//     let email = req.email;
+//     let ob_id = req.id;
+//     // console.log(ob_id);
+//     let users = await User.find({ _id: ob_id });
+//     // console.log(users);
+//     let data = users[0];
+//     // console.log("data:",data);
 
-    if (users.length == 0) {
-        throw createError(401, 'user not exist');
-    } else {
-        // console.log("data:",data);
-        let emailCheck = await User.find({ email: email });
-        if (emailCheck.length != 0) {
-            throw createError(409, 'Email already exist');
-        }
-        query = { _id: ob_id }
-        const update = {
-            $set: { "aboutme": aboutme, "email": email, "isEmailConfirm": 1, "updated_at": new Date() }
-        };
+//     if (users.length == 0) {
+//         throw createError(401, 'user not exist');
+//     } else {
+//         // console.log("data:",data);
+//         let emailCheck = await User.find({ email: email });
+//         if (emailCheck.length != 0) {
+//             throw createError(409, 'Email already exist');
+//         }
+//         query = { _id: ob_id }
+//         const update = {
+//             $set: { "aboutme": aboutme, "email": email, "isEmailConfirm": 1, "updated_at": new Date() }
+//         };
 
-        let up = await User.findOneAndUpdate(query, update, { returnNewDocument: true, new: true })
-        const id = up._id;
-        const isActive = up.isActive;
-        return loginprocess(id,isActive);
-    }
-}
+//         let up = await User.findOneAndUpdate(query, update, { returnNewDocument: true, new: true })
+//         const id = up._id;
+//         const isEmailVerified = up.isEmailVerified;
+//         return loginprocess(id,isEmailVerified);
+//     }
+// }
 
 /**
  * ldap functions
@@ -348,6 +353,9 @@ module.exports.ldapauthprocess = async(req, res) => {
 
 module.exports.changepassword = async(req, res) => {
     let mainToken = req.headers['authorization'];
+    if (mainToken == "" || mainToken == null) {
+        throw createError(401, 'missing token in authorization header');
+    }
     let token = linkedTokens[mainToken] ? linkedTokens[mainToken] : mainToken
     req = await json(req)
     let oldpass = req.oldpass;
@@ -364,7 +372,7 @@ module.exports.changepassword = async(req, res) => {
         }
         let comparepass = await bcrypt.compare(oldpass, users[0].password);
         if (comparepass == false) {
-            throw createError(401, 'password does not match');
+            throw createError(401, 'Current password does not match.');
         } else {
             query = { _id: data.userId };
             const update = { $set: { "password": hashSync(newpass, 2), "updated_at": new Date() } };
@@ -373,7 +381,7 @@ module.exports.changepassword = async(req, res) => {
             return jsonString
         }
     } catch (err) {
-        throw createError(401, 'invalid token');
+        throw createError(401, err);
     }
 };
 
