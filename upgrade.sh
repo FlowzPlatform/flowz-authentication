@@ -48,6 +48,10 @@ then
     SERVICE_NAME_AUTH="$SERVICE_NAME_AUTH_MASTER";
     SERVICE_NAME_LDAP="$SERVICE_NAME_LDAP_MASTER";
     SERVICE_NAME_USER="$SERVICE_NAME_USER_MASTER";
+    
+    SERVICE_AUTH_HOST="$SERVICE_AUTH_HOST_MASTER";
+    SERVICE_LDAP_HOST="$SERVICE_LDAP_HOST_MASTER";
+    SERVICE_USER_HOST="$SERVICE_USER_HOST_MASTER";
   }
 elif [ "$TRAVIS_BRANCH" = "develop" ]
 then
@@ -72,6 +76,10 @@ then
       SERVICE_NAME_AUTH="$SERVICE_NAME_AUTH_DEVELOP";
       SERVICE_NAME_LDAP="$SERVICE_NAME_LDAP_DEVELOP";
       SERVICE_NAME_USER="$SERVICE_NAME_USER_DEVELOP";
+      
+      SERVICE_AUTH_HOST="$SERVICE_AUTH_HOST_DEVELOP";
+      SERVICE_LDAP_HOST="$SERVICE_LDAP_HOST_DEVELOP";
+      SERVICE_USER_HOST="$SERVICE_USER_HOST_DEVELOP";
     }
 elif [ "$TRAVIS_BRANCH" = "staging" ]
 then
@@ -95,6 +103,10 @@ then
       SERVICE_NAME_AUTH="$SERVICE_NAME_AUTH_STAGING";
       SERVICE_NAME_LDAP="$SERVICE_NAME_LDAP_STAGING";
       SERVICE_NAME_USER="$SERVICE_NAME_USER_STAGING";
+      
+      SERVICE_AUTH_HOST="$SERVICE_AUTH_HOST_STAGING";
+      SERVICE_LDAP_HOST="$SERVICE_LDAP_HOST_STAGING";
+      SERVICE_USER_HOST="$SERVICE_USER_HOST_STAGING";
 
     }    
 else
@@ -118,6 +130,10 @@ else
       SERVICE_NAME_AUTH="$SERVICE_NAME_AUTH_QA";
       SERVICE_NAME_LDAP="$SERVICE_NAME_LDAP_QA";
       SERVICE_NAME_USER="$SERVICE_NAME_USER_QA";
+      
+      SERVICE_AUTH_HOST="$SERVICE_AUTH_HOST_QA";
+      SERVICE_LDAP_HOST="$SERVICE_LDAP_HOST_QA";
+      SERVICE_USER_HOST="$SERVICE_USER_HOST_QA";
   }
 fi
 
@@ -135,7 +151,7 @@ curl -u ""$RANCHER_ACCESSKEY":"$RANCHER_SECRETKEY"" \
 -H 'Accept: application/json' \
 -H 'Content-Type: application/json' \
 -d '{
-  "inServiceStrategy":{"launchConfig": {"imageUuid":"docker:'$USERNAME'/authentication_auth_flowz:'$TAG'","kind": "container","labels":{"io.rancher.container.pull_image": "always","io.rancher.scheduler.affinity:host_label": "machine=cluster-flowz"},"ports": ["3001:3001/tcp"],"environment": {"MONGODB": "'"$MONGODB"'","SECRET": "'"$SECRET"'","DOMAINKEY":"'"$DOMAINKEY"'","accountSid":"'"$accountSid"'","authToken":"'"$authToken"'","no1":"'"$no1"'","FROM":"'"$FROM"'"},"healthCheck": {"type": "instanceHealthCheck","healthyThreshold": 2,"initializingTimeout": 60000,"interval": 2000,"name": null,"port": 3001,"recreateOnQuorumStrategyConfig": {"type": "recreateOnQuorumStrategyConfig","quorum": 1},"reinitializingTimeout": 60000,"responseTimeout": 60000,"strategy": "recreateOnQuorum","unhealthyThreshold": 3},"networkMode": "managed"}},"toServiceStrategy":null}' \
+  "inServiceStrategy":{"launchConfig": {"imageUuid":"docker:'$USERNAME'/authentication_auth_flowz:'$TAG'","kind": "container","labels":{"io.rancher.container.pull_image": "always","io.rancher.scheduler.affinity:host_label": "'"$SERVICE_AUTH_HOST"'"},"ports": ["3001:3001/tcp"],"environment": {"MONGODB": "'"$MONGODB"'","SECRET": "'"$SECRET"'","DOMAINKEY":"'"$DOMAINKEY"'","accountSid":"'"$accountSid"'","authToken":"'"$authToken"'","no1":"'"$no1"'","FROM":"'"$FROM"'"},"healthCheck": {"type": "instanceHealthCheck","healthyThreshold": 2,"initializingTimeout": 60000,"interval": 2000,"name": null,"port": 3001,"recreateOnQuorumStrategyConfig": {"type": "recreateOnQuorumStrategyConfig","quorum": 1},"reinitializingTimeout": 60000,"responseTimeout": 60000,"strategy": "recreateOnQuorum","unhealthyThreshold": 3},"networkMode": "managed"}},"toServiceStrategy":null}' \
 $RANCHER_URL/v2-beta/projects/$ENV_ID/services/$SERVICE_ID_AUTH?action=upgrade
 
 curl -u ""$RANCHER_ACCESSKEY":"$RANCHER_SECRETKEY"" \
@@ -143,7 +159,7 @@ curl -u ""$RANCHER_ACCESSKEY":"$RANCHER_SECRETKEY"" \
 -H 'Accept: application/json' \
 -H 'Content-Type: application/json' \
 -d '{
-  "inServiceStrategy":{"launchConfig": {"imageUuid":"docker:'$USERNAME'/authentication_ldap_flowz:'$TAG'","kind": "container","labels":{"io.rancher.container.pull_image": "always","io.rancher.scheduler.affinity:host_label": "machine=cluster-flowz"},"ports": ["3000:3000/tcp"],"environment": {"LDAPURL":"'"$LDAPURL"'","ADMINPASS":"'"$ADMINPASS"'","USERPASS":"'"$USERPASS"'" },"healthCheck": {"type": "instanceHealthCheck","healthyThreshold": 2,"initializingTimeout": 60000,"interval": 2000,"name": null,"port": 3000,"recreateOnQuorumStrategyConfig": {"type": "recreateOnQuorumStrategyConfig","quorum": 1},"reinitializingTimeout": 60000,"responseTimeout": 60000,"strategy": "recreateOnQuorum","unhealthyThreshold": 3},"networkMode": "managed"}},"toServiceStrategy":null}' \
+  "inServiceStrategy":{"launchConfig": {"imageUuid":"docker:'$USERNAME'/authentication_ldap_flowz:'$TAG'","kind": "container","labels":{"io.rancher.container.pull_image": "always","io.rancher.scheduler.affinity:host_label": "'"$SERVICE_LDAP_HOST"'"},"ports": ["3000:3000/tcp"],"environment": {"LDAPURL":"'"$LDAPURL"'","ADMINPASS":"'"$ADMINPASS"'","USERPASS":"'"$USERPASS"'" },"healthCheck": {"type": "instanceHealthCheck","healthyThreshold": 2,"initializingTimeout": 60000,"interval": 2000,"name": null,"port": 3000,"recreateOnQuorumStrategyConfig": {"type": "recreateOnQuorumStrategyConfig","quorum": 1},"reinitializingTimeout": 60000,"responseTimeout": 60000,"strategy": "recreateOnQuorum","unhealthyThreshold": 3},"networkMode": "managed"}},"toServiceStrategy":null}' \
 $RANCHER_URL/v2-beta/projects/$ENV_ID/services/$SERVICE_ID_LDAP?action=upgrade
 
 curl -u ""$RANCHER_ACCESSKEY":"$RANCHER_SECRETKEY"" \
@@ -151,5 +167,5 @@ curl -u ""$RANCHER_ACCESSKEY":"$RANCHER_SECRETKEY"" \
 -H 'Accept: application/json' \
 -H 'Content-Type: application/json' \
 -d '{
-  "inServiceStrategy":{"launchConfig": {"imageUuid":"docker:'$USERNAME'/authentication_user_flowz:'$TAG'","kind": "container","labels":{"io.rancher.container.pull_image": "always","io.rancher.scheduler.affinity:host_label": "machine=cluster-flowz"},"ports": ["3002:3002/tcp"],"environment": {"MONGODB": "'"$MONGODB"'","SECRET": "'"$SECRET"'"},"healthCheck": {"type": "instanceHealthCheck","healthyThreshold": 2,"initializingTimeout": 60000,"interval": 2000,"name": null,"port": 3002,"recreateOnQuorumStrategyConfig": {"type": "recreateOnQuorumStrategyConfig","quorum": 1},"reinitializingTimeout": 60000,"responseTimeout": 60000,"strategy": "recreateOnQuorum","unhealthyThreshold": 3},"networkMode": "managed"}},"toServiceStrategy":null}' \
+  "inServiceStrategy":{"launchConfig": {"imageUuid":"docker:'$USERNAME'/authentication_user_flowz:'$TAG'","kind": "container","labels":{"io.rancher.container.pull_image": "always","io.rancher.scheduler.affinity:host_label": "'"$SERVICE_USER_HOST"'"},"ports": ["3002:3002/tcp"],"environment": {"MONGODB": "'"$MONGODB"'","SECRET": "'"$SECRET"'"},"healthCheck": {"type": "instanceHealthCheck","healthyThreshold": 2,"initializingTimeout": 60000,"interval": 2000,"name": null,"port": 3002,"recreateOnQuorumStrategyConfig": {"type": "recreateOnQuorumStrategyConfig","quorum": 1},"reinitializingTimeout": 60000,"responseTimeout": 60000,"strategy": "recreateOnQuorum","unhealthyThreshold": 3},"networkMode": "managed"}},"toServiceStrategy":null}' \
 $RANCHER_URL/v2-beta/projects/$ENV_ID/services/$SERVICE_ID_USER?action=upgrade
