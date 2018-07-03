@@ -44,6 +44,10 @@ then
     no1="$no1_master";
     FROM="$FROM_master";
     no2="$no2_master";
+   
+    SERVICE_NAME_AUTH="$SERVICE_NAME_AUTH_MASTER";
+    SERVICE_NAME_LDAP="$SERVICE_NAME_LDAP_MASTER";
+    SERVICE_NAME_USER="$SERVICE_NAME_USER_MASTER";
   }
 elif [ "$TRAVIS_BRANCH" = "develop" ]
 then
@@ -64,6 +68,10 @@ then
       no1="$no1_develop";
       FROM="$FROM_develop";
       no2="$no2_develop";
+      
+      SERVICE_NAME_AUTH="$SERVICE_NAME_AUTH_DEVELOP";
+      SERVICE_NAME_LDAP="$SERVICE_NAME_LDAP_DEVELOP";
+      SERVICE_NAME_USER="$SERVICE_NAME_USER_DEVELOP";
     }
 elif [ "$TRAVIS_BRANCH" = "staging" ]
 then
@@ -84,11 +92,15 @@ then
       no1="$no1_staging";
       FROM="$FROM_staging";
       no2="$no2_staging";
+      SERVICE_NAME_AUTH="$SERVICE_NAME_AUTH_STAGING";
+      SERVICE_NAME_LDAP="$SERVICE_NAME_LDAP_STAGING";
+      SERVICE_NAME_USER="$SERVICE_NAME_USER_STAGING";
+
     }    
 else
   {
       echo "call $TRAVIS_BRANCH branch"
-      ENV_ID=`curl -u ""$RANCHER_ACCESSKEY_QA":"$RANCHER_SECRETKEY_QA"" -X GET -H 'Accept: application/json' -H 'Content-Type: application/json' "$RANCHER_URL_QA/v2-beta/projects?name=QA" | jq '.data[].id' | tr -d '"'`
+      ENV_ID=`curl -u ""$RANCHER_ACCESSKEY_QA":"$RANCHER_SECRETKEY_QA"" -X GET -H 'Accept: application/json' -H 'Content-Type: application/json' "$RANCHER_URL_QA/v2-beta/projects?name=Develop" | jq '.data[].id' | tr -d '"'`
       echo $ENV_ID
       USERNAME="$DOCKER_USERNAME";
       TAG="qa";
@@ -103,16 +115,19 @@ else
       no1="$no1_qa";
       FROM="$FROM_qa";
       no2="$no2_qa";
+      SERVICE_NAME_AUTH="$SERVICE_NAME_AUTH_QA";
+      SERVICE_NAME_LDAP="$SERVICE_NAME_LDAP_QA";
+      SERVICE_NAME_USER="$SERVICE_NAME_USER_QA";
   }
 fi
 
-SERVICE_ID_AUTH=`curl -u ""$RANCHER_ACCESSKEY":"$RANCHER_SECRETKEY"" -X GET -H 'Accept: application/json' -H 'Content-Type: application/json' "$RANCHER_URL/v2-beta/projects/$ENV_ID/services?name=auth-authentication-flowz" | jq '.data[].id' | tr -d '"'`
+SERVICE_ID_AUTH=`curl -u ""$RANCHER_ACCESSKEY":"$RANCHER_SECRETKEY"" -X GET -H 'Accept: application/json' -H 'Content-Type: application/json' "$RANCHER_URL/v2-beta/projects/$ENV_ID/services?name=$SERVICE_NAME_AUTH" | jq '.data[].id' | tr -d '"'`
 echo $SERVICE_ID_AUTH
 
-SERVICE_ID_LDAP=`curl -u ""$RANCHER_ACCESSKEY":"$RANCHER_SECRETKEY"" -X GET -H 'Accept: application/json' -H 'Content-Type: application/json' "$RANCHER_URL/v2-beta/projects/$ENV_ID/services?name=ldap-authentication-flowz" | jq '.data[].id' | tr -d '"'`
+SERVICE_ID_LDAP=`curl -u ""$RANCHER_ACCESSKEY":"$RANCHER_SECRETKEY"" -X GET -H 'Accept: application/json' -H 'Content-Type: application/json' "$RANCHER_URL/v2-beta/projects/$ENV_ID/services?name=$SERVICE_NAME_LDAP" | jq '.data[].id' | tr -d '"'`
 echo $SERVICE_ID_LDAP
 
-SERVICE_ID_USER=`curl -u ""$RANCHER_ACCESSKEY":"$RANCHER_SECRETKEY"" -X GET -H 'Accept: application/json' -H 'Content-Type: application/json' "$RANCHER_URL/v2-beta/projects/$ENV_ID/services?name=user-authentication-flowz" | jq '.data[].id' | tr -d '"'`
+SERVICE_ID_USER=`curl -u ""$RANCHER_ACCESSKEY":"$RANCHER_SECRETKEY"" -X GET -H 'Accept: application/json' -H 'Content-Type: application/json' "$RANCHER_URL/v2-beta/projects/$ENV_ID/services?name=$SERVICE_NAME_USER" | jq '.data[].id' | tr -d '"'`
 echo $SERVICE_ID_USER
 
 curl -u ""$RANCHER_ACCESSKEY":"$RANCHER_SECRETKEY"" \
