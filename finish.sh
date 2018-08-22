@@ -11,7 +11,6 @@
 # 'http://rancher.flowz.com:8080/v2-beta/projects/1a29/services/1s106?action=finishupgrade'
 
 
-
 if [ "$TRAVIS_BRANCH" = "master" ]
 then
     {
