@@ -24,7 +24,6 @@
 
 
 
-
 if [ "$TRAVIS_BRANCH" = "master" ]
 then
     {
