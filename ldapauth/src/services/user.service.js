@@ -1,4 +1,5 @@
-const { json, send } = require('micro')
+const { json, send} = require('micro')
+
 const { sign, verify } = require('jsonwebtoken');
 const _ = require('lodash')
 const ldapConfig = require('../config.js');
@@ -9,6 +10,9 @@ let Ajv = require('ajv');
 let ajv = new Ajv({ allErrors: true });
 
 const ldapschema = require('../schema/schema.js')
+
+const io = require('socket.io')(ldapConfig.socketPort);
+io.on('connection', socket => {});
 
 let ldap = require('ldapjs');
 
@@ -382,7 +386,12 @@ let self = {
                   delete cacheRoleResource[cacheKey];
                   delete cacheModuleWise[cacheGetAll];
                   delete cacheModuleRoleWise[cacheRole];
-
+                  io.emit('permissionChanged', {
+                    app:body.app,
+                    taskType:body.taskType,
+                    roleId:body.roleId,
+                    resourceId:body.resourceId
+                  });
                   resBody = { 'status': 1, 'message': 'Permission set successfully' };
               } else {
                   resCode = 404;
