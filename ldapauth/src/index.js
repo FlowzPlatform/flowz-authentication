@@ -30,6 +30,7 @@ module.exports = router(
     post('/setpermission', user.setPermission),
     get('/getpermission/:app/:taskType/:roleId/:resourceId', user.getPermission),
     get('/getallpermission/:app', user.getAllPermission),
+    get('/getallrolepermission/:app/:taskType/:roleId', user.getAllRolePermission),
     post('/init', user.init),
     get('/groupRoles', user.groupRoles),
     //post('/hellopost', hellopost),
