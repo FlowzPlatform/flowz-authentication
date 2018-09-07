@@ -1,5 +1,5 @@
 module.exports = {
-  socketPort: 4042,
+  socketPort: 4043,
   secret: process.env.SECRET,
   database: process.env.MONGODB
 };
