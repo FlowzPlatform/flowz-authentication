@@ -1,6 +1,13 @@
 const { json, send, createError, sendError } = require('micro');
 const User = require('../models/user');
 let responce = require('./responce');
+let config = require('../config.js');
+
+console.log("===============socketPort=======",config.socketPort);
+const io = require('socket.io')(config.socketPort);
+io.on('connection', socket => {
+  console.log("==========socket=connect====");
+});
 
 module.exports.alluserdetails = async () => {
   try {
@@ -54,6 +61,7 @@ module.exports.updateuserdetails = async (req, res) => {
   try {
     let data = await User.update(query, body, { upsert: true, setDefaultsOnInsert: true })
     if (data.nModified) {
+      io.emit('updateduserdetails', data);
       let sucessReply = sendSuccessResponce(1, '201', 'updateuserdetails', data);
       return sucessReply;
     } else {
