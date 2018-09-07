@@ -10,7 +10,7 @@ RUN npm install
 
 COPY . /usr/src/app
 
-EXPOSE 3002 4042
+EXPOSE 3002 4043
 #ENV MONGODB=mongodb://localhost:27017
 #ENV SECRET=abcdefgabcdefg
 
