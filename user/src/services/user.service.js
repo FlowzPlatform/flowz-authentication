@@ -3,11 +3,8 @@ const User = require('../models/user');
 let responce = require('./responce');
 let config = require('../config.js');
 
-console.log("===============socketPort=======",config.socketPort);
 const io = require('socket.io')(config.socketPort);
-io.on('connection', socket => {
-  console.log("==========socket=connect====");
-});
+io.on('connection', socket => {});
 
 module.exports.alluserdetails = async () => {
   try {
