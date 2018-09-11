@@ -91,6 +91,19 @@ const sociallogin = (id , isEmailVerified ) => {
 
 module.exports.sociallogin = sociallogin
 
+/* validate token  */
+
+module.exports.validateToken = async(req, res) => { 
+   try{
+   let token = req.headers['authorization']
+   let data = verify(token, secret)
+    send(res, 200, {"status": 1, "code": "200", "message": "Token verified succesfully","id": data.userId})
+}catch(err){
+    send(res, 401, {"status": 0, "code": "401", "message": "Unauthorized token",err: err})
+}
+}
+
+
 /**
  * get userdetails
  */
