@@ -95,7 +95,6 @@ module.exports.getspecificuserdetails = async (req, res) => {
   for (var i = 0; i < users.length; i++) {
     obj_ids.push(new ObjectID(users[i].toString()));
   }
-  console.log(obj_ids)
   try {
     let data = await User.find({ _id: { $in: obj_ids } });
     if (data != null) {
