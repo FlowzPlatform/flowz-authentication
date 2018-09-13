@@ -21,7 +21,7 @@ let cacheRoleResource = {}
 let cacheModuleWise = {}
 let cacheModuleRoleWise = {}
 
-// console.log("binding :: " + ldapConfig.ldapUrl);
+console.log("binding :: " + ldapConfig.ldapUrl);
 // ldap://localhost:389
 // let ldapUrl = "ldap://" + "ldapserver"
 let client = ldap.createClient({
@@ -100,19 +100,25 @@ let self = {
                 } else {
                   resolve({ 'auth': false });
                 }
+
             });
         });
+
     },
 
     ldapentry: async(strDn, entry) => {
         return new Promise((resolve, reject) => {
             client.add(strDn, entry, function(err, res) {
+                // console.log("entry :: " + entry)
+
                 if (!err)
                     resolve(true);
+                // resolve(err);
                 resolve(false);
             });
         });
     },
+
 
     ldapmodify: async(strDn, attrs, operation) => {
         return new Promise((resolve, reject) => {
@@ -139,9 +145,11 @@ let self = {
                     searchData.push(entry.object)
                 });
                 res.on('searchReference', function(referral) {
+                    //resolve({'event':'searchReference','reponse':referral.uris.join()});
                 });
                 res.on('error', function(err) {
                     resolve({});
+                    //resolve({'event':'error','reponse':err.message});
                 });
                 res.on('end', function(result) {
                     resolve({ 'response': searchData });
@@ -214,7 +222,9 @@ let self = {
                 //  admin is authenticated, search for given user
                 let searchOptions = {
                     filter: '(mail=' + body.email + ')',
+                    //filter: '(cn=*)',
                     scope: 'sub'
+                        //attributes: ['dn', 'sn', 'cn']
                 };
 
                 let strDn = 'ou=' + ldapConfig.userNs + ',' + ldapConfig.ldapDc;
@@ -235,9 +245,12 @@ let self = {
                         uidNumber: body.uidNumber,
                         userpassword: body.userpassword
                     };
+                    // console.log("entry", entry)
                     let clientAddPath = 'cn=' + entry.cn + "," + "ou=" + ldapConfig.userNs + "," + ldapConfig.ldapDc;
+                    // console.log("clientAddPath", clientAddPath)
                     return new Promise((resolve, reject) => {
                         client.add(clientAddPath, entry, function(err, res) {
+
                             if (!err) {
                                 resolve({ "status": 1, "code": 200, "message": "user registerd succesfully" })
                             } else {
@@ -250,19 +263,29 @@ let self = {
         } catch (err) {
             console.log(err);
         }
+
+        // send(res, 200, {})
     }),
 
     importuserentry: async(userdata) => {
         for (let key in userdata) {
             if (userdata.hasOwnProperty(key)) {
                 let val = userdata[key];
+                // console.log("length", val.length)
                 for (let i = 0; i < val.length; i++) {
+                    // console.log("i->", i, val[i])
+                    // console.log("contct",parseFloat(val[i].data.ContactID))
+                    // console.log("type",typeof(parseFloat(val[i].data.ContactID)))
                     let searchOptions = {
                         filter: '(mail=' + val[i].data.EmailAddress + ')',
+                        //filter: '(cn=*)',
                         scope: 'sub'
+                            //attributes: ['dn', 'sn', 'cn']
                     };
                     let strDn = "ou=" + ldapConfig.userNs + "," + ldapConfig.ldapDc;
                     let result = await self.ldapsearch(strDn, searchOptions);
+                    // console.log("result", result.response)
+                    // console.log(result.response.length)
 
                     if (!result.response.length) {
                         let entry = {
@@ -278,10 +301,15 @@ let self = {
                             uidNumber: 5055,
                             userpassword: ldapConfig.userPass
                         };
+                        // console.log("entry", entry)
                         let clientAddPath = 'cn=' + entry.cn + "," + "ou=" + ldapConfig.userNs + "," + ldapConfig.ldapDc;
                         let entryresponse = await self.ldapentry(clientAddPath, entry);
+                        // console.log("entryresponse", entryresponse)
+
+                        // return(true)
                     } else {
                         console.log("user found")
+                            // return (false)
                     }
                 }
             }
@@ -297,6 +325,7 @@ let self = {
         let userdata = await self.getuserdata();
 
         let importuserentry = await self.importuserentry(userdata);
+        // console.log("importuserentry", importuserentry)
 
         send(res, "200", { "status": 1, "code": "200", "message": "import users succsfully" })
     }),
@@ -305,6 +334,9 @@ let self = {
 
         return new Promise((resolve, reject) => {
             request(ldapConfig.importUserUrl, function(error, response, body) {
+                // console.log('error:', error); // Print the error if one occurred
+                // console.log('statusCode:', response && response.statusCode); // Print the response status code if a response was received
+                // console.log('body:', JSON.parse(body).data);
                 let impdata = JSON.parse(body).data;
                 resolve(impdata);
             });
@@ -389,6 +421,7 @@ let self = {
                     } else {
                         objAttrL = [resAcc.response[0].l];
                     }
+
                     let currentAttr;
                     if (objAttrL) {
                         currentAttr = _.find(objAttrL, function(str) {
@@ -404,7 +437,9 @@ let self = {
                         await self.ldapmodify(dnRolePath, attrs, 'delete');
                     }
                 }
+
             }
+
             // add new res with accessVal
             let attrs = {
                 l: [resourceId + ":" + accessValue]
@@ -417,6 +452,7 @@ let self = {
 
     getPermission: cors(async(req, res) => {
         try {
+            //const body = await json(req)
             let isAdminAuth = isUserAuth = false;
             let cacheKey = `${req.params.app}_${req.params.taskType}_${req.params.roleId}_${req.params.resourceId}`;
 
@@ -430,6 +466,7 @@ let self = {
                 const dnTaskTypeNs = "ou=" + ldapConfig.tasktype + "," + dnAppPath;
                 const dnTaskTypePath = "ou=" + req.params.taskType + "," + dnTaskTypeNs;
 
+                //  cn=113dbe20-588c-4e48-bb35-35cb17a3fd65,ou=roles,ou=cd930dbb-9e11-42f2-80d2-fa9862f55e12,ou=tasktype,ou=todoapp,ou=apps,dc=ldaptest,dc=local
                 const searchPath = "cn=" + req.params.roleId + ",ou=roles," + dnTaskTypePath;
                 const roleOcc = "ou=" + req.params.resourceId + ",ou=resources," + dnAppPath;
 
@@ -438,9 +475,12 @@ let self = {
                     scope: 'sub',
                     attributes: ['l']
                 };
+
                 let res = await self.ldapsearch(searchPath, opt);
+
                 let resourceAccess;
                 if (!_.isEmpty(res.response)) {
+
                     let objAttrL;
                     if (_.isObject(res.response[0].l)) {
                         objAttrL = res.response[0].l
@@ -471,23 +511,29 @@ let self = {
 
     getAllPermission: cors(async(req, res) => {
         try {
+            //const body = await json(req)
             let cacheGetAll = `${req.params.app}`
             if(cacheModuleWise[cacheGetAll]) {
               return cacheModuleWise[cacheGetAll]
             }
+
             let isAdminAuth = isUserAuth = false;
             isAdminAuth = await self.ldapbind(ldapConfig.adminDn, ldapConfig.adminPass);
 
             if (isAdminAuth.auth) {
+
                 const dnAppRootPath = "ou=" + ldapConfig.approot + "," + ldapConfig.ldapDc;
                 const dnAppPath = "ou=" + req.params.app + "," + dnAppRootPath;
                 const dnTaskTypeNs = "ou=" + ldapConfig.tasktype + "," + dnAppPath;
 
                 let opt = {
                     filter: '(objectClass=organizationalRole)',
-                    scope: 'sub'
+                    scope: 'sub',
+                    //attributes: ['cn', 'l']
                 };
+
                 let res = await self.ldapsearch(dnTaskTypeNs, opt);
+
                 let resourceAccess;
                 let allPerm = [];
                 if (!_.isEmpty(res.response)) {
@@ -511,6 +557,7 @@ let self = {
                                     'resourceId': objResAcc[0],
                                     'access_value': objResAcc[1],
                                 }
+                                //console.log('inner for.....' + valL);
                             allPerm.push(obj);
                         })
                     });
@@ -524,26 +571,33 @@ let self = {
     }),
     getAllRolePermission: cors(async(req, res) => {
         try {
+            //const body = await json(req)
             let cacheRole = `${req.params.app}_${req.params.taskType}_${req.params.roleId}`
             if(cacheModuleRoleWise[cacheRole]) {
               return cacheModuleRoleWise[cacheRole]
             }
+
             let isAdminAuth = isUserAuth = false;
             isAdminAuth = await self.ldapbind(ldapConfig.adminDn, ldapConfig.adminPass);
 
             if (isAdminAuth.auth) {
+
                 const dnAppRootPath = "ou=" + ldapConfig.approot + "," + ldapConfig.ldapDc;
                 const dnAppPath = "ou=" + req.params.app + "," + dnAppRootPath;
                 const dnTaskTypeNs = "ou=" + ldapConfig.tasktype + "," + dnAppPath;
                 const dnTaskTypePath = "ou=" + req.params.taskType + "," + dnTaskTypeNs;
 
+                //  cn=113dbe20-588c-4e48-bb35-35cb17a3fd65,ou=roles,ou=cd930dbb-9e11-42f2-80d2-fa9862f55e12,ou=tasktype,ou=todoapp,ou=apps,dc=ldaptest,dc=local
                 const searchPath = "cn=" + req.params.roleId + ",ou=roles," + dnTaskTypePath;
 
                 let opt = {
                     filter: '(objectClass=organizationalRole)',
-                    scope: 'sub'
+                    scope: 'sub',
+                    //attributes: ['cn', 'l']
                 };
+
                 let res = await self.ldapsearch(searchPath, opt);
+
                 let resourceAccess;
                 let allPerm = [];
                 if (!_.isEmpty(res.response)) {
@@ -567,6 +621,7 @@ let self = {
                                     'resourceId': objResAcc[0],
                                     'access_value': objResAcc[1],
                                 }
+                                //console.log('inner for.....' + valL);
                             allPerm.push(obj);
                         })
                     });
@@ -611,6 +666,7 @@ let self = {
             uniqueMember: uniqueMember
         }
         return await self.ldapentry(strDn, entry);
+
     },
 
     init: cors(async(req, res) => {
@@ -625,6 +681,10 @@ let self = {
             // check if unit "apps" exist or not
             const dnAppRootPath = "ou=" + ldapConfig.approot + "," + ldapConfig.ldapDc;
             await self.checkOrgUnit(ldapConfig.approot, dnAppRootPath)
+
+            // console.log('============================================');
+            // console.log('Please provide app name');
+            // console.log('============================================');
 
             // check if unit given app exist or not
             const dnAppPath = "ou=" + appName + "," + dnAppRootPath;
@@ -676,6 +736,8 @@ let self = {
         let isAdminAuth = isUserAuth = false;
         isAdminAuth = await self.ldapbind(ldapConfig.adminDn, ldapConfig.adminPass);
         if (isAdminAuth.auth) {
+
+            //  ou=groupRoles,dc=ldapserver,dc=local
             let strDn = "ou=" + ldapConfig.groupRoles + "," + ldapConfig.ldapDc;
             await self.checkOrgUnit(ldapConfig.groupRoles, strDn)
 
@@ -686,25 +748,37 @@ let self = {
             };
 
             let result = await self.ldapsearch(strDn, searchOptions);
+            //    console.log("result",result.response)
             let grouproles = result.response
+                // console.log("grouproles", grouproles)
             let mapdata = grouproles.map(a => a.owner);
+            // console.log("mapdata", mapdata)
             let matchowner = newData(mapdata)
 
             function newData(data) {
                 let matchowner = [];
                 for (let i in data) {
+                    // console.log(i);
+                    // console.log(i + "", mapdata[i])
                     if (data[i] instanceof Array) {
                         let multiData = newData(data[i])
+                            // console.log("multidata",multiData)
+                            // matchowner = matchowner.concat(multiData)
                         matchowner.push(multiData)
                     } else if (data[i]) {
+                        // console.log(i + "", mapdata[i])
                         let spdata = data[i].split(",")[0].split('=')[1];
+                        // console.log("split array", spdata)
                         matchowner.push(spdata)
                     } else {
+                        //   console.log(i + "",mapdata[i])
                         matchowner.push(data[i])
                     }
                 }
                 return matchowner
             }
+            // console.log("matchowner", matchowner)
+
             for (let i = 0; i < grouproles.length; i++) {
                 grouproles[i].rolename = grouproles[i].cn;
                 grouproles[i].owner = matchowner[i]
@@ -713,18 +787,30 @@ let self = {
                 delete grouproles[i].dn;
                 delete grouproles[i].controls;
             }
+            // console.log(grouproles);
             send(res, 200, { "status": "1", "code": "200", grouproles })
         }
     }),
 
     userauth: cors(async(req, res) => {
+
+        /*
+        res.setHeader('Access-Control-Allow-Origin', '*');
+        res.setHeader('Access-Control-Allow-Credentials', 'true');
+        res.setHeader('Access-Control-Allow-Methods', 'GET,HEAD,OPTIONS,POST,PUT,DELETE');
+        res.setHeader("Access-Control-Allow-Headers", "Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With")
+        */
         try {
             const body = await json(req)
+                //send(res, 200, body)
+
             let valid = ajv.validate(ldapschema.userAuth, body);
+
             if (!valid) {
                 let resCode = 404;
                 let resBody = { 'status': 0, 'code': 404, 'error': ajv.errors }
                 send(res, resCode, resBody)
+                    // console.log('Invalid: ', ajv.errors);
                 return;
             }
 
@@ -735,23 +821,35 @@ let self = {
                 //  admin is authenticated, search for given user
                 let searchOptions = {
                     filter: '(uid=' + body.userid + ')',
+                    //filter: '(cn=*)',
                     scope: 'sub'
+                        //attributes: ['dn', 'sn', 'cn']
                 };
 
                 let strDn = 'ou=users,' + ldapConfig.ldapDc;
                 let result = await self.ldapsearch(strDn, searchOptions);
 
                 if (result.response.length) {
+
                     let searchUserDn = result.response[0].dn;
+
                     isUserAuth = await self.ldapbind(searchUserDn, body.passwd);
+
                     if (isUserAuth.auth) {
+                        ///let userAssignedRoles = await self.userroles(body.userid);
+
                         let userData = {
                             'authenticated': true,
-                            'uid': body.userid
+                            'uid': body.userid,
+                            ///'roles': userAssignedRoles
                         }
+
                         let token = sign(userData, ldapConfig.jwtKey);
+
                         let authRes = { 'status': 1, 'code': 200, 'message': 'succesfully authenticated', 'token': token };
+
                         send(res, 200, authRes);
+
                         return;
                         //return isUserAuth;
                     } else {
@@ -763,11 +861,39 @@ let self = {
                     return;
                 }
             }
+
             send(res, 404, { 'auth': false });
+
+            /*
+            let isUserAuth = false;
+            const strBind = 'cn='+body.userid+',ou=users,'+ldapDc;
+            console.log(strBind);
+
+            return new Promise((resolve, reject) => {
+              client.bind(strBind, body.passwd, function(err) {
+                //assert.ifError(err):
+                 if(!err)
+                  isUserAuth = true;
+
+                console.log(err);
+
+                resolve({ "auth": isUserAuth })
+              });
+            });
+            */
+
         } catch (err) {
             console.log(err);
+            /*
+            res.setHeader('Access-Control-Allow-Origin', '*');
+            res.setHeader('Access-Control-Allow-Credentials', 'true');
+            res.setHeader('Access-Control-Allow-Methods', 'GET,HEAD,OPTIONS,POST,PUT,DELETE');
+            res.setHeader("Access-Control-Allow-Headers", "Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With")
+            */
             send(res, 403, { 'auth': false, 'error': err });
+            //throw createError(403, 'error!');
         }
+
         return;
     })
 };

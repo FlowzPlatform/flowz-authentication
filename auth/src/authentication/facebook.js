@@ -8,6 +8,7 @@ const User = require('../models/user');
 const facebookAuth = microAuthFacebook(index.options);
 
 module.exports.facebook = facebookAuth(async (req, res, auth) => {
+   console.log(auth)
    let id = auth.result.info.id
    let provider = auth.result.provider
    let fullname = auth.result.info.name
@@ -30,9 +31,10 @@ module.exports.facebook = facebookAuth(async (req, res, auth) => {
       user.save(function(err){
         if(err)
         {
-          throw createError(401, 'data insertaion failure');
+          console.log(err);
         }
         else{
+          //console.log(user._id);
           let ob_id = user._id;
           const statusCode = 302
           const location = index.redirect_app_url+'?ob_id='+ob_id

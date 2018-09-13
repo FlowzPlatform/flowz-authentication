@@ -47,6 +47,8 @@ const userdetailsbyemailRoute = route('/api/userdetailsbyemail', 'POST')
 const sendsmsRoute = route('/api/sendsms', 'POST')
 const validateTokenRoute = route('/api/validatetoken','POST')
 
+// const { twitcallbackUrl,twitpath,gitcallbackUrl,gitpath,gitscope,fbcallbackUrl,fbpath,fbscope,gpluscallbackUrl,gpluspath,gplusscope } = require('./src/social-config');
+
 module.exports = async function (req, res) {
 
   res.setHeader('Content-Type', 'application/json');
@@ -66,6 +68,7 @@ module.exports = async function (req, res) {
     const _data = await parse(req);
     let datasearch = await authConfigs.find({ userid: "100" });
     let data = datasearch[0];
+    console.log("github",data._doc.social_configs.github)
     success_url = _data.success_url;
     key = data._doc.social_configs.github.key;
     seceret = data._doc.social_configs.github.seceret;
@@ -84,6 +87,7 @@ module.exports = async function (req, res) {
     const _data = await parse(req);
     let datasearch = await authConfigs.find({ userid: "100" });
     let data = datasearch[0];
+    console.log("facebook",data._doc.social_configs.facebook)
     success_url = _data.success_url;
     key = data._doc.social_configs.facebook.key;
     seceret = data._doc.social_configs.facebook.seceret;
@@ -102,6 +106,7 @@ module.exports = async function (req, res) {
     const _data = await parse(req);
     let datasearch = await authConfigs.find({ userid: "100" });
     let data = datasearch[0];
+    console.log("twitter",data._doc.social_configs.twitter)
     success_url = _data.success_url;
     key = data._doc.social_configs.twitter.key;
     seceret = data._doc.social_configs.twitter.seceret;
@@ -120,6 +125,7 @@ module.exports = async function (req, res) {
     const _data = await parse(req);
     let datasearch = await authConfigs.find({ userid: "100" });
     let data = datasearch[0];
+    console.log("google",data._doc.social_configs.google)
 
     success_url = _data.success_url;
     key = data._doc.social_configs.google.key;
@@ -128,6 +134,7 @@ module.exports = async function (req, res) {
     if (success_url) {
 
       if (typeof success_url !== 'undefined') {
+        module.exports.redirect_app_url = success_url;
       }
     }
     getGplus(req);
@@ -138,6 +145,8 @@ module.exports = async function (req, res) {
     const _data = await parse(req);
     let datasearch = await authConfigs.find({ userid: "100" });
     let data = datasearch[0];
+    console.log(data)
+    console.log("_data",_data)
     success_url = _data.success_url;
     key = data._doc.social_configs.linkedin.key;
     seceret = data._doc.social_configs.linkedin.seceret;
@@ -187,6 +196,7 @@ function getTwitter(req) {
     callbackUrl: twitcallbackUrl,
     path: '/auth/twitter'
   };
+ console.log("options", options)
   module.exports.options = options;
   twitter = require('./src/authentication/twitter');
 
@@ -201,6 +211,7 @@ function getGithub(req) {
     path: '/auth/github',
     scope: 'user'
   };
+  console.log("options", options)
   module.exports.options = options;
   github = require('./src/authentication/github');
 }
@@ -214,6 +225,7 @@ function getFacebook(req) {
     path: '/auth/facebook',
     fields: 'name,email,cover,first_name'
   };
+   console.log("options", options)
   module.exports.options = options;
   fb = require('./src/authentication/facebook');
 }
@@ -228,6 +240,7 @@ function getGplus(req) {
     scope: 'https://www.googleapis.com/auth/plus.me',
     access_type: 'offline'
   };
+  console.log("options", options)
   module.exports.options = options;
   Gplus = require('./src/authentication/Gplus');
 }
@@ -241,6 +254,8 @@ function getLinkedin(req) {
     path: '/auth/linkedin',
     scope: 'r_basicprofile r_emailaddress'
   };
+  console.log(options);
+
   module.exports.options = options;
   linkedin = require('./src/authentication/linkedin');
 }

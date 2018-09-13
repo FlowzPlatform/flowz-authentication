@@ -1,3 +1,4 @@
+// const microAuthGoogle = require('googleauth-micro');
 const sleep = require('then-sleep')
 const { json, send, createError } = require('micro');
 const authLinkedin = require('./authentication');
@@ -9,6 +10,7 @@ const User = require('../models/user');
 
 module.exports.linkedin = linkedinAuth(async (req, res, auth) => {
 
+  console.log(auth)
   let id = auth.result.info.id
   let provider = auth.result.provider
   let fullname = auth.result.info.formattedName
@@ -21,6 +23,7 @@ module.exports.linkedin = linkedinAuth(async (req, res, auth) => {
   let data_length = await User.find({ social_uid: id });
   let data = data_length[0];
 
+
   if (!auth) {
     return send(res, 404, 'Not Found');
   }
@@ -30,13 +33,15 @@ module.exports.linkedin = linkedinAuth(async (req, res, auth) => {
     return send(res, 403, 'Forbidden');
   }
 
+  // console.log("googletoken",token);
   if (data_length.length == 0) {
     let user = new User({ aboutme: null, fullname: fullname, firstname: firstname, lastname: lastname, email: email, password: null, dob: null, role: null, signup_type: null, image_name: null, image_url: publicProfileUrl, forget_token_created_at: null, provider: provider, access_token: access_token, isEmailConfirm: 0, social_uid: id, isActive:1 });
     user.save(function (err) {
       if (err) {
-        throw createError(401, 'data insertaion failure');
+        console.log(err);
       }
       else {
+        //console.log(user._id);
         let ob_id = user._id;
         const statusCode = 302
         const location = index.redirect_app_url + '?ob_id=' + ob_id
@@ -56,4 +61,5 @@ module.exports.linkedin = linkedinAuth(async (req, res, auth) => {
     const location = index.redirect_app_url + '?ob_id=' + ob_id
     redirect(res, statusCode, location)
   }
+
 });
