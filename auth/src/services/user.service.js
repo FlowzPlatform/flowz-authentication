@@ -33,18 +33,14 @@ const signup = (req, res1, { username, aboutme, fullname, firstname, lastname, m
     var uniqueHash = await generateToken().catch((err) => { send(res1, 401, { status: "0", code: "401", message: "UniqueHash error." }) })
     let user = new User({ username: username, aboutme: aboutme, fullname: fullname, firstname: firstname, lastname: lastname, middlename: middlename, companyname: companyname, address1: address1, address2: address2, country: country, state: state, city: city, zipcode: zipcode, phonenumber: phonenumber, fax: fax, email: email, password: hashSync(password, 2), dob: dob, role: role, signup_type: signup_type, image_name: image_name, image_url: image_url, forget_token_created_at: null, provider: null, access_token: null, picture: null, isActive: 1, veri_token: uniqueHash, isEmailVerified: 0 });
     userdata = await user.save().catch((err) => { send(res1, 401, { status: "0", code: "401", message: "User registration error." })});
-    console.log("userdata", userdata)
     let url = req.headers['x-forwarded-proto'] + "://" + req.headers['x-forwarded-host']
     let referer = req.headers.referer;
     let to = userdata.email;
     let newToken = userdata.veri_token;
     await verifyUserEmail(to, newToken, url, referer).then(async (emailResponse) => {
-      console.log("-- emailResponse -- ",emailResponse)
       await send(res1, 200, { status: "1", code: "200", message: "You are successfully register. Please verify your email." })
     }).catch((err) => {
-      console.log("-- emailResponse err --", err)
       removeUser(User, userdata._id).then((removeUser) => {
-        console.log("-- removeUser --", removeUser)
         send(res1, 401, { status: "0", code: "401", message: "Registration failed.Found error while sending verification email." })
       }).catch((err) => {
         send(res1, 401, { status: "0", code: "401", message: "removeUser failed." })
@@ -52,7 +48,6 @@ const signup = (req, res1, { username, aboutme, fullname, firstname, lastname, m
     })
     return;
   }).catch((err) => {
-    console.log("err >>>>>>>", err)
     throw createError(409, 'email already exists');
   })
 }
@@ -132,8 +127,6 @@ module.exports.verifyemail = async (req, res) => {
       let up = await User.findOneAndUpdate(query, update, { returnNewDocument: true, new: true })
       let location = referer
       redirect(res, 302, location)
-      // let sucessReply = sendSuccessResponce(1, '200', 'email verified succesfully');
-      // return sucessReply;
     }
   } catch (err) {
     let referer = query.redirect;
@@ -143,34 +136,24 @@ module.exports.verifyemail = async (req, res) => {
 
 
 module.exports.verifyaccount = async (req, res) => {
-  // console.log("req ----------",req)
   req2 = await json(req)
   let to = req2.email;
-  console.log("req2.email", to)
   let users = await User.find({ email: to });
-   console.log("users", users)
   let userdata = users[0];
   if (users.length == 0) {
     throw createError(401, 'You are not registered with us.');
   } else {
-    console.log("req.headers.referer", req.headers.referer)
     let url = req.headers['x-forwarded-proto'] + "://" + req.headers['x-forwarded-host']
     let referer = req.headers.referer;
-    console.log("url", url);
-    console.log("referer", referer);
     let to = userdata.email;
     let newToken = userdata.veri_token;
-    console.log("--------------------emailresponse fun start ----------------------")
     await verifyUserEmail(to, newToken, url, referer).then((emailResponse)=>{
-      console.log("emailResponse",emailResponse)
       send(res, 200, { status: "1", code: "200", message: "Email sent succesfully. Please verify your email" })
     }).catch((err)=>{
-      console.log("err >>",err)
       send(res, 500, { status: "1", code: "500", message: "Email sending failed." })
     })
   }
 }
-
 
 /**
  * sendemail for verification of user email
@@ -199,7 +182,6 @@ let verifyUserEmail = async function (to, newToken, url, referer) {
       "body": body
     }
 
-
     var options = {
       method: 'POST',
       url: sendemailurl,
@@ -212,16 +194,10 @@ let verifyUserEmail = async function (to, newToken, url, referer) {
       json: true
     };
 
-    // const mailres = 
-
-    //return rp(options)
     rp(options).then((result)=>{
       resolve("1")
     }).catch((err)=>{console.log("err..........",err),reject(err)})
-
   });
-
-
 }
 
 /**
@@ -459,8 +435,6 @@ module.exports.dashboardpass = async (req, res) => {
 
 async function sendsms(accountSid, authToken, body, to, from) {
   return new Promise((resolve, reject) => {
-    console.log("accountSid", accountSid)
-    console.log("authToken", authToken)
     var client = new twilio(accountSid, authToken);
     let options = {
       body: body,  //'Hello from Node',
@@ -476,26 +450,13 @@ async function sendsms(accountSid, authToken, body, to, from) {
 /* sendsms  */
 
 module.exports.sendsms = async (req, res) => {
-  console.log("req >>>>>>>>>>>>", req)
   const bodyparse = await json(req)
-  console.log("--- body ---", bodyparse)
-  // var numbers = [];
-  // numbers.push(no1, no2);
-  // console.log("numbers", numbers)
-  // let data = _.compact(numbers);
-  // console.log("data", data)
-  let urlstring = decodeURI(req.url)
-  console.log("urlstring", urlstring)
   var url_parts = url.parse(encodeURI(urlstring), true);
-  console.log("url_parts", url_parts)
   var query = url_parts.query;
-  console.log("query", query)
   var numbers = query.to.split(","); // split string value with (,)
   let q_to = numbers.map(i => '+' + i); // map array & append with + chracter
-  console.log("q_to", q_to)
   let data = _.compact(q_to); // remove any undefined values
   var q_body =  bodyparse.title + "\n"  + "message:" +  bodyparse.message 
-  // let q_to = TO;
   let q_from = FROM;
   let body = q_body;
   let from = q_from;
@@ -503,13 +464,11 @@ module.exports.sendsms = async (req, res) => {
   if (array == true) {
     try {
       for (let num of data) {
-        console.log("num", num)
         let to = num;
         await sendsms(accountSid, authToken, body, to, from)
       }
       send(res, 200, { status: "1", code: "200", message: "Sms sent successfully." })
     } catch (err) {
-      console.log("err >>>>>>>>>", err)
       send(res, 401, { status: "1", code: "401", message: "Sms sending failed." })
     }
   }
