@@ -59,11 +59,13 @@ module.exports.updateuserdetails = async (req, res) => {
     let data = await User.update(query, body, { upsert: true, setDefaultsOnInsert: true })
     if (data.nModified) {
       let userdata = await User.find(query)
-      io.emit('updateduserdetails', userdata[0]);
-      let sucessReply = sendSuccessResponce(1, '201', 'updateuserdetails', data);
+      let raw = userdata[0].toObject()
+      delete raw.password
+      io.emit('updateduserdetails', raw);
+      let sucessReply = sendSuccessResponce(1, '201', 'updateuserdetails', raw);
       return sucessReply;
     } else {
-      let rejectReply = sendRejectResponce(0, '200', 'no record updated');
+      let rejectReply = sendRejectResponce(0, '200', 'No record updated');
       return rejectReply;
     }
   } catch (err) {
