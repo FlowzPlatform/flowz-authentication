@@ -8,7 +8,6 @@ const googleAuth = microAuthGoogle(index.options);
 const User = require('../models/user');
 
 module.exports.Gplus = googleAuth(async(req, res, auth) => {
-  console.log("auth",auth);
 
   var id = auth.result.info.id
   var provider = auth.result.provider
@@ -33,7 +32,6 @@ module.exports.Gplus = googleAuth(async(req, res, auth) => {
     return send(res, 403, 'Forbidden');
   }
 
-// console.log("googletoken",token);
   if( data_length.length == 0){
     let user = new User({ aboutme:null, fullname:fullname, firstname:null, lastname:null, email:null, password:null, dob:null, role:null,signup_type:null,image_name:null,image_url:picture,forget_token_created_at:null,provider:provider,access_token:access_token,isEmailConfirm:0,social_uid:id,isActive:1});
       user.save(function(err){
@@ -42,12 +40,10 @@ module.exports.Gplus = googleAuth(async(req, res, auth) => {
           throw createError(401, 'data insertaion failure');
         }
         else{
-          //console.log(user._id);
           let ob_id = user._id;
           const statusCode = 302
           const location = index.redirect_app_url+'?ob_id='+ob_id
           redirect(res, statusCode, location)
-
         }
       });
     }else if(data.isEmailConfirm == 1){

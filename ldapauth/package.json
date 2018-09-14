@@ -15,12 +15,13 @@
     "extends": "prettier"
   },
   "dependencies": {
-    "jsonwebtoken": "^8.1.0",
-    "ldapjs": "^1.0.1",
-    "micro": "^9.0.0",
+    "jsonwebtoken": "8.1.0",
+    "ldapjs": "1.0.1",
+    "micro": "9.0.0",
     "micro-cors": "0.0.4",
-    "micro-http-router": "^1.2.1",
-    "microrouter": "^2.2.3"
+    "micro-http-router": "1.2.1",
+    "microrouter": "2.2.3",
+    "socket.io": "2.1.1"
   },
   "license": "MIT",
   "devDependencies": {
