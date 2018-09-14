@@ -117,7 +117,9 @@ module.exports.userdetails = async(req, res) => {
                 throw createError(401, 'That user does not exist');
             }
             const data = users[0];
-            let jsonString = { "status": 1, "code": "201", "message": "userdetails", "data": data }
+            let raw = data.toObject()
+            delete raw.password
+            let jsonString = { "status": 1, "code": "201", "message": "userdetails", "data": raw }
             return jsonString
         });
     } catch (err) {
