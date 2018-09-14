@@ -65,7 +65,7 @@ module.exports.updateuserdetails = async (req, res) => {
       let sucessReply = sendSuccessResponce(1, '201', 'updateuserdetails', raw);
       return sucessReply;
     } else {
-      let rejectReply = sendRejectResponce(0, '204', 'No record updated');
+      let rejectReply = sendRejectResponce(0, '200', 'No record updated');
       return rejectReply;
     }
   } catch (err) {
