@@ -1,6 +1,10 @@
 const { json, send, createError, sendError } = require('micro');
 const User = require('../models/user');
 let responce = require('./responce');
+let config = require('../config.js');
+
+const io = require('socket.io')(config.socketPort);
+io.on('connection', socket => {});
 
 module.exports.alluserdetails = async () => {
   try {
@@ -54,10 +58,14 @@ module.exports.updateuserdetails = async (req, res) => {
   try {
     let data = await User.update(query, body, { upsert: true, setDefaultsOnInsert: true })
     if (data.nModified) {
-      let sucessReply = sendSuccessResponce(1, '201', 'updateuserdetails', data);
+      let userdata = await User.find(query)
+      let raw = userdata[0].toObject()
+      delete raw.password
+      io.emit('updateduserdetails', raw);
+      let sucessReply = sendSuccessResponce(1, '201', 'updateuserdetails', raw);
       return sucessReply;
     } else {
-      let rejectReply = sendRejectResponce(0, '200', 'no record updated');
+      let rejectReply = sendRejectResponce(0, '200', 'No record updated');
       return rejectReply;
     }
   } catch (err) {
@@ -89,7 +97,6 @@ module.exports.getspecificuserdetails = async (req, res) => {
   for (var i = 0; i < users.length; i++) {
     obj_ids.push(new ObjectID(users[i].toString()));
   }
-  console.log(obj_ids)
   try {
     let data = await User.find({ _id: { $in: obj_ids } });
     if (data != null) {

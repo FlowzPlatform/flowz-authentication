@@ -1,6 +1,7 @@
 
 module.exports = {
-    ldapUrl: process.env.LDAPURL, 
+    ldapUrl: process.env.LDAPURL,
+    socketPort: 4042,
     ldapDc: "dc=ldapdocker,dc=doc",
     adminDn: "cn=admin,dc=ldapdocker,dc=doc",
     adminPass: process.env.ADMINPASS,
