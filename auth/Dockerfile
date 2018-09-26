@@ -1,4 +1,4 @@
-FROM bitnami/node:latest
+FROM bitnami/node:latest-prod
 
 RUN mkdir -p /usr/src/app
 

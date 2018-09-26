@@ -34,13 +34,19 @@ const signupGpRoute = route('/auth/Gplus')
 const callbackGpRoute = route('/oauthCallback')
 const signupLinkedinRoute = route('/auth/linkedin')
 const callbackLinkedinRoute = route('/auth-linkedin')
-const userdetailsRoute = route('/api/userdetails')
+const userdetailsRoute = route('/api/userdetails','GET')
 const forgetpasswordRoute = route('/api/forgetpassword', 'POST')
 const resetpasswordRoute = route('/api/resetpassword', 'POST')
 const changepasswordRoute = route('/api/changepassword', 'POST')
 const sendemailapiRoute = route('/api/sendemail', 'POST')
-const verifyemailapiRoute = route('/api/verifyemail', 'POST')
+const verifyemailapiRoute = route('/api/verifyemail', 'GET')
+const verifyaccountRoute = route('/api/verifyaccount', 'POST')
 const ldapauthRoute = route('/api/ldapauth', 'POST')
+const dashboardpassRoute = route('/api/dashboardpass', 'POST')
+const userdetailsbyemailRoute = route('/api/userdetailsbyemail', 'POST')
+const sendsmsRoute = route('/api/sendsms', 'POST')
+const validateTokenRoute = route('/api/validatetoken','POST')
+
 // const { twitcallbackUrl,twitpath,gitcallbackUrl,gitpath,gitscope,fbcallbackUrl,fbpath,fbscope,gpluscallbackUrl,gpluspath,gplusscope } = require('./src/social-config');
 
 module.exports = async function (req, res) {
@@ -62,7 +68,6 @@ module.exports = async function (req, res) {
     const _data = await parse(req);
     let datasearch = await authConfigs.find({ userid: "100" });
     let data = datasearch[0];
-    console.log("github",data._doc.social_configs.github)
     success_url = _data.success_url;
     key = data._doc.social_configs.github.key;
     seceret = data._doc.social_configs.github.seceret;
@@ -81,7 +86,6 @@ module.exports = async function (req, res) {
     const _data = await parse(req);
     let datasearch = await authConfigs.find({ userid: "100" });
     let data = datasearch[0];
-    console.log("facebook",data._doc.social_configs.facebook)
     success_url = _data.success_url;
     key = data._doc.social_configs.facebook.key;
     seceret = data._doc.social_configs.facebook.seceret;
@@ -100,7 +104,6 @@ module.exports = async function (req, res) {
     const _data = await parse(req);
     let datasearch = await authConfigs.find({ userid: "100" });
     let data = datasearch[0];
-    console.log("twitter",data._doc.social_configs.twitter)
     success_url = _data.success_url;
     key = data._doc.social_configs.twitter.key;
     seceret = data._doc.social_configs.twitter.seceret;
@@ -119,7 +122,6 @@ module.exports = async function (req, res) {
     const _data = await parse(req);
     let datasearch = await authConfigs.find({ userid: "100" });
     let data = datasearch[0];
-    console.log("google",data._doc.social_configs.google)
 
     success_url = _data.success_url;
     key = data._doc.social_configs.google.key;
@@ -139,8 +141,6 @@ module.exports = async function (req, res) {
     const _data = await parse(req);
     let datasearch = await authConfigs.find({ userid: "100" });
     let data = datasearch[0];
-    console.log(data)
-    console.log("_data",_data)
     success_url = _data.success_url;
     key = data._doc.social_configs.linkedin.key;
     seceret = data._doc.social_configs.linkedin.seceret;
@@ -166,9 +166,19 @@ module.exports = async function (req, res) {
   } else if (sendemailapiRoute(req)) {
     return users.sendemailapi(req, res);
   } else if (verifyemailapiRoute (req)) {
-    return auth.verifyemail(req, res);
+    return users.verifyemail(req, res);
+  } else if (verifyaccountRoute(req)) {
+    return users.verifyaccount(req, res);
   } else if (ldapauthRoute(req)) {
     return auth.ldapauthprocess(req, res);
+  } else if (dashboardpassRoute(req)) {
+    return users.dashboardpass(req, res);
+  } else if (userdetailsbyemailRoute(req)) {
+    return auth.userdetailsbyemail(req, res);
+  } else if (sendsmsRoute(req)) {
+    return users.sendsms(req, res);
+  } else if(validateTokenRoute(req)) {
+    return auth.validateToken(req, res);
   }
 
 }
@@ -180,7 +190,6 @@ function getTwitter(req) {
     callbackUrl: twitcallbackUrl,
     path: '/auth/twitter'
   };
- console.log("options", options)
   module.exports.options = options;
   twitter = require('./src/authentication/twitter');
 
@@ -195,7 +204,6 @@ function getGithub(req) {
     path: '/auth/github',
     scope: 'user'
   };
-  console.log("options", options)
   module.exports.options = options;
   github = require('./src/authentication/github');
 }
@@ -209,7 +217,6 @@ function getFacebook(req) {
     path: '/auth/facebook',
     fields: 'name,email,cover,first_name'
   };
-   console.log("options", options)
   module.exports.options = options;
   fb = require('./src/authentication/facebook');
 }
@@ -224,7 +231,6 @@ function getGplus(req) {
     scope: 'https://www.googleapis.com/auth/plus.me',
     access_type: 'offline'
   };
-  console.log("options", options)
   module.exports.options = options;
   Gplus = require('./src/authentication/Gplus');
 }
@@ -238,7 +244,6 @@ function getLinkedin(req) {
     path: '/auth/linkedin',
     scope: 'r_basicprofile r_emailaddress'
   };
-  console.log(options);
 
   module.exports.options = options;
   linkedin = require('./src/authentication/linkedin');

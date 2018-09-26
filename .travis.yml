@@ -8,33 +8,115 @@ services:
 branches:
   only:
   - master
-  
+  - develop
+  - staging
+  - QA
+
 jobs:
   include:
     - stage: Authentication-Auth-Flowz
       script:
-      - docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD"
-      - docker build -t authentication_auth_flowz:"$DOCKER_IMAGE_TAG" ./auth/
-      - docker images
-      - docker tag authentication_auth_flowz:"$DOCKER_IMAGE_TAG" $DOCKER_USERNAME/authentication_auth_flowz:"$DOCKER_IMAGE_TAG"
-      - docker push $DOCKER_USERNAME/authentication_auth_flowz:"$DOCKER_IMAGE_TAG"
+      - 'if [ ${TRAVIS_BRANCH} = "master" ]; then
+            docker login -u="$DOCKER_USERNAME_FLOWZ" -p="$DOCKER_PASSWORD_FLOWZ";
+            docker build -t authentication_auth_flowz:latest ./auth/;
+            docker images;
+            docker tag authentication_auth_flowz:latest $DOCKER_USERNAME_FLOWZ/authentication_auth_flowz:latest;
+            docker push $DOCKER_USERNAME_FLOWZ/authentication_auth_flowz:latest;
+        elif [ ${TRAVIS_BRANCH} = "develop" ]; then
+            docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD";
+            docker build -t authentication_auth_flowz:dev ./auth/;
+            docker images;
+            docker tag authentication_auth_flowz:dev $DOCKER_USERNAME/authentication_auth_flowz:dev;
+            docker push $DOCKER_USERNAME/authentication_auth_flowz:dev;
+        elif [ ${TRAVIS_BRANCH} = "staging" ]; then
+            docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD";
+            docker build -t authentication_auth_flowz:$TRAVIS_BRANCH-$TRAVIS_BUILD_NUMBER ./auth/;
+            docker tag authentication_auth_flowz:$TRAVIS_BRANCH-$TRAVIS_BUILD_NUMBER $DOCKER_USERNAME/authentication_auth_flowz:$TRAVIS_BRANCH-$TRAVIS_BUILD_NUMBER;
+            docker tag authentication_auth_flowz:$TRAVIS_BRANCH-$TRAVIS_BUILD_NUMBER $DOCKER_USERNAME/authentication_auth_flowz:staging;
+            docker images;
+            docker push $DOCKER_USERNAME/authentication_auth_flowz:$TRAVIS_BRANCH-$TRAVIS_BUILD_NUMBER;
+            docker push $DOCKER_USERNAME/authentication_auth_flowz:staging;
+        else
+            docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD";
+            docker build -t authentication_auth_flowz:qa ./auth/;
+            docker images;
+            docker tag authentication_auth_flowz:qa $DOCKER_USERNAME/authentication_auth_flowz:qa;
+            docker push $DOCKER_USERNAME/authentication_auth_flowz:qa;
+        fi'
     - stage: Authentication-Ldap-Flowz
       script:
-      - docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD"
-      - docker build -t authentication_ldap_flowz:"$DOCKER_IMAGE_TAG" ./ldapauth/
-      - docker images
-      - docker tag authentication_ldap_flowz:"$DOCKER_IMAGE_TAG" $DOCKER_USERNAME/authentication_ldap_flowz:"$DOCKER_IMAGE_TAG"
-      - docker push $DOCKER_USERNAME/authentication_ldap_flowz:"$DOCKER_IMAGE_TAG"
+      - 'if [ ${TRAVIS_BRANCH} = "master" ]; then
+            docker login -u="$DOCKER_USERNAME_FLOWZ" -p="$DOCKER_PASSWORD_FLOWZ";
+            docker build -t authentication_ldap_flowz:latest ./ldapauth/;
+            docker images;
+            docker tag authentication_ldap_flowz:latest $DOCKER_USERNAME_FLOWZ/authentication_ldap_flowz:latest;
+            docker push $DOCKER_USERNAME_FLOWZ/authentication_ldap_flowz:latest;
+        elif [ ${TRAVIS_BRANCH} = "develop" ]; then
+            docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD";
+            docker build -t authentication_ldap_flowz:dev ./ldapauth/;
+            docker images;
+            docker tag authentication_ldap_flowz:dev $DOCKER_USERNAME/authentication_ldap_flowz:dev;
+            docker push $DOCKER_USERNAME/authentication_ldap_flowz:dev;
+        elif [ ${TRAVIS_BRANCH} = "staging" ]; then
+            docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD";
+            docker build -t authentication_ldap_flowz:$TRAVIS_BRANCH-$TRAVIS_BUILD_NUMBER ./ldapauth/;
+            docker tag authentication_ldap_flowz:$TRAVIS_BRANCH-$TRAVIS_BUILD_NUMBER $DOCKER_USERNAME/authentication_ldap_flowz:$TRAVIS_BRANCH-$TRAVIS_BUILD_NUMBER;
+            docker tag authentication_ldap_flowz:$TRAVIS_BRANCH-$TRAVIS_BUILD_NUMBER $DOCKER_USERNAME/authentication_ldap_flowz:staging;
+            docker images;
+            docker push $DOCKER_USERNAME/authentication_ldap_flowz:$TRAVIS_BRANCH-$TRAVIS_BUILD_NUMBER;
+            docker push $DOCKER_USERNAME/authentication_ldap_flowz:staging;
+        else
+            docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD";
+            docker build -t authentication_ldap_flowz:qa ./ldapauth/;
+            docker images;
+            docker tag authentication_ldap_flowz:qa $DOCKER_USERNAME/authentication_ldap_flowz:qa;
+            docker push $DOCKER_USERNAME/authentication_ldap_flowz:qa;
+        fi'
     - stage: Authentication-User-Flowz
       script:
-      - docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD"
-      - docker build -t authentication_user_flowz:"$DOCKER_IMAGE_TAG" ./user/
-      - docker images
-      - docker tag authentication_user_flowz:"$DOCKER_IMAGE_TAG" $DOCKER_USERNAME/authentication_user_flowz:"$DOCKER_IMAGE_TAG"
-      - docker push $DOCKER_USERNAME/authentication_user_flowz:"$DOCKER_IMAGE_TAG"
-    - stage: Upgrade Rancher Service 
-      script: 
+      - 'if [ ${TRAVIS_BRANCH} = "master" ]; then
+            docker login -u="$DOCKER_USERNAME_FLOWZ" -p="$DOCKER_PASSWORD_FLOWZ";
+            docker build -t authentication_user_flowz:latest ./user/;
+            docker images;
+            docker tag authentication_user_flowz:latest $DOCKER_USERNAME_FLOWZ/authentication_user_flowz:latest;
+            docker push $DOCKER_USERNAME_FLOWZ/authentication_user_flowz:latest;
+        elif [ ${TRAVIS_BRANCH} = "develop" ]; then
+            docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD";
+            docker build -t authentication_user_flowz:dev ./user/;
+            docker images;
+            docker tag authentication_user_flowz:dev $DOCKER_USERNAME/authentication_user_flowz:dev;
+            docker push $DOCKER_USERNAME/authentication_user_flowz:dev;
+        elif [ ${TRAVIS_BRANCH} = "staging" ]; then
+            docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD";
+            docker build -t authentication_user_flowz:$TRAVIS_BRANCH-$TRAVIS_BUILD_NUMBER ./user/;
+            docker tag authentication_user_flowz:$TRAVIS_BRANCH-$TRAVIS_BUILD_NUMBER $DOCKER_USERNAME/authentication_user_flowz:$TRAVIS_BRANCH-$TRAVIS_BUILD_NUMBER;
+            docker tag authentication_user_flowz:$TRAVIS_BRANCH-$TRAVIS_BUILD_NUMBER $DOCKER_USERNAME/authentication_user_flowz:staging;
+            docker images;
+            docker push $DOCKER_USERNAME/authentication_user_flowz:$TRAVIS_BRANCH-$TRAVIS_BUILD_NUMBER;
+            docker push $DOCKER_USERNAME/authentication_user_flowz:staging;
+        else
+            docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD";
+            docker build -t authentication_user_flowz:qa ./user/;
+            docker images;
+            docker tag authentication_user_flowz:qa $DOCKER_USERNAME/authentication_user_flowz:qa;
+            docker push $DOCKER_USERNAME/authentication_user_flowz:qa;
+        fi'
+    - stage: Upgrade Rancher Service
+      script:
       - bash ./upgrade.sh
     - stage: Finish Rancher Service
       script:
       - bash ./finish.sh
+
+notifications:
+  email:
+    recipients:
+      - arpitap@officebeacon.com
+      - kaushalm@officebrain.com
+      - anuj@officebrain.com
+      - naveeng@officebrain.com
+      - acharotariya@officebrain.com
+      - mshah@officebrain.com
+      - avasani@officebrain.com
+    on_success: always
+    on_failure: always

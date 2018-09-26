@@ -1,11 +1,8 @@
 const { send } = require('micro')
-const { router, get, post } = require('microrouter')
+const { router, get, post, options } = require('microrouter')
 const user = require('./services/user.service');
 
 const hello = async(req, res) => {
-
-    console.log('hello.......');
-    //   res.setHeader('Content-Type', 'application/json');
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Credentials', 'true');
     res.setHeader('Access-Control-Allow-Methods', 'GET,HEAD,OPTIONS,POST,PUT,DELETE');
@@ -29,30 +26,11 @@ module.exports = router(
     get('/importuser', user.importuser),
     post('/setpermission', user.setPermission),
     get('/getpermission/:app/:taskType/:roleId/:resourceId', user.getPermission),
+    get('/getallrolepermission/:app/:taskType/:roleId', user.getAllRolePermission),
     get('/getallpermission/:app', user.getAllPermission),
     post('/init', user.init),
     get('/groupRoles', user.groupRoles),
-    //post('/hellopost', hellopost),
     get('/hello/:who', hello),
-    get('/*', notfound)
+    get('/*', notfound),
+    options('/*', user.corsoption)
 )
-
-//const Router = require('micro-http-router');
-// Initialize the router
-//const router = new Router();
-
-/*
-// Define a basic GET request
-router.route({
-    path: '/user',
-    method: 'GET',
-    handler: (req, res) => {
-        return 'Hello, world 123';
-    }
-});
-
-module.exports = async () => {
-  //return 'Hello, world'
-  return router
-}
-*/
