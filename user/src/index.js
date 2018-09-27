@@ -11,6 +11,7 @@ const rateLimit = require('micro-ratelimit')
 const microApi = require('micro-api')
 const user_info = require('./services/user.service.personaldetails');
 const user_address = require('./services/user.service.address');
+const { secret } = require('./config');
 
 const compose = (...fns) => fns.reduce((f, g) => (...args) => f(g(...args)))
 
@@ -81,6 +82,6 @@ module.exports = compose(
   handleErrors,
   cors,
   //rateLimit,
-  jwtAuth("abcdefgabcdefg"),
+  jwtAuth(secret),
   visualize
 )(api)
