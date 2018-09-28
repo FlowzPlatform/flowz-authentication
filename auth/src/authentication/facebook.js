@@ -39,7 +39,7 @@ module.exports.facebook = facebookAuth(async (req, res, auth) => {
           redirect(res, statusCode, location)
         }
       });
-    }else if(data.isEmailConfirm == 1){
+    }else if(data.isEmailVerified == 1){
       let ob_id = data._id;
       token = authFb.sociallogin(ob_id);
       const logintoken  = token.logintoken;
