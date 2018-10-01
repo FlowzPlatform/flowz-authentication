@@ -44,7 +44,7 @@ module.exports.linkedin = linkedinAuth(async (req, res, auth) => {
         redirect(res, statusCode, location)
       }
     });
-  } else if (data.isEmailConfirm == 1) {
+  } else if (data.isEmailVerified == 1) {
     let ob_id = data._id;
     token = authLinkedin.sociallogin(ob_id);
     const logintoken = token.logintoken;

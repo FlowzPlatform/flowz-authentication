@@ -28,16 +28,17 @@ module.exports.list = async () => {
 //
 ///////////////////////////////
 
-const signup = (req, res1, { username, aboutme, fullname, firstname, lastname, middlename, companyname, address1, address2, email, country, state, city, zipcode, phonenumber, fax, password, dob, role, signup_type, image_name, image_url, provider, access_token, picture, isActive, isEmailVerified, url }) => {
+const signup = (req, res1, { username, aboutme, fullname, firstname, lastname, middlename, companyname, address1, address2, email, country, state, city, zipcode, phonenumber, fax, password, dob, role, signup_type, image_name, image_url, provider, access_token, picture, isActive, isEmailVerified, url, redirect_url }) => {
   return getEmail(email).then(async (res) => {
     var uniqueHash = await generateToken().catch((err) => { send(res1, 401, { status: "0", code: "401", message: "UniqueHash error." }) })
-    let user = new User({ username: username, aboutme: aboutme, fullname: fullname, firstname: firstname, lastname: lastname, middlename: middlename, companyname: companyname, address1: address1, address2: address2, country: country, state: state, city: city, zipcode: zipcode, phonenumber: phonenumber, fax: fax, email: email, password: hashSync(password, 2), dob: dob, role: role, signup_type: signup_type, image_name: image_name, image_url: image_url, forget_token_created_at: null, provider: null, access_token: null, picture: null, isActive: 1, veri_token: uniqueHash, isEmailVerified: 0 });
+    let user = new User({ username: username, aboutme: aboutme, fullname: fullname, firstname: firstname, lastname: lastname, middlename: middlename, companyname: companyname, address1: address1, address2: address2, country: country, state: state, city: city, zipcode: zipcode, phonenumber: phonenumber, fax: fax, email: email, password: hashSync(password, 2), dob: dob, role: role, signup_type: signup_type, image_name: image_name, image_url: image_url, forget_token_created_at: null, provider: null, access_token: null, picture: null, isActive: 1, veri_token: uniqueHash, isEmailVerified: 0 , redirect_url: redirect_url});
     userdata = await user.save().catch((err) => { send(res1, 401, { status: "0", code: "401", message: "User registration error." })});
     let url = req.headers['x-forwarded-proto'] + "://" + req.headers['x-forwarded-host']
     let referer = req.headers.referer;
     let to = userdata.email;
     let newToken = userdata.veri_token;
-    await verifyUserEmail(to, newToken, url, referer).then(async (emailResponse) => {
+    let redirect = userdata.redirect_url
+    await verifyUserEmail(to, newToken, url, referer, redirect).then(async (emailResponse) => {
       await send(res1, 200, { status: "1", code: "200", message: "You are successfully register. Please verify your email." })
     }).catch((err) => {
       removeUser(User, userdata._id).then((removeUser) => {
@@ -159,11 +160,16 @@ module.exports.verifyaccount = async (req, res) => {
  * sendemail for verification of user email
  */
 
-let verifyUserEmail = async function (to, newToken, url, referer) {
+let verifyUserEmail = async function (to, newToken, url, referer,redirect) {
   return new Promise(async(resolve,reject)=>{
     var token = encodeURIComponent(newToken);
-    let verifiedurl = url + "/auth/api/verifyemail?token=" + token + "&redirect=" + referer
-    let body = "<html><body>Hello Dear, <br><br>Welcome to FlowzDigital.Please verify your email by click below button.<br><br>" +
+    var redirect_to = redirect;
+    if(redirect_to) {
+      var verifiedurl = url + "/auth/api/verifyemail?token=" + token + "&redirect=" + redirect_to
+    } else {
+      var verifiedurl = url + "/auth/api/verifyemail?token=" + token + "&redirect=" + referer
+    }
+    var body = "<html><body>Hello Dear, <br><br>Welcome to FlowzDigital.Please verify your email by click below button.<br><br>" +
       `<table>
         <tr>
             <td style="background-color: #0097c3;border-color: #00aac3 ;border: 1px solid #00aac3 !important;padding: 10px;text-align: center,border-radius:1px;">
